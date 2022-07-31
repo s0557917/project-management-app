@@ -8,4 +8,10 @@ module.exports = {
     extend: {},
   },
   plugins: [],
+  variants: {
+    // The 'active' variant will be generated in addition to the defaults
+    extend: {
+      backgroundColor: ['active']
+    }
+  },
 }
