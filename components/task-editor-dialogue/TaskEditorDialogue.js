@@ -31,16 +31,6 @@ export default function TaskEditorDialogue({ tasks, modalState, selectedTaskStat
         console.log("Reminders selected: ", reminders);
     }
 
-    function getSubtasks(){
-        selectedTask?.subtasks?.map(subtask => {
-            tasks.find(task => {
-                if(task.id.localeCompare(subtask)){
-                    return task;
-                }
-            });
-        });
-    }
-
     return (
         <Dialogue
             opened={opened}
@@ -92,9 +82,7 @@ export default function TaskEditorDialogue({ tasks, modalState, selectedTaskStat
                 <RemindersDialogue remindersDialogueState={[remindersDialogueOpened, setRemindersDialogueOpened]} remindersDialogueCallback={remindersSelectedCallback}/>
 
                 <Title order={4}>Subtasks</Title>
-                {/* <Sublist tasks={getSubtasks()}
-
-                /> */}
+                <Sublist tasks={tasks?.filter((task) => selectedTask?.subtasks?.includes(task.id))}/>
             </>
         </Dialogue>
     );

@@ -2,9 +2,10 @@ import Subtask from "./Subtask";
 import { ScrollArea } from '@mantine/core';
 
 export default function Sublist({ tasks }) {
+
   return (
     <div class="border-cyan-500">
-      {!tasks 
+      {(!tasks || tasks.length === 0)
         ? <p>No subtasks yet...</p> 
         : <ScrollArea style={{ height: 100 }}>
             <ul>
