@@ -6,7 +6,7 @@ const sampleData = [
         "completed": false,
         "dueDate": "01/01/2020",
         "priority": 5,
-        "category": "Personal",
+        "category": "86f7b2be-f7b5-4dbf-8d97-04cb81d4ca82",
         "reminders": [
             {
                 "date": "01/01/2020",
@@ -29,7 +29,7 @@ const sampleData = [
         "completed": true,
         "dueDate": "01/01/2020",
         "priority": 5,
-        "category": "Personal",
+        "category": "86f7b2be-f7b5-4dbf-8d97-04cb81d4ca82",
         "reminders": [
             {
                 "date": "01/01/2020",
@@ -49,7 +49,7 @@ const sampleData = [
         "completed": false,
         "dueDate": "01/01/2020",
         "priority": 5,
-        "category": "Personal",
+        "category": "e186dd85-2d84-43bd-844c-48ca4878952a",
         "reminders": [],
         "subtasks": [ "2200df4b-cd1d-4f35-bd61-38d4c8cae1a3" ]
     },
@@ -60,7 +60,7 @@ const sampleData = [
         "completed": true,
         "dueDate": "01/01/2020",
         "priority": 5,
-        "category": "Personal",
+        "category": "86f7b2be-f7b5-4dbf-8d97-04cb81d4ca82",
         "reminders": [
             {
                 "date": "01/01/2020",
