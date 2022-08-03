@@ -1,88 +1,133 @@
-import { useState } from 'react';
-import { Modal, Group, TextInput, Textarea, Title } from '@mantine/core';
-import {Calendar, Flag, Tag, BellRinging, createStyles } from 'phosphor-react';
-import sampleSubtaskData from '../../data/sample-subtasks'; 
+import { useState, useEffect } from 'react';
+import { TextInput, Textarea, Title } from '@mantine/core';
+import {Calendar, Flag, Tag, BellRinging } from 'phosphor-react';
 import Sublist from '../task-list/Sublist';
 import DateTimePickerDialogue from './DateTimePickerDialogue';
 import PriorityDialogue from './PriorityDialogue';
 import Dialogue from '../general/dialogues/Dialogue';
 import RemindersDialogue from './RemindersDialogue';
+import CategoryDialogue from './CategoryDialogue';
+import IconButton from './IconButton';
 
-export default function TaskEditorDialogue({ tasks, modalState, selectedTaskState, saveTaskCallback}) {
+export default function TaskEditorDialogue({ tasks, categories, modalState, selectedTaskState, saveTaskCallback, onModalClosed}) {
     const [opened, setOpened] = modalState;
-    const [selectedTask, setSelectedTask] = selectedTaskState;
-    const [taskName, setTaskName] = useState(selectedTask.name);
-    const [taskDetails, setTaskDetails] = useState(selectedTask.details);
+    const [taskTitle, setTaskTitle] = useState(selectedTaskState.title);
+    const [taskDetails, setTaskDetails] = useState(selectedTaskState.details);
 
-    const [dateTimePickerOpened, setDateTimePickerOpened] = useState(false);
+    const [dateTimeDialogOpened, setDateTimeDialogOpened] = useState(false);
     const [priorityDialogueOpened, setPriorityDialogueOpened] = useState(false);
     const [remindersDialogueOpened, setRemindersDialogueOpened] = useState(false);
+    const [categoryDialogueOpened, setCategoryDialogueOpened] = useState(false);
 
-    function dateTimePickerCallback(date, timeFrame) {
-        console.log("DATE: ", date, " - ", timeFrame);
-        setDateTimePickerOpened(false);
+    const [pickedDate, setPickedDate] = useState(new Date(selectedTaskState.dueDate).toLocaleString('en-GB') || '');
+    const [pickedTimeRange, setPickedTimeRange] = useState(selectedTaskState.timeRange || [null, null]);
+    const [pickedPriority, setPickedPriority] = useState(selectedTaskState.priority || 1);
+    const [pickedReminders, setPickedReminders] = useState(selectedTaskState.reminders || []);
+    const [pickedCategory, setPickedCategory] = useState(selectedTaskState.category || '');
+    const [userTimezone, setUserTimezone] = useState(selectedTaskState.timeZone || null);
+
+    function dateTimePickerCallback(date, timeRange, userTimezone) {
+        setPickedDate(date);
+        setPickedTimeRange(timeRange);
+        setUserTimezone(userTimezone);
+
+        console.log(date, timeRange, userTimezone);
+
+        setDateTimeDialogOpened(false);
+
     }
 
-    function prioritySelectedCallback(priority) {
-        console.log("Priority selected: ", priority);
-    }
-
-    function remindersSelectedCallback(reminders) {
-        console.log("Reminders selected: ", reminders);
-    }
+    useEffect(() => {
+        setTaskTitle(selectedTaskState.title);
+        setTaskDetails(selectedTaskState.details);
+        setPickedCategory(selectedTaskState.category || '');
+        setPickedTimeRange(selectedTaskState.timeRange || [null, null]);
+        setPickedDate(selectedTaskState.dueDate || null);
+        setPickedPriority(selectedTaskState.priority || 1);
+        setPickedReminders(selectedTaskState.reminders || []);
+        setUserTimezone(selectedTaskState.timeZone || null);
+    }, [selectedTaskState]);
+  
+    useEffect(() => {  
+        // console.log(a);
+    }, [pickedDate])
 
     return (
         <Dialogue
             opened={opened}
             onClose={() => {
                 setOpened(false);
-                setSelectedTask({});
+                onModalClosed();
             }}
             title="Add or edit your task"
-            saveButtonCallback={() => saveTaskCallback({
-                title: taskName,
-                details: taskDetails,
-            })}
+            saveButtonCallback={() => {
+                saveTaskCallback({
+                    id: (selectedTaskState ? selectedTaskState.id : ''),  
+                    title: taskTitle,
+                    details: taskDetails,
+                    dueDate: pickedDate,
+                    timeRange: pickedTimeRange,
+                    category: pickedCategory,
+                    reminders: pickedReminders,
+                    priority: pickedPriority,
+                });
+            }}
         >
-                        <>
+            <>
                 <TextInput
                     label="Task Title"
                     placeholder="Enter a title for your task"
                     required
-                    value={selectedTask ? selectedTask.title : undefined}
-                    onChange={(e) => setTaskName(e.target.value) }
+                    value={taskTitle}
+                    onChange={(event) => setTaskTitle(event.currentTarget.value)}
                 />
 
                 <Textarea 
                     label="Task Details"
                     placeholder="Enter details for your task"
                     required
-                    value={selectedTask ? selectedTask.details : undefined}
+                    value={taskDetails}
                     onChange={(e) => setTaskDetails(e.target.value) }
                 />
 
                 <div class="inset-y-0 right-0 flex items-center m-1 justify-items-end">
-                    <button onClick={() => setDateTimePickerOpened(true)}>
+
+                    <IconButton
+                        state={new Date(pickedDate).toLocaleDateString('en-GB')}
+                        buttonCallback={() => setDateTimeDialogOpened(true)}
+                    >
                         <Calendar size={28} class="m-1"/>
-                    </button>
-                    <button onClick={() => setPriorityDialogueOpened(true)}>
+                    </IconButton>
+
+                    <IconButton
+                        state={pickedPriority}
+                        buttonCallback={() => setPriorityDialogueOpened(true)}
+                    >
                         <Flag size={28} class="m-1"/>
-                    </button>
-                    <button>
+                    </IconButton>
+
+                    <IconButton
+                        state={categories.find(category => category.id === pickedCategory)?.name}
+                        buttonCallback={() => setCategoryDialogueOpened(true)}
+                    >
                         <Tag size={28} class="m-1"/>
-                    </button>
-                    <button onClick={() => setRemindersDialogueOpened(true)}>
+                    </IconButton>
+
+                    <IconButton
+                        buttonCallback={() => setRemindersDialogueOpened(true)}
+                    >
                         <BellRinging size={28} class="m-1"/>
-                    </button>
+                    </IconButton>
                     <br/>
                 </div>
 
-                <DateTimePickerDialogue dateTimePickerState={[ dateTimePickerOpened, setDateTimePickerOpened ]} dateTimePickerCallback={dateTimePickerCallback}/>
-                <PriorityDialogue priorityDialogueState={[ priorityDialogueOpened, setPriorityDialogueOpened ]} priorityDialogueCallback={prioritySelectedCallback}/>
-                <RemindersDialogue remindersDialogueState={[remindersDialogueOpened, setRemindersDialogueOpened]} remindersDialogueCallback={remindersSelectedCallback}/>
+                <DateTimePickerDialogue dateTimeDialogState={[ dateTimeDialogOpened, setDateTimeDialogOpened ]} dateTimePickerCallback={dateTimePickerCallback} dateState={pickedDate} timeRangeState={pickedTimeRange} timeZoneState={userTimezone}/>
+                <PriorityDialogue priorityDialogueState={[ priorityDialogueOpened, setPriorityDialogueOpened ]} priorityDialogueCallback={setPickedPriority}/>
+                <RemindersDialogue remindersDialogueState={[remindersDialogueOpened, setRemindersDialogueOpened]} remindersDialogueCallback={setPickedReminders}/>
+                <CategoryDialogue categoryDialogueState={[categoryDialogueOpened, setCategoryDialogueOpened]} category={pickedCategory} categoryDialogueCallback={setPickedCategory} categories={categories}/>
 
                 <Title order={4}>Subtasks</Title>
-                <Sublist tasks={tasks?.filter((task) => selectedTask?.subtasks?.includes(task.id))}/>
+                <Sublist tasks={tasks?.filter((task) => selectedTaskState?.subtasks?.includes(task.id))}/>
             </>
         </Dialogue>
     );

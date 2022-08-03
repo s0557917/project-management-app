@@ -13,8 +13,57 @@ export default function TaskList() {
     const [sampleTasks, setSampleTasks] = useState(sampleData);
 
     function onTaskSaved(taskData) {
-        setSampleTasks([...sampleTasks, taskData]);
+        console.log("SAVED: " + JSON.stringify(taskData));
+
+        if (!taskData.id) {
+            taskData.id = Math.random().toString(36).substr(2, 9);
+            setSampleTasks([...sampleTasks, taskData]);
+
+            console.log("sampleTasks: " + JSON.stringify(sampleTasks));
+
+        } else {
+            let taskIndex = sampleTasks.findIndex(task => task.id === taskData.id);
+            let tasksCopy = [...sampleTasks];
+            console.log("CATEGORY", taskData.category);
+            let modifiedTask = {
+                ...tasksCopy[taskIndex],
+                title: taskData.title,
+                details: taskData.details,
+                dueDate: taskData.dueDate,
+                timeRange: taskData.timeRange,
+                category: taskData.category,
+                reminders: taskData.reminders,
+                priority: taskData.priority,
+            }
+
+            tasksCopy[taskIndex] = modifiedTask;
+            setSampleTasks(tasksCopy);
+
+            // setSampleTasks(({tasks}) => ({
+            //     tasks: [
+            //         ...tasks.slice(0, taskIndex),
+            //         {
+            //             ...tasks[taskIndex],
+            //             id: taskData.id,
+            //             title: taskData.title,
+            //             details: taskData.details,
+            //             dueDate: taskData.dueDate,
+            //             timeRange: taskData.timeRange,
+            //             category: taskData.category,
+            //             reminders: taskData.reminders,
+            //             priority: taskData.priority,
+            //         },
+            //         ...tasks.slice(taskIndex + 1),
+            //     ]
+            // }));
+        }
+
+        // setSampleTasks([...sampleTasks, taskData]);
         setOpened(false);
+        setSelectedTask({});
+    }
+
+    function onModalClosed() {
         setSelectedTask({});
     }
 
@@ -30,9 +79,11 @@ export default function TaskList() {
             />
             <TaskEditorDialogue 
                 tasks={sampleTasks} 
+                categories={sampleCategories}
                 modalState={[opened, setOpened]} 
-                selectedTaskState={[selectedTask, setSelectedTask]} 
+                selectedTaskState={selectedTask}
                 saveTaskCallback={onTaskSaved}
+                onModalClosed={onModalClosed}
             />
             <AddTaskButton modalStateSetter={setOpened}/>
         </>

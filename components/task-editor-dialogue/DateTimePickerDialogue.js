@@ -1,29 +1,47 @@
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { Divider, Modal } from '@mantine/core'
+import { Divider } from '@mantine/core'
 import { Calendar, TimeRangeInput } from '@mantine/dates'
 import Dialogue from '../general/dialogues/Dialogue';
+import { useEffect } from 'react';
 
-export default function DateTimePickerDialogue({ dateTimePickerState, dateTimePickerCallback }) {
+export default function DateTimePickerDialogue({ dateTimeDialogState, dateTimePickerCallback, dateState, timeRangeState, userTimezoneState }) {
     const now = new Date();
-    const then = dayjs(now).add(30, 'minutes').toDate();
-    const [dateTimePickerOpened, setDateTimePickerOpened] = dateTimePickerState;
-    const [pickedDate, setPickedDate] = useState(null);
-    const [pickedTimeRange, setPickedTimeRange] = useState([now, then]); 
+    const then = dayjs(now).add(60, 'minutes').toDate();
+    const [dateTimePickerOpened, setDateTimePickerOpened] = dateTimeDialogState;
+    const [pickedDate, setPickedDate] = useState(dateState ? new Date(dateState) : now );
+    const [pickedTimeRange, setPickedTimeRange] = useState(
+        timeRangeState.length > 0 
+            ? [new Date(timeRangeState[0]), new Date(timeRangeState[1])] 
+            : [now, then] 
+    ); 
+    const [userTimezone, setUserTimezone] = useState(null);
+
+    useEffect(() => {
+        console.log("PTR", pickedTimeRange);
+    }, [pickedTimeRange]);
 
     return (
         <Dialogue 
             opened={dateTimePickerOpened}
             onClose={() => setDateTimePickerOpened(false)}
             title="Set a date and time"
-            saveButtonCallback={() => dateTimePickerCallback(pickedDate, pickedTimeRange)}
+            saveButtonCallback={() => dateTimePickerCallback(pickedDate, pickedTimeRange, userTimezone)}
         >
             <>
-                <Calendar value={pickedDate} onChange={setPickedDate} />
+                <Calendar 
+                    value={pickedDate} 
+                    initialMonth={pickedDate}
+                    onChange={setPickedDate} 
+                    fullWidth={true}
+                />
                 <Divider my="sm" />
                 <TimeRangeInput
                     value={pickedTimeRange}
-                    onChange={setPickedTimeRange}
+                    onChange={() => {
+                        setPickedTimeRange(pickedTimeRange);
+                        setUserTimezone((new Date()).getTimezoneOffset());
+                    }}
                     label="Duration"
                     clearable
                 />
