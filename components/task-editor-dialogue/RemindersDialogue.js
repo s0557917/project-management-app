@@ -2,69 +2,37 @@ import Dialogue from "../general/dialogues/Dialogue"
 import { useState, useEffect } from "react";
 import ReminderInput from "./ReminderInput";
 
-export default function RemindersDialogue({remindersDialogueState, remindersDialogueCallback}) {
+export default function RemindersDialogue({remindersDialogueState, remindersDialogueCallback, remindersState}) {
 
     const [remindersDialogueOpened, setRemindersDialogueOpened] = remindersDialogueState;
-    const [reminders, setReminders] = useState([{
-        id: 1,
-        time: 30,
-        unit: 'Minutes'
-    }]);
-    const [reminderInputs, setReminderInputs] = useState([<ReminderInput id={1} onInputChangeCallback={onInputChange} key={1}/>]);
+    const [reminders, setReminders] = useState(remindersState);
+    const [reminderInputs, setReminderInputs] = useState(
+        <ReminderInput 
+            id={0} 
+            onInputChangeCallback={onInputChange} 
+            key={0}
+            remindersState={remindersState}
+        />
+    );
 
-    function formatAndSaveReminders() {
-        // remindersDialogueCallback()
-    }
+    console.log("START: ", reminders, remindersState);
 
-    function onReminderAdded(id) {
-        console.log("Start: ", reminders)
-        let newReminders = [...reminders];
-        newReminders.push({
-            id: id,
-            time: 30,
-            unit: 'Minutes'
-        });
-        setReminders(newReminders);
-        console.log("NEW: ",reminders)
-    }
+    // useEffect(() => {
+    //     if(reminders.length < reminderInputs.length) {
+    //         let expandedReminders = {...reminders};
+    //         expandedReminders = {
+    //             time: 30,
+    //             unit: 'Minutes'
+    //         }
+    //         setReminders(expandedReminders);
+    //     }
+    // }, [reminderInputs])
 
-    useEffect(() => {
-        console.log('REM UP', reminders);
-      }, [reminders])
+    function onInputChange(id, newTime, newUnit) {
+        let changedReminder = {...reminders};
+        changedReminder = {time: newTime, unit: newUnit};
 
-    function onInputChange(id, value, field) {
-
-        // console.log("id: ", id, "value: ", value, "field: ", field);
-
-        // console.log("REM: ", reminders);
-        let newReminders = [...reminders];
-        // console.log("TEST", reminders[0].id, id, reminders[0].id === parseInt(id, 10))
-        console.log("REM: ", reminders);
-        reminders.forEach(reminder => {
-            console.log("TEST FE", reminder.id, id, reminder.id === parseInt(id, 10))
-            // reminder.id === parseInt(id, 10);
-        });
-        // console.log("NEW: ", newReminders);
-
-        // if(id <= reminders.length) {
-        //     let modifiedReminder = {
-        //         ...reminders[index],
-        //         [field]: value
-        //     }
-
-        //     newReminders[index] = modifiedReminder;
-
-        // }
-
-        
-
-        // if(field === "time" && newReminders[id]) {
-        //     newReminders[id].time = value;
-        // } else if(field === "unit" && newReminders[id]) {
-        //     newReminders[id].unit = value;
-        // }
-        // setReminders(newReminders);
-        // console.log("Reminder input changed: ", reminders);
+        setReminders(changedReminder);
     }
 
     return (
@@ -72,19 +40,28 @@ export default function RemindersDialogue({remindersDialogueState, remindersDial
             opened={remindersDialogueOpened}
             onClose={() => setRemindersDialogueOpened(false)}
             title="Set reminders"
-            saveButtonCallback = {() => formatAndSaveReminders()}
+            saveButtonCallback = {() => {
+                remindersDialogueCallback(reminders);
+                setRemindersDialogueOpened(false);
+            }}
         >
             <>
                 {reminderInputs}
-                <button
+                {/* <button
                     className="hover:bg-cyan-700 bg-cyan-500 m-3 p-3 text-white rounded-full"
-                    onClick={() => {
-                        setReminderInputs([...reminderInputs, <ReminderInput id={reminderInputs.length + 1} onInputChangeCallback={onInputChange} key={reminderInputs.length + 1}/>]);
-                        onReminderAdded(reminderInputs.length + 1)
-                    }}
+                    onClick={() => setReminderInputs(
+                        [
+                            ...reminderInputs, 
+                            <ReminderInput 
+                                id={reminderInputs.length} 
+                                onInputChangeCallback={onInputChange} 
+                                key={reminderInputs.length}
+                            />
+                        ]
+                    )}
                 >
                     +
-                </button>
+                </button> */}
             </>
         </Dialogue>
     )

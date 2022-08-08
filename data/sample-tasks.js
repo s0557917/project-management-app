@@ -10,16 +10,10 @@ const sampleData = [
         "timeZone": "",
         "priority": 1,
         "category": "86f7b2be-f7b5-4dbf-8d97-04cb81d4ca82",
-        "reminders": [
-            {
-                "date": "01/01/2020",
-                "time": "12:00"
-            },
-            {
-                "date": "01/01/2020",
-                "time": "12:00"
-            }
-        ],
+        "reminders": {
+            "time": 1,
+            "unit": "Weeks"
+        },
         "subtasks": [
             "b4c63d1b-3bf8-4a63-9e3f-28b0918f668b", 
             "7a3f7529-13ff-42ae-b4b0-6056f2526a3e",
@@ -35,16 +29,10 @@ const sampleData = [
         "timeZone": "",
         "priority": 2,
         "category": "86f7b2be-f7b5-4dbf-8d97-04cb81d4ca82",
-        "reminders": [
-            {
-                "date": "01/01/2020",
-                "time": "12:00"
-            },
-            {
-                "date": "01/01/2020",
-                "time": "12:00"
-            }
-        ],
+        "reminders": {
+            "time": 45,
+            "unit": "Minutes"
+        },
         "subtasks": []
     },
     {
@@ -57,7 +45,7 @@ const sampleData = [
         "timeZone": "",
         "priority": 3,
         "category": "e186dd85-2d84-43bd-844c-48ca4878952a",
-        "reminders": [],
+        "reminders": {},
         "subtasks": [ "2200df4b-cd1d-4f35-bd61-38d4c8cae1a3" ]
     },
     {
@@ -70,12 +58,7 @@ const sampleData = [
         "timeZone": "",
         "priority": 3,
         "category": "86f7b2be-f7b5-4dbf-8d97-04cb81d4ca82",
-        "reminders": [
-            {
-                "date": "01/01/2020",
-                "time": "12:00"
-            }
-        ],
+        "reminders": {},
         "subtasks": []
     },
     {
@@ -88,12 +71,7 @@ const sampleData = [
         "timeZone": "",
         "priority": 4,
         "category": "",
-        "reminders": [
-            {
-                "date": "01/01/2020",
-                "time": "12:00"
-            }
-        ],
+        "reminders": {},
         "subtasks": []
     },
     {
@@ -109,12 +87,10 @@ const sampleData = [
         "timeZone": "",
         "priority": "",
         "category": "",
-        "reminders": [
-            {
-                "date": "01/01/2020",
-                "time": "12:00"
-            }
-        ],
+        "reminders": {
+            "time": 3,
+            "unit": "Days"
+        },
         "subtasks": []
     }
 ]

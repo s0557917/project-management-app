@@ -17,10 +17,6 @@ export default function DateTimePickerDialogue({ dateTimeDialogState, dateTimePi
     ); 
     const [userTimezone, setUserTimezone] = useState(null);
 
-    useEffect(() => {
-        console.log("PTR", pickedTimeRange);
-    }, [pickedTimeRange]);
-
     return (
         <Dialogue 
             opened={dateTimePickerOpened}

@@ -44,13 +44,9 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
         setPickedTimeRange(selectedTaskState.timeRange || [null, null]);
         setPickedDate(selectedTaskState.dueDate || null);
         setPickedPriority(selectedTaskState.priority || 1);
-        setPickedReminders(selectedTaskState.reminders || []);
+        setPickedReminders(selectedTaskState.reminders || {"time": 3, "unit": "Days"});
         setUserTimezone(selectedTaskState.timeZone || null);
     }, [selectedTaskState]);
-  
-    useEffect(() => {  
-        // console.log(a);
-    }, [pickedDate])
 
     return (
         <Dialogue
@@ -93,7 +89,10 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
                 <div class="inset-y-0 right-0 flex items-center m-1 justify-items-end">
 
                     <IconButton
-                        state={new Date(pickedDate).toLocaleDateString('en-GB')}
+                        state={pickedDate 
+                            ? new Date(pickedDate).toLocaleDateString('en-GB')
+                            : undefined
+                        }
                         buttonCallback={() => setDateTimeDialogOpened(true)}
                     >
                         <Calendar size={28} class="m-1"/>
@@ -122,8 +121,8 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
                 </div>
 
                 <DateTimePickerDialogue dateTimeDialogState={[ dateTimeDialogOpened, setDateTimeDialogOpened ]} dateTimePickerCallback={dateTimePickerCallback} dateState={pickedDate} timeRangeState={pickedTimeRange} timeZoneState={userTimezone}/>
-                <PriorityDialogue priorityDialogueState={[ priorityDialogueOpened, setPriorityDialogueOpened ]} priorityDialogueCallback={setPickedPriority}/>
-                <RemindersDialogue remindersDialogueState={[remindersDialogueOpened, setRemindersDialogueOpened]} remindersDialogueCallback={setPickedReminders}/>
+                <PriorityDialogue priorityDialogueState={[ priorityDialogueOpened, setPriorityDialogueOpened ]} priorityDialogueCallback={setPickedPriority} priorityState={pickedPriority}/>
+                <RemindersDialogue remindersDialogueState={[remindersDialogueOpened, setRemindersDialogueOpened]} remindersDialogueCallback={setPickedReminders} remindersState={pickedReminders}/>
                 <CategoryDialogue categoryDialogueState={[categoryDialogueOpened, setCategoryDialogueOpened]} category={pickedCategory} categoryDialogueCallback={setPickedCategory} categories={categories}/>
 
                 <Title order={4}>Subtasks</Title>
