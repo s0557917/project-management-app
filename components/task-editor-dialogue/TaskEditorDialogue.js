@@ -86,7 +86,7 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
                     onChange={(e) => setTaskDetails(e.target.value) }
                 />
 
-                <div class="inset-y-0 right-0 flex items-center m-1 justify-items-end">
+                <div className="inset-y-0 right-0 flex items-center m-1 justify-items-end">
 
                     <IconButton
                         state={pickedDate 
@@ -95,27 +95,27 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
                         }
                         buttonCallback={() => setDateTimeDialogOpened(true)}
                     >
-                        <Calendar size={28} class="m-1"/>
+                        <Calendar size={28} className="m-1"/>
                     </IconButton>
 
                     <IconButton
                         state={pickedPriority}
                         buttonCallback={() => setPriorityDialogueOpened(true)}
                     >
-                        <Flag size={28} class="m-1"/>
+                        <Flag size={28} className="m-1"/>
                     </IconButton>
 
                     <IconButton
                         state={categories.find(category => category.id === pickedCategory)?.name}
                         buttonCallback={() => setCategoryDialogueOpened(true)}
                     >
-                        <Tag size={28} class="m-1"/>
+                        <Tag size={28} className="m-1"/>
                     </IconButton>
 
                     <IconButton
                         buttonCallback={() => setRemindersDialogueOpened(true)}
                     >
-                        <BellRinging size={28} class="m-1"/>
+                        <BellRinging size={28} className="m-1"/>
                     </IconButton>
                     <br/>
                 </div>
