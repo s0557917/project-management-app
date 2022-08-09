@@ -1,4 +1,3 @@
-import Task from "./Task";
 import Category from "./category/Category";
 import CategoryCompletedTasks from "./category/CategoryCompletedTasks";
 
@@ -49,30 +48,7 @@ export default function List({ tasks, categories, modalStateSetter, selectedTask
       buildAllCategorySections(),
       buildUncategorizedSection(),
       buildCompletedSection()
-    );  
-
-
-    // let uncategorizedTasks = tasks.filter(task => task.category === null || task.category === '');
-    // if(uncategorizedTasks.length > 0) {
-    //   categoriesJSX.push(
-    //     <div className="mx-4 p-2">
-    //       <div className="flex items-center">
-    //         <span className={`bg-slate-900] rounded-full w-6 h-6 m-3`}></span>
-    //         <h2 className="text-2xl">Uncategorized</h2>
-    //       </div>
-    //       {uncategorizedTasks.map(task => {
-    //         return <Task 
-    //           taskData={task} 
-    //           onTaskClicked={onTaskClicked} 
-    //           onCompletionStateChanged={onCompletionStateChanged}
-    //           category={''} 
-    //           key={task.id}
-    //         />
-    //       })}
-    //     </div>
-    //   );
-    // }
-    
+    );      
     return categoriesJSX;
   }
 

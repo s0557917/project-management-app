@@ -13,8 +13,6 @@ export default function TaskList() {
     const [sampleTasks, setSampleTasks] = useState(sampleData);
 
     function onTaskSaved(taskData) {
-        console.log("SAVED: " + JSON.stringify(taskData));
-
         if (!taskData.id) {
             taskData.id = Math.random().toString(36).substr(2, 9);
             setSampleTasks([...sampleTasks, taskData]);

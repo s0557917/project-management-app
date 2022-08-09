@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Divider } from '@mantine/core'
 import { Calendar, TimeRangeInput } from '@mantine/dates'
 import Dialogue from '../general/dialogues/Dialogue';
-import { useEffect } from 'react';
 
 export default function DateTimePickerDialogue({ dateTimeDialogState, dateTimePickerCallback, dateState, timeRangeState, userTimezoneState }) {
     const now = new Date();

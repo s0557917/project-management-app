@@ -9,7 +9,7 @@ import RemindersDialogue from './RemindersDialogue';
 import CategoryDialogue from './CategoryDialogue';
 import IconButton from './IconButton';
 
-export default function TaskEditorDialogue({ tasks, categories, modalState, selectedTaskState, saveTaskCallback, onModalClosed}) {
+export default function TaskEditorDialogue({ tasks, categories, modalState, selectedTaskState, saveTaskCallback, onModalClosed, date}) {
     const [opened, setOpened] = modalState;
     const [taskTitle, setTaskTitle] = useState(selectedTaskState.title);
     const [taskDetails, setTaskDetails] = useState(selectedTaskState.details);
@@ -19,12 +19,42 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
     const [remindersDialogueOpened, setRemindersDialogueOpened] = useState(false);
     const [categoryDialogueOpened, setCategoryDialogueOpened] = useState(false);
 
-    const [pickedDate, setPickedDate] = useState(new Date(selectedTaskState.dueDate).toLocaleString('en-GB') || '');
+    console.log("PASSED DATE: ", date);
+    console.log("SELECTED", selectedTaskState === '{}');
+    const [pickedDate, setPickedDate] = useState(() => () => {
+        
+        if(selectedTaskState && Object.keys(selectedTaskState).length !== 0) {
+            console.log("SELECTED TASK")
+            return new Date(selectedTaskState.dueDate).toLocaleString('en-GB');
+        } else if(date) {
+            console.log("DATE")
+            return date;
+        } else {
+            console.log("E;MPYT")
+            return '';
+        }
+    });
     const [pickedTimeRange, setPickedTimeRange] = useState(selectedTaskState.timeRange || [null, null]);
     const [pickedPriority, setPickedPriority] = useState(selectedTaskState.priority || 1);
     const [pickedReminders, setPickedReminders] = useState(selectedTaskState.reminders || []);
     const [pickedCategory, setPickedCategory] = useState(selectedTaskState.category || '');
     const [userTimezone, setUserTimezone] = useState(selectedTaskState.timeZone || null);
+
+    useEffect(() => {
+        setPickedDate(() => {
+            if(selectedTaskState) {
+                console.log("SELECTED TASK")
+                return new Date(selectedTaskState.dueDate).toLocaleString('en-GB');
+            } else if(date) {
+                console.log("DATE")
+                return date;
+            } else {
+                console.log("E;MPYT")
+                return '';
+            }
+        });
+    }, [selectedTaskState, date]);
+
 
     function dateTimePickerCallback(date, timeRange, userTimezone) {
         setPickedDate(date);
