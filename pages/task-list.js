@@ -19,12 +19,9 @@ export default function TaskList() {
             taskData.id = Math.random().toString(36).substr(2, 9);
             setSampleTasks([...sampleTasks, taskData]);
 
-            console.log("sampleTasks: " + JSON.stringify(sampleTasks));
-
         } else {
             let taskIndex = sampleTasks.findIndex(task => task.id === taskData.id);
             let tasksCopy = [...sampleTasks];
-            console.log("CATEGORY", taskData.category);
             let modifiedTask = {
                 ...tasksCopy[taskIndex],
                 title: taskData.title,
@@ -38,29 +35,17 @@ export default function TaskList() {
 
             tasksCopy[taskIndex] = modifiedTask;
             setSampleTasks(tasksCopy);
-
-            // setSampleTasks(({tasks}) => ({
-            //     tasks: [
-            //         ...tasks.slice(0, taskIndex),
-            //         {
-            //             ...tasks[taskIndex],
-            //             id: taskData.id,
-            //             title: taskData.title,
-            //             details: taskData.details,
-            //             dueDate: taskData.dueDate,
-            //             timeRange: taskData.timeRange,
-            //             category: taskData.category,
-            //             reminders: taskData.reminders,
-            //             priority: taskData.priority,
-            //         },
-            //         ...tasks.slice(taskIndex + 1),
-            //     ]
-            // }));
         }
 
-        // setSampleTasks([...sampleTasks, taskData]);
         setOpened(false);
         setSelectedTask({});
+    }
+
+    function onCompletionStateChanged(taskId, isCompleted) {
+        let modifiedTasks = [...sampleTasks];
+        let modifiedTask = modifiedTasks.find(task => task.id === taskId);
+        modifiedTask.completed = isCompleted;
+        setSampleTasks(modifiedTasks);
     }
 
     function onModalClosed() {
@@ -76,6 +61,7 @@ export default function TaskList() {
                 categories={sampleCategories}
                 selectedTaskSetter={setSelectedTask} 
                 modalStateSetter={setOpened}
+                onCompletionStateChanged={onCompletionStateChanged}
             />
             <TaskEditorDialogue 
                 tasks={sampleTasks} 
