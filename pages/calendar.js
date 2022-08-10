@@ -55,6 +55,7 @@ export default function Calendar() {
             <h1>Calendar</h1>
 
             <EventCalendar 
+                events={sampleTasks}
                 dateClickCallback={onDateClicked}
             />
 

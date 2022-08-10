@@ -19,18 +19,13 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
     const [remindersDialogueOpened, setRemindersDialogueOpened] = useState(false);
     const [categoryDialogueOpened, setCategoryDialogueOpened] = useState(false);
 
-    console.log("PASSED DATE: ", date);
-    console.log("SELECTED", selectedTaskState === '{}');
     const [pickedDate, setPickedDate] = useState(() => () => {
         
         if(selectedTaskState && Object.keys(selectedTaskState).length !== 0) {
-            console.log("SELECTED TASK")
             return new Date(selectedTaskState.dueDate).toLocaleString('en-GB');
         } else if(date) {
-            console.log("DATE")
             return date;
         } else {
-            console.log("E;MPYT")
             return '';
         }
     });
@@ -43,13 +38,10 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
     useEffect(() => {
         setPickedDate(() => {
             if(selectedTaskState) {
-                console.log("SELECTED TASK")
                 return new Date(selectedTaskState.dueDate).toLocaleString('en-GB');
             } else if(date) {
-                console.log("DATE")
                 return date;
             } else {
-                console.log("E;MPYT")
                 return '';
             }
         });

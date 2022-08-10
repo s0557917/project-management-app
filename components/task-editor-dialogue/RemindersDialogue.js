@@ -14,9 +14,7 @@ export default function RemindersDialogue({remindersDialogueState, remindersDial
             remindersState={remindersState}
         />
     );
-
-    console.log("START: ", reminders, remindersState);
-
+    
     // useEffect(() => {
     //     if(reminders.length < reminderInputs.length) {
     //         let expandedReminders = {...reminders};

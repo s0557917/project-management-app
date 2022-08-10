@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 
 export default function ReminderInput({id, onInputChangeCallback, remindersState}) {
     
-    console.log("REMINDER STATE: ", remindersState);
     const [time, setTime] = useState(remindersState?.time || 30);
     const [unit, setUnit] = useState(remindersState?.unit || 'Minutes');
     
