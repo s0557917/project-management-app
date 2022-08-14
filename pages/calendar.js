@@ -87,7 +87,7 @@ export default function Calendar() {
     }
 
     return (
-        <div className="m-5">
+        <div className="p-5 h-screen">
             <ViewsTabs />
             <h1>Calendar</h1>
 

@@ -33,9 +33,9 @@ export default function EventCalendar({events, dateClickCallback, taskClickCallb
     <Calendar 
       plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]} 
       headerToolbar={{
-        left:'title',
-        center:'',
-        right:'today prev,next dayGridMonth,timeGridWeek,timeGridDay'
+        left:'today prev,next',
+        center:'title',
+        right:'dayGridMonth,timeGridWeek,timeGridDay'
       }}
       eventClick={(arg) => taskClickCallback(events.find((event) => event.id === arg.event.id))}
       dateClick={(arg) => dateClickCallback(arg.date)}
@@ -50,6 +50,17 @@ export default function EventCalendar({events, dateClickCallback, taskClickCallb
       }
       editable={true}
       eventDrop={(args) => taskDroppedCallback(args.event)}
+      buttonText={{
+        today: 'Today',
+        month: 'Month',
+        week: 'Week',
+        day: 'Day',
+        prev: '<',
+        next: '>',
+      }}
+      locale={'en-gb'}
+      nowIndicator={true}
+      height={'85%'}
     />
     );
 }
