@@ -19,52 +19,32 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
     const [remindersDialogueOpened, setRemindersDialogueOpened] = useState(false);
     const [categoryDialogueOpened, setCategoryDialogueOpened] = useState(false);
 
-    const [pickedDate, setPickedDate] = useState(() => () => {
-        
-        if(selectedTaskState && Object.keys(selectedTaskState).length !== 0) {
-            return new Date(selectedTaskState.dueDate).toLocaleString('en-GB');
-        } else if(date) {
-            return date;
-        } else {
-            return '';
-        }
-    });
-    const [pickedTimeRange, setPickedTimeRange] = useState(selectedTaskState.timeRange || [null, null]);
+    const [dueDate, setDueDate] = useState(new Date(selectedTaskState.dueDate) || null);
+    const [startPoint, setStartPoint] = useState(new Date(selectedTaskState.start) || null);
+    const [endPoint, setEndPoint] = useState(selectedTaskState.end || null);
     const [pickedPriority, setPickedPriority] = useState(selectedTaskState.priority || 1);
     const [pickedReminders, setPickedReminders] = useState(selectedTaskState.reminders || []);
     const [pickedCategory, setPickedCategory] = useState(selectedTaskState.category || '');
     const [userTimezone, setUserTimezone] = useState(selectedTaskState.timeZone || null);
 
-    useEffect(() => {
-        setPickedDate(() => {
-            if(selectedTaskState) {
-                return new Date(selectedTaskState.dueDate).toLocaleString('en-GB');
-            } else if(date) {
-                return date;
-            } else {
-                return '';
-            }
-        });
-    }, [selectedTaskState, date]);
 
-
-    function dateTimePickerCallback(date, timeRange, userTimezone) {
-        setPickedDate(date);
-        setPickedTimeRange(timeRange);
+    function dateTimePickerCallback(dueDate, start, end, userTimezone) {
+        setDueDate(dueDate);
+        if(start !== null && end !== null) {
+            setStartPoint(start);
+            setEndPoint(end);
+        }
         setUserTimezone(userTimezone);
-
-        console.log(date, timeRange, userTimezone);
-
         setDateTimeDialogOpened(false);
-
     }
 
     useEffect(() => {
         setTaskTitle(selectedTaskState.title);
         setTaskDetails(selectedTaskState.details);
         setPickedCategory(selectedTaskState.category || '');
-        setPickedTimeRange(selectedTaskState.timeRange || [null, null]);
-        setPickedDate(selectedTaskState.dueDate || null);
+        setDueDate(selectedTaskState.dueDate || null);
+        setStartPoint(selectedTaskState.start || null);
+        setEndPoint(selectedTaskState.end || null);
         setPickedPriority(selectedTaskState.priority || 1);
         setPickedReminders(selectedTaskState.reminders || {"time": 3, "unit": "Days"});
         setUserTimezone(selectedTaskState.timeZone || null);
@@ -83,8 +63,9 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
                     id: (selectedTaskState ? selectedTaskState.id : ''),  
                     title: taskTitle,
                     details: taskDetails,
-                    dueDate: pickedDate,
-                    timeRange: pickedTimeRange,
+                    dueDate: dueDate,
+                    start: startPoint,
+                    end: endPoint,
                     category: pickedCategory,
                     reminders: pickedReminders,
                     priority: pickedPriority,
@@ -111,8 +92,8 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
                 <div className="inset-y-0 right-0 flex items-center m-1 justify-items-end">
 
                     <IconButton
-                        state={pickedDate 
-                            ? new Date(pickedDate).toLocaleDateString('en-GB')
+                        state={dueDate 
+                            ? new Date(dueDate).toLocaleDateString('en-GB')
                             : undefined
                         }
                         buttonCallback={() => setDateTimeDialogOpened(true)}
@@ -142,7 +123,7 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
                     <br/>
                 </div>
 
-                <DateTimePickerDialogue dateTimeDialogState={[ dateTimeDialogOpened, setDateTimeDialogOpened ]} dateTimePickerCallback={dateTimePickerCallback} dateState={pickedDate} timeRangeState={pickedTimeRange} timeZoneState={userTimezone}/>
+                <DateTimePickerDialogue dateTimeDialogState={[ dateTimeDialogOpened, setDateTimeDialogOpened ]} dateTimePickerCallback={dateTimePickerCallback} dueDate={dueDate} startPoint={startPoint} endPoint={endPoint} timeZoneState={userTimezone}/>
                 <PriorityDialogue priorityDialogueState={[ priorityDialogueOpened, setPriorityDialogueOpened ]} priorityDialogueCallback={setPickedPriority} priorityState={pickedPriority}/>
                 <RemindersDialogue remindersDialogueState={[remindersDialogueOpened, setRemindersDialogueOpened]} remindersDialogueCallback={setPickedReminders} remindersState={pickedReminders}/>
                 <CategoryDialogue categoryDialogueState={[categoryDialogueOpened, setCategoryDialogueOpened]} category={pickedCategory} categoryDialogueCallback={setPickedCategory} categories={categories}/>

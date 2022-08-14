@@ -13,11 +13,6 @@ export default function Calendar() {
 
     const [selectedDate, setSelectedDate] = useState('');
 
-    function onDateClicked(date){
-        setSelectedDate(new Date(date.date).toLocaleString('en-GB'));
-        setOpened(true);
-    }
-
     function onTaskSaved(taskData) {
         if (!taskData.id) {
             taskData.id = Math.random().toString(36).substr(2, 9);
@@ -31,7 +26,8 @@ export default function Calendar() {
                 title: taskData.title,
                 details: taskData.details,
                 dueDate: taskData.dueDate,
-                timeRange: taskData.timeRange,
+                start: taskData.start,
+                end: taskData.end,
                 category: taskData.category,
                 reminders: taskData.reminders,
                 priority: taskData.priority,
@@ -45,18 +41,61 @@ export default function Calendar() {
         setSelectedTask({});
     }
 
+    function onDateClicked(date){
+        setSelectedDate(new Date(date));
+        setOpened(true);
+    }
+
+    function onTaskClicked(task){
+        setSelectedTask(task);
+        setOpened(true);
+    }
+
+    function onTaskDropped(droppedCalendarTask){
+
+        console.log("START: ", droppedCalendarTask.start, " -- ", droppedCalendarTask.end)
+
+        let droppedTask = sampleTasks.find(task => task.id === droppedCalendarTask.id);
+        let taskIndex = sampleTasks.findIndex(task => task.id === droppedTask.id);
+
+        if(droppedTask.dueDate && droppedTask.start && droppedTask.end){
+            let tasksCopy = [...sampleTasks];
+            let modifiedTask = {
+                ...tasksCopy[taskIndex],
+                dueDate: droppedCalendarTask.start,
+                start: droppedCalendarTask.start,
+                end: droppedCalendarTask.end
+            }
+            tasksCopy[taskIndex] = modifiedTask;
+            console.log("---TIMED EVENT", tasksCopy, '⁄n', sampleTasks)
+            setSampleTasks(tasksCopy);
+        } else if(droppedTask.dueDate && (!droppedTask.start  && !droppedTask.end)){
+            let tasksCopy = [...sampleTasks];
+            let modifiedTask = {
+                ...tasksCopy[taskIndex],
+                dueDate: droppedCalendarTask.start,
+            }
+            tasksCopy[taskIndex] = modifiedTask;
+            console.log("---ALL DAY EVENT", tasksCopy, '⁄n', sampleTasks)
+            setSampleTasks(tasksCopy);
+        }
+        
+    }
+
     function onModalClosed() {
         setSelectedTask({});
     }
 
     return (
-        <div>
+        <div className="m-5">
             <ViewsTabs />
             <h1>Calendar</h1>
 
             <EventCalendar 
                 events={sampleTasks}
                 dateClickCallback={onDateClicked}
+                taskClickCallback={onTaskClicked}
+                taskDroppedCallback={onTaskDropped}
             />
 
             <TaskEditorDialogue 
