@@ -12,6 +12,7 @@ export default function TaskList() {
     const [selectedTask, setSelectedTask] = useState({});
     const [sampleTasks, setSampleTasks] = useState(sampleData);
 
+    //TODO DRY
     function onTaskSaved(taskData) {
         if (!taskData.id) {
             taskData.id = Math.random().toString(36).substr(2, 9);
@@ -25,7 +26,8 @@ export default function TaskList() {
                 title: taskData.title,
                 details: taskData.details,
                 dueDate: taskData.dueDate,
-                timeRange: taskData.timeRange,
+                start: taskData.start,
+                end: taskData.end,
                 category: taskData.category,
                 reminders: taskData.reminders,
                 priority: taskData.priority,

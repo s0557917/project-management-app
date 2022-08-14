@@ -29,7 +29,7 @@ export default function Task({ taskData, onTaskClicked, onCompletionStateChanged
                     className="flex items-center m-1 h-auto"
                 >
                     <IconInformation
-                        state={taskData.dueDate}
+                        state={taskData.dueDate && taskData.dueDate !== '' ? new Date(taskData.dueDate).toLocaleDateString('en-GB') : null}
                     >
                         <Calendar size={28} className="m-1"/>
                     </IconInformation>
