@@ -4,7 +4,7 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from "@fullcalendar/interaction";
 import { useState, useEffect } from 'react';
 
-export default function EventCalendar({events, dateClickCallback, taskClickCallback, taskDroppedCallback}) {
+export default function EventCalendar({events, categories, dateClickCallback, taskClickCallback, taskDroppedCallback}) {
 
   const [eventSource, setEventSource] = useState(mapEvents)
 
@@ -17,12 +17,14 @@ export default function EventCalendar({events, dateClickCallback, taskClickCallb
     const mappedEvents = filteredEvents.map(event => {
       const startTime = event.start !== '' ? new Date(event.start): new Date(event.dueDate);
       const endTime = event.end !== '' ? new Date(event.end) : null;
+      const categoryColor = categories?.find(category => category.id === event.category)?.color || "#a39d9d";
       return {
         id: event.id,
         title: event.title,
         allDay: event.start === '' && event.end === '',
         start: startTime,
         end: endTime,
+        color: categoryColor
       }
     });
     console.log("MAPPED: ", mappedEvents)

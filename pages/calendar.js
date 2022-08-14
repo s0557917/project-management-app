@@ -93,6 +93,7 @@ export default function Calendar() {
 
             <EventCalendar 
                 events={sampleTasks}
+                categories={sampleCategories}
                 dateClickCallback={onDateClicked}
                 taskClickCallback={onTaskClicked}
                 taskDroppedCallback={onTaskDropped}
