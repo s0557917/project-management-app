@@ -15,13 +15,19 @@ export default function EventCalendar({events, categories, dateClickCallback, ta
   function mapEvents(){
     const filteredEvents = events?.filter(event => event.dueDate !== '')
     const mappedEvents = filteredEvents.map(event => {
-      const startTime = event.start !== '' ? new Date(event.start): new Date(event.dueDate);
-      const endTime = event.end !== '' ? new Date(event.end) : null;
+      // console.log("MAPPING EVENT", event, '⁄n', event.start !== '' || event.start !== null, "? ", new Date(event.start), ":", new Date(event.dueDate));
+      const startTime = event.start !== '' && event.start !== null 
+        ? new Date(event.start)
+        : new Date(event.dueDate);
+      const endTime = event.end !== '' && event.end !== null 
+        ? new Date(event.end) 
+        : null;
       const categoryColor = categories?.find(category => category.id === event.category)?.color || "#a39d9d";
+      
       return {
         id: event.id,
         title: event.title,
-        allDay: event.start === '' && event.end === '',
+        allDay: (event.start === '' || event.start === null) && (event.end === '' || event.end === null),
         start: startTime,
         end: endTime,
         color: categoryColor

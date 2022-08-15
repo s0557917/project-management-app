@@ -35,7 +35,6 @@ export default function DateTimePickerDialogue({ dateTimeDialogState, dateTimePi
                 end = dayjs(end).add(1, 'day').toDate();
             }
         }
-        
         setTimeRange([start, end]);
         dateTimePickerCallback(start === null ? pickedDate : start, start, end, userTimezone);
     }

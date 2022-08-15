@@ -18,15 +18,22 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
     const [priorityDialogueOpened, setPriorityDialogueOpened] = useState(false);
     const [remindersDialogueOpened, setRemindersDialogueOpened] = useState(false);
     const [categoryDialogueOpened, setCategoryDialogueOpened] = useState(false);
-
-    const [dueDate, setDueDate] = useState(new Date(selectedTaskState.dueDate) || null);
+    
+    const [dueDate, setDueDate] = useState(() => {
+        if(selectedTaskState.dueDate && !isNaN(new Date(selectedTaskState.dueDate))){
+            return new Date(selectedTaskState.dueDate);
+        } else if(date && !isNaN(new Date(date))){
+            return new Date(date);
+        } else {
+            return null;
+        }
+    });
     const [startPoint, setStartPoint] = useState(new Date(selectedTaskState.start) || null);
     const [endPoint, setEndPoint] = useState(selectedTaskState.end || null);
     const [pickedPriority, setPickedPriority] = useState(selectedTaskState.priority || 1);
     const [pickedReminders, setPickedReminders] = useState(selectedTaskState.reminders || []);
     const [pickedCategory, setPickedCategory] = useState(selectedTaskState.category || '');
     const [userTimezone, setUserTimezone] = useState(selectedTaskState.timeZone || null);
-
 
     function dateTimePickerCallback(dueDate, start, end, userTimezone) {
         setDueDate(dueDate);
@@ -42,13 +49,21 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
         setTaskTitle(selectedTaskState.title);
         setTaskDetails(selectedTaskState.details);
         setPickedCategory(selectedTaskState.category || '');
-        setDueDate(selectedTaskState.dueDate || null);
+        setDueDate(() => {
+            if(selectedTaskState.dueDate && !isNaN(new Date(selectedTaskState.dueDate))){
+                return new Date(selectedTaskState.dueDate);
+            } else if(date && !isNaN(new Date(date))){
+                return new Date(date);
+            } else {
+                return null;
+            }
+        });
         setStartPoint(selectedTaskState.start || null);
         setEndPoint(selectedTaskState.end || null);
         setPickedPriority(selectedTaskState.priority || 1);
         setPickedReminders(selectedTaskState.reminders || {"time": 3, "unit": "Days"});
         setUserTimezone(selectedTaskState.timeZone || null);
-    }, [selectedTaskState]);
+    }, [selectedTaskState, date]);
 
     return (
         <Dialogue

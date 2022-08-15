@@ -1,4 +1,5 @@
 import ViewsTabs from "../components/general/ViewsTabs"
+import { v4 as uuidv4 } from 'uuid';
 import EventCalendar from "../components/calendar/EventCalendar"
 import sampleData from "../data/sample-tasks";
 import sampleCategories from "../data/sample-categories";
@@ -14,9 +15,12 @@ export default function Calendar() {
     const [selectedDate, setSelectedDate] = useState('');
 
     function onTaskSaved(taskData) {
+        console.log("Task saved: ", taskData);
         if (!taskData.id) {
-            taskData.id = Math.random().toString(36).substr(2, 9);
-            setSampleTasks([...sampleTasks, taskData]);
+            taskData.id = uuidv4();
+            const copy = [...sampleTasks, {...taskData, dueDate: taskData.dueDate.toString()}];
+            console.log("COPY:: ", copy);   
+            setSampleTasks(copy);
 
         } else {
             let taskIndex = sampleTasks.findIndex(task => task.id === taskData.id);
@@ -34,6 +38,7 @@ export default function Calendar() {
             }
 
             tasksCopy[taskIndex] = modifiedTask;
+            console.log("Task modified: ", tasksCopy);
             setSampleTasks(tasksCopy);
         }
 
@@ -52,9 +57,6 @@ export default function Calendar() {
     }
 
     function onTaskDropped(droppedCalendarTask){
-
-        console.log("START: ", droppedCalendarTask.start, " -- ", droppedCalendarTask.end)
-
         let droppedTask = sampleTasks.find(task => task.id === droppedCalendarTask.id);
         let taskIndex = sampleTasks.findIndex(task => task.id === droppedTask.id);
 
