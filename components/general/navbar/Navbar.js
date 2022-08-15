@@ -5,27 +5,25 @@ import { StatsRing } from "./StatsRing";
 
 export default function Navbar(){
     return(
-        <div className="flex items-end w-screen bg-cyan-800">
-            <TextInput 
-                placeholder={"Search..."}
-                icon={<MagnifyingGlass size={16} />}
-            />
+        <div className="flex w-full justify-between bg-cyan-800">
+            <div className="self-center m-3 w-72">
+                <TextInput 
+                    placeholder={"Search..."}
+                    icon={<MagnifyingGlass size={16} />}
+                />
+            </div>
             <Tabbing />
-            <StatsRing
-                 data={
-                    [
-                        { "label": "Page views", "stats": "456,578", "progress": 65, "color": "teal", "icon": "up" },
-                        { "label": "New users", "stats": "2,550", "progress": 72, "color": "blue", "icon": "up" },
-                        {
-                          "label": "Orders",
-                          "stats": "4,735",
-                          "progress": 52,
-                          "color": "red",
-                          "icon": "down"
-                        }
-                      ]
-                 }
-            />
+            <div className="self-center">
+                <StatsRing
+                        data={{
+                        "label": "Tracked Tasks",
+                        "stats": "88",
+                        "progress": 76,
+                        "color": "green",
+                        "icon": "up"
+                    }}
+                />
+            </div>
         </div>
     )
 }

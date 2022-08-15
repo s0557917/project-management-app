@@ -1,4 +1,4 @@
-import { RingProgress, Text, SimpleGrid, Paper, Center, Group } from '@mantine/core';
+import { RingProgress, Text } from '@mantine/core';
 import { ArrowUp, ArrowDown } from 'phosphor-react';
 
 interface StatsRingProps {
@@ -8,7 +8,7 @@ interface StatsRingProps {
     progress: number;
     color: string;
     icon: 'up' | 'down';
-  }[];
+  };
 }
 
 const icons = {
@@ -17,38 +17,23 @@ const icons = {
 };
 
 export function StatsRing({ data }: StatsRingProps) {
-  const stats = data.map((stat) => {
-    const Icon = icons[stat.icon];
-    return (
-      <Paper withBorder radius="md" p="xs" key={stat.label}>
-        <Group>
+  const Icon = icons[data.icon];
+  return (
+      <div> 
+        <div className='flex items-center pt-1'>
           <RingProgress
-            size={80}
+            size={55}
             roundCaps
-            thickness={8}
-            sections={[{ value: stat.progress, color: stat.color }]}
+            thickness={4}
+            sections={[{ value: data.progress, color: data.color }]}
             label={
-              <Center>
-                <Icon size={22} stroke={1.5} />
-              </Center>
+              <p className='text-center text-xl text-white font-bold'>
+                {data.stats}
+              </p>
             }
           />
 
-          <div>
-            <Text color="dimmed" size="xs" transform="uppercase" weight={700}>
-              {stat.label}
-            </Text>
-            <Text weight={700} size="xl">
-              {stat.stats}
-            </Text>
-          </div>
-        </Group>
-      </Paper>
-    );
-  });
-  return (
-    <SimpleGrid cols={3} breakpoints={[{ maxWidth: 'sm', cols: 1 }]}>
-      {stats}
-    </SimpleGrid>
+        </div>
+      </div>
   );
 }
