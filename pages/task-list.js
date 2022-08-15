@@ -1,4 +1,4 @@
-import ViewsTabs from "../components/general/ViewsTabs"
+import Navbar from "../components/general/navbar/Navbar"
 import List from "../components/task-list/List"
 import sampleData from "../data/sample-tasks"
 import sampleCategories from "../data/sample-categories"
@@ -53,25 +53,27 @@ export default function TaskList() {
     }
 
     return (
-        <>
-            <ViewsTabs />        
-            <h1 className="text-3xl font-bold underline">Task List</h1>
-            <List 
-                tasks={sampleTasks} 
-                categories={sampleCategories}
-                selectedTaskSetter={setSelectedTask} 
-                modalStateSetter={setOpened}
-                onCompletionStateChanged={onCompletionStateChanged}
-            />
-            <TaskEditorDialogue 
-                tasks={sampleTasks} 
-                categories={sampleCategories}
-                modalState={[opened, setOpened]} 
-                selectedTaskState={selectedTask}
-                saveTaskCallback={onTaskSaved}
-                onModalClosed={onModalClosed}
-            />
-            <AddTaskButton modalStateSetter={setOpened}/>
-        </>
+        <div className="h-screen">
+            <Navbar /> 
+            <div className="h-full p-5">       
+                <h1 className="text-3xl font-bold underline">Task List</h1>
+                <List 
+                    tasks={sampleTasks} 
+                    categories={sampleCategories}
+                    selectedTaskSetter={setSelectedTask} 
+                    modalStateSetter={setOpened}
+                    onCompletionStateChanged={onCompletionStateChanged}
+                />
+                <TaskEditorDialogue 
+                    tasks={sampleTasks} 
+                    categories={sampleCategories}
+                    modalState={[opened, setOpened]} 
+                    selectedTaskState={selectedTask}
+                    saveTaskCallback={onTaskSaved}
+                    onModalClosed={onModalClosed}
+                />
+                <AddTaskButton modalStateSetter={setOpened}/>
+            </div>
+        </div>
     )
 }

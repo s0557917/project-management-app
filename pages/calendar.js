@@ -1,4 +1,4 @@
-import ViewsTabs from "../components/general/ViewsTabs"
+import Navbar from '../components/general/navbar/Navbar';
 import { v4 as uuidv4 } from 'uuid';
 import EventCalendar from "../components/calendar/EventCalendar"
 import sampleData from "../data/sample-tasks";
@@ -15,11 +15,9 @@ export default function Calendar() {
     const [selectedDate, setSelectedDate] = useState('');
 
     function onTaskSaved(taskData) {
-        console.log("Task saved: ", taskData);
         if (!taskData.id) {
             taskData.id = uuidv4();
             const copy = [...sampleTasks, {...taskData, dueDate: taskData.dueDate.toString()}];
-            console.log("COPY:: ", copy);   
             setSampleTasks(copy);
 
         } else {
@@ -38,7 +36,6 @@ export default function Calendar() {
             }
 
             tasksCopy[taskIndex] = modifiedTask;
-            console.log("Task modified: ", tasksCopy);
             setSampleTasks(tasksCopy);
         }
 
@@ -69,7 +66,6 @@ export default function Calendar() {
                 end: droppedCalendarTask.end
             }
             tasksCopy[taskIndex] = modifiedTask;
-            console.log("---TIMED EVENT", tasksCopy, '⁄n', sampleTasks)
             setSampleTasks(tasksCopy);
         } else if(droppedTask.dueDate && (!droppedTask.start  && !droppedTask.end)){
             let tasksCopy = [...sampleTasks];
@@ -78,7 +74,6 @@ export default function Calendar() {
                 dueDate: droppedCalendarTask.start,
             }
             tasksCopy[taskIndex] = modifiedTask;
-            console.log("---ALL DAY EVENT", tasksCopy, '⁄n', sampleTasks)
             setSampleTasks(tasksCopy);
         }
         
@@ -89,27 +84,29 @@ export default function Calendar() {
     }
 
     return (
-        <div className="p-5 h-screen">
-            <ViewsTabs />
-            <h1>Calendar</h1>
+        <div>
+            <Navbar />
+            <div className="h-screen p-5">
+                <h1>Calendar</h1>
 
-            <EventCalendar 
-                events={sampleTasks}
-                categories={sampleCategories}
-                dateClickCallback={onDateClicked}
-                taskClickCallback={onTaskClicked}
-                taskDroppedCallback={onTaskDropped}
-            />
+                <EventCalendar 
+                    events={sampleTasks}
+                    categories={sampleCategories}
+                    dateClickCallback={onDateClicked}
+                    taskClickCallback={onTaskClicked}
+                    taskDroppedCallback={onTaskDropped}
+                />
 
-            <TaskEditorDialogue 
-                tasks={sampleTasks} 
-                categories={sampleCategories}
-                modalState={[opened, setOpened]} 
-                selectedTaskState={selectedTask}
-                saveTaskCallback={onTaskSaved}
-                onModalClosed={onModalClosed}
-                date={selectedDate}
-            />
+                <TaskEditorDialogue 
+                    tasks={sampleTasks} 
+                    categories={sampleCategories}
+                    modalState={[opened, setOpened]} 
+                    selectedTaskState={selectedTask}
+                    saveTaskCallback={onTaskSaved}
+                    onModalClosed={onModalClosed}
+                    date={selectedDate}
+                />
+            </div>
         </div>
     )
 }

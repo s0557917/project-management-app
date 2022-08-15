@@ -15,7 +15,6 @@ export default function EventCalendar({events, categories, dateClickCallback, ta
   function mapEvents(){
     const filteredEvents = events?.filter(event => event.dueDate !== '')
     const mappedEvents = filteredEvents.map(event => {
-      // console.log("MAPPING EVENT", event, '⁄n', event.start !== '' || event.start !== null, "? ", new Date(event.start), ":", new Date(event.dueDate));
       const startTime = event.start !== '' && event.start !== null 
         ? new Date(event.start)
         : new Date(event.dueDate);
@@ -33,7 +32,6 @@ export default function EventCalendar({events, categories, dateClickCallback, ta
         color: categoryColor
       }
     });
-    console.log("MAPPED: ", mappedEvents)
     return mappedEvents;
   }
 

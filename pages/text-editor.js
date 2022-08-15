@@ -1,10 +1,12 @@
-import ViewsTabs from "../components/general/ViewsTabs"
+import Navbar from "../components/general/navbar/Navbar"
 
 export default function TextEditor() {
     return (
         <div>
-            <ViewsTabs />
-            <h1>Text Editor</h1>
+            <Navbar />
+            <div>
+                <h1>Text Editor</h1>
+            </div>
         </div>
     )
 }
