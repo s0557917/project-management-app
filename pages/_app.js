@@ -3,6 +3,7 @@ import '@fullcalendar/common/main.css'
 import '@fullcalendar/daygrid/main.css'
 import '@fullcalendar/timegrid/main.css'
 import { MantineProvider } from '@mantine/core';
+import { NotificationsProvider } from '@mantine/notifications';
 
 function MyApp({ Component, pageProps }) {
   return (
@@ -13,7 +14,9 @@ function MyApp({ Component, pageProps }) {
         colorScheme: 'dark',
       }}
     >
-      <Component {...pageProps} />
+      <NotificationsProvider>
+        <Component {...pageProps} />
+      </NotificationsProvider>
     </MantineProvider>
   )
 }

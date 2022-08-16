@@ -1,9 +1,22 @@
 import Head from 'next/head'
-import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 import Navbar from '../components/general/navbar/Navbar'
+import LoginComponent from '../components/general/authentication/LoginComponent'
+import { useState, useEffect } from 'react'
+import AccountPage from '../components/general/authentication/AccountPage'
+import { supabase } from '../utils/supabaseClient'
 
 export default function Home() {
+  // const [session, setSession] = useState(null)
+
+  // useEffect(() => {
+  //   setSession(supabase.auth.session())
+
+  //   supabase.auth.onAuthStateChange((_event, session) => {
+  //     setSession(session)
+  //   })
+  // }, [])
+
   return (
     <div className={styles.container}>
       <Head>
@@ -12,8 +25,13 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Navbar />
-      <h1>Home page</h1>
+      {/* <div className={"p-12"}>
+        {!session ? (
+          <LoginComponent />
+        ) : (
+          <AccountPage key={session.user.id} session={session} />
+        )}
+      </div> */}
     </div>
   )
 }
