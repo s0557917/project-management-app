@@ -52,9 +52,7 @@ export default function TaskList({tasks, categories}) {
                 const taskIndex = tasksState.findIndex(task => task.id === data.id);
                 const tasksCopy = [...tasksState];
                 tasksCopy[taskIndex] = data;
-
-                console.log("MODIFICATION: ", data, " -- ", taskIndex, " -- ", tasksCopy);
-
+                
                 setTasksState(tasksCopy);
             });
             
