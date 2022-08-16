@@ -19,10 +19,9 @@ model Task {
   title      String
   details    String?
   completed  Boolean    @default(false)
-  dueDate    DateTime?
-  start      DateTime?
-  end        DateTime?
-  timezone   String?
+  dueDate    DateTime?  @db.Timestamptz(3)
+  start      DateTime?  @db.Timestamptz(3)
+  end        DateTime?  @db.Timestamptz(3)
   priority   Int        @default(1)
   category   Category?  @relation(fields: [categoryId], references: [id])
   categoryId String?

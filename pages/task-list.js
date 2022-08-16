@@ -1,48 +1,69 @@
-import Navbar from "../components/general/navbar/Navbar"
-import List from "../components/task-list/List"
-import sampleData from "../data/sample-tasks"
-import sampleCategories from "../data/sample-categories"
-import { useState } from 'react'
-import TaskEditorDialogue from "../components/task-editor-dialogue/TaskEditorDialogue"
+import Navbar from "../components/general/navbar/Navbar";
+import List from "../components/task-list/List";
+import sampleData from "../data/sample-tasks";
+import sampleCategories from "../data/sample-categories";
+import { useState } from 'react';
+import TaskEditorDialogue from "../components/task-editor-dialogue/TaskEditorDialogue";
 import AddTaskButton from "../components/task-editor-dialogue/AddTaskButton";
+import prisma from "../utils/prisma";
 
-export default function TaskList() {
+export async function getServerSideProps() {
+    const tasks = await prisma.task.findMany();
+    const categories = await prisma.category.findMany();
+
+    return {
+        props: {
+            tasks: JSON.parse(JSON.stringify(tasks)),
+            categories: JSON.parse(JSON.stringify(categories))
+        },
+    }
+}
+
+export default function TaskList({tasks, categories}) {
 
     const [opened, setOpened] = useState(false);
     const [selectedTask, setSelectedTask] = useState({});
-    const [sampleTasks, setSampleTasks] = useState(sampleData);
+    const [tasksState, setTasksState] = useState(tasks);
+    const [categoriesState, setCategoriesState] = useState(categories);
 
-    //TODO DRY
-    function onTaskSaved(taskData) {
-        if (!taskData.id) {
-            taskData.id = Math.random().toString(36).substr(2, 9);
-            setSampleTasks([...sampleTasks, taskData]);
+    async function onNewTaskSaved(taskData) {
+        console.log("TASK DATA: ", taskData);
 
-        } else {
-            let taskIndex = sampleTasks.findIndex(task => task.id === taskData.id);
-            let tasksCopy = [...sampleTasks];
-            let modifiedTask = {
-                ...tasksCopy[taskIndex],
-                title: taskData.title,
-                details: taskData.details,
-                dueDate: taskData.dueDate,
-                start: taskData.start,
-                end: taskData.end,
-                category: taskData.category,
-                reminders: taskData.reminders,
-                priority: taskData.priority,
-            }
-
-            tasksCopy[taskIndex] = modifiedTask;
-            setSampleTasks(tasksCopy);
-        }
+        await fetch('/api/tasks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(taskData),
+        })
+            .then((response) => response.json())
+            .then((data) => setTasksState([...tasksState, data]));
 
         setOpened(false);
         setSelectedTask({});
     }
 
+    async function onEditedTaskSaved(taskData, taskId){
+        await fetch(`/api/tasks/${taskId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(taskData),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                const taskIndex = tasksState.findIndex(task => task.id === data.id);
+                const tasksCopy = [...tasksState];
+                tasksCopy[taskIndex] = data;
+
+                console.log("MODIFICATION: ", data, " -- ", taskIndex, " -- ", tasksCopy);
+
+                setTasksState(tasksCopy);
+            });
+            
+        setOpened(false);
+        setSelectedTask({});
+    }
+
     function onCompletionStateChanged(taskId, isCompleted) {
-        let modifiedTasks = [...sampleTasks];
+        let modifiedTasks = [...tasks];
         let modifiedTask = modifiedTasks.find(task => task.id === taskId);
         modifiedTask.completed = isCompleted;
         setSampleTasks(modifiedTasks);
@@ -58,18 +79,19 @@ export default function TaskList() {
             <div className="h-full p-5">       
                 <h1 className="text-3xl font-bold underline">Task List</h1>
                 <List 
-                    tasks={sampleTasks} 
-                    categories={sampleCategories}
+                    tasks={tasksState} 
+                    categories={categoriesState}
                     selectedTaskSetter={setSelectedTask} 
                     modalStateSetter={setOpened}
                     onCompletionStateChanged={onCompletionStateChanged}
                 />
                 <TaskEditorDialogue 
-                    tasks={sampleTasks} 
-                    categories={sampleCategories}
+                    tasks={tasksState} 
+                    categories={categoriesState}
                     modalState={[opened, setOpened]} 
                     selectedTaskState={selectedTask}
-                    saveTaskCallback={onTaskSaved}
+                    saveEditedTaskCallback={onEditedTaskSaved}
+                    saveNewTaskCallback={onNewTaskSaved}
                     onModalClosed={onModalClosed}
                 />
                 <AddTaskButton modalStateSetter={setOpened}/>

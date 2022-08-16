@@ -2,14 +2,14 @@ import Category from "./category/Category";
 import CategoryCompletedTasks from "./category/CategoryCompletedTasks";
 
 export default function List({ tasks, categories, modalStateSetter, selectedTaskSetter, onCompletionStateChanged }) {
-  
   function buildAllCategorySections() {
     let categoriesJSX = [];
     
     categories.forEach(category => {
-      let tasksInCategory = tasks.filter(task => task.category === category.id);        
+      let tasksInCategory = tasks.filter(task => task.categoryId === category.id);        
       categoriesJSX.push(
         <Category
+          key={category.id}
           tasks={tasksInCategory}
           onTaskClicked={onTaskClicked}
           onCompletionStateChanged={onCompletionStateChanged}
@@ -22,8 +22,9 @@ export default function List({ tasks, categories, modalStateSetter, selectedTask
   }
 
   function buildUncategorizedSection(){
-    let uncategorizedTasks = tasks.filter(task => task.category === null || task.category === '');     
+    let uncategorizedTasks = tasks.filter(task => task.categoryId === null || task.category === '');     
     return <Category
+      key={'uncategorized'}
       tasks={uncategorizedTasks}
       onTaskClicked={onTaskClicked}
       onCompletionStateChanged={onCompletionStateChanged}
@@ -35,6 +36,7 @@ export default function List({ tasks, categories, modalStateSetter, selectedTask
   function buildCompletedSection(){
     let completedTasks = tasks.filter(task => task.completed);     
     return <CategoryCompletedTasks
+      key={'completed'}
       tasks={completedTasks}
       onTaskClicked={onTaskClicked}
       onCompletionStateChanged={onCompletionStateChanged}

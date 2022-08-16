@@ -9,10 +9,10 @@ import RemindersDialogue from './RemindersDialogue';
 import CategoryDialogue from './CategoryDialogue';
 import IconButton from './IconButton';
 
-export default function TaskEditorDialogue({ tasks, categories, modalState, selectedTaskState, saveTaskCallback, onModalClosed, date}) {
+export default function TaskEditorDialogue({ tasks, categories, modalState, selectedTaskState, saveEditedTaskCallback, saveNewTaskCallback, onModalClosed, date}) {
     const [opened, setOpened] = modalState;
-    const [taskTitle, setTaskTitle] = useState(selectedTaskState.title);
-    const [taskDetails, setTaskDetails] = useState(selectedTaskState.details);
+    const [taskTitle, setTaskTitle] = useState(selectedTaskState.title || '');
+    const [taskDetails, setTaskDetails] = useState(selectedTaskState.details || '');
 
     const [dateTimeDialogOpened, setDateTimeDialogOpened] = useState(false);
     const [priorityDialogueOpened, setPriorityDialogueOpened] = useState(false);
@@ -32,7 +32,7 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
     const [endPoint, setEndPoint] = useState(selectedTaskState.end || null);
     const [pickedPriority, setPickedPriority] = useState(selectedTaskState.priority || 1);
     const [pickedReminders, setPickedReminders] = useState(selectedTaskState.reminders || []);
-    const [pickedCategory, setPickedCategory] = useState(selectedTaskState.category || '');
+    const [pickedCategory, setPickedCategory] = useState(selectedTaskState.categoryId || '');
     const [userTimezone, setUserTimezone] = useState(selectedTaskState.timeZone || null);
 
     function dateTimePickerCallback(dueDate, start, end, userTimezone) {
@@ -46,9 +46,9 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
     }
 
     useEffect(() => {
-        setTaskTitle(selectedTaskState.title);
-        setTaskDetails(selectedTaskState.details);
-        setPickedCategory(selectedTaskState.category || '');
+        setTaskTitle(selectedTaskState.title || '');
+        setTaskDetails(selectedTaskState.details || '');
+        setPickedCategory(selectedTaskState.categoryId || '');
         setDueDate(() => {
             if(selectedTaskState.dueDate && !isNaN(new Date(selectedTaskState.dueDate))){
                 return new Date(selectedTaskState.dueDate);
@@ -65,6 +65,27 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
         setUserTimezone(selectedTaskState.timeZone || null);
     }, [selectedTaskState, date]);
 
+    function onSaveButtonClicked(){
+        const taskData = {
+            ownerId: "64cece17-1c3d-49a9-aacc-b8ed9e2c9087",
+            title: taskTitle,
+            details: taskDetails,
+            completed: selectedTaskState.completed || false,
+            dueDate: dueDate,
+            start: startPoint,
+            end: endPoint,
+            categoryId: pickedCategory,
+            reminders: pickedReminders,
+            priority: pickedPriority,
+            subtasks: selectedTaskState.subtasks || [],
+        }
+        if(selectedTaskState.id){
+            saveEditedTaskCallback(taskData, selectedTaskState.id);
+        } else {
+            saveNewTaskCallback(taskData);
+        }
+    }
+
     return (
         <Dialogue
             opened={opened}
@@ -73,19 +94,7 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
                 onModalClosed();
             }}
             title="Add or edit your task"
-            saveButtonCallback={() => {
-                saveTaskCallback({
-                    id: (selectedTaskState ? selectedTaskState.id : ''),  
-                    title: taskTitle,
-                    details: taskDetails,
-                    dueDate: dueDate,
-                    start: startPoint,
-                    end: endPoint,
-                    category: pickedCategory,
-                    reminders: pickedReminders,
-                    priority: pickedPriority,
-                });
-            }}
+            saveButtonCallback={() => onSaveButtonClicked()}
         >
             <>
                 <TextInput

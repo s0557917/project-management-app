@@ -10,7 +10,7 @@
     "prisma:generate": "npx prisma generate",
     "prisma:push": "npx prisma db push",
     "prisma:migrate": "npx prisma migrate dev",
-    "prisma:studio": "npx prisma studio"    
+    "prisma:studio": "npx prisma studio"
   },
   "dependencies": {
     "@emotion/react": "^11.9.3",
@@ -29,6 +29,7 @@
     "@mantine/notifications": "^5.0.0",
     "@prisma/client": "^4.2.1",
     "@supabase/supabase-js": "^1.35.6",
+    "axios": "^0.27.2",
     "dayjs": "^1.11.4",
     "graphql": "^16.5.0",
     "i": "^0.3.7",
