@@ -60,11 +60,25 @@ export default function TaskList({tasks, categories}) {
         setSelectedTask({});
     }
 
-    function onCompletionStateChanged(taskId, isCompleted) {
-        let modifiedTasks = [...tasks];
-        let modifiedTask = modifiedTasks.find(task => task.id === taskId);
-        modifiedTask.completed = isCompleted;
-        setSampleTasks(modifiedTasks);
+    async function onCompletionStateChanged(taskId, isCompleted) {    
+        const modifiedTasks = [...tasksState];
+        const taskIndex = tasksState.findIndex(task => task.id === taskId);
+        modifiedTasks[taskIndex].completed = isCompleted;
+        setTasksState(modifiedTasks);
+
+        await fetch(`/api/tasks/${taskId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(modifiedTasks[taskIndex]),
+        })
+        .then((response) => response.json())
+        .then((data) => {
+            const taskIndex = tasksState.findIndex(task => task.id === data.id);
+            const tasksCopy = [...tasksState];
+            modifiedTasks[taskIndex] = data;
+            
+            setTasksState(tasksCopy);
+        });
     }
 
     function onModalClosed() {
