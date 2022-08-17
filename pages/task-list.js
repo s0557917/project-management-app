@@ -1,7 +1,5 @@
 import Navbar from "../components/general/navbar/Navbar";
 import List from "../components/task-list/List";
-import sampleData from "../data/sample-tasks";
-import sampleCategories from "../data/sample-categories";
 import { useState } from 'react';
 import TaskEditorDialogue from "../components/task-editor-dialogue/TaskEditorDialogue";
 import AddTaskButton from "../components/task-editor-dialogue/AddTaskButton";
@@ -27,8 +25,6 @@ export default function TaskList({tasks, categories}) {
     const [categoriesState, setCategoriesState] = useState(categories);
 
     async function onNewTaskSaved(taskData) {
-        console.log("TASK DATA: ", taskData);
-
         await fetch('/api/tasks', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
