@@ -4,14 +4,11 @@ import '@fullcalendar/daygrid/main.css'
 import '@fullcalendar/timegrid/main.css'
 import { MantineProvider } from '@mantine/core';
 import { NotificationsProvider } from '@mantine/notifications';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState } from 'react';
+import { SessionProvider as AuthProvider } from 'next-auth/react';
 
 function MyApp({ Component, pageProps }) {
-  const [queryClient] = useState(() => new QueryClient());
-
   return (
-    <QueryClientProvider client={queryClient}>
+    <AuthProvider session={pageProps.session}>
       <MantineProvider
         withGlobalStyles
         withNormalizeCSS
@@ -23,7 +20,7 @@ function MyApp({ Component, pageProps }) {
           <Component {...pageProps} />
         </NotificationsProvider>
       </MantineProvider>
-    </QueryClientProvider>
+    </AuthProvider>
   )
 }
 

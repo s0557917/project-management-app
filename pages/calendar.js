@@ -5,12 +5,30 @@ import sampleData from "../data/sample-tasks";
 import sampleCategories from "../data/sample-categories";
 import { useState } from "react";
 import TaskEditorDialogue from "../components/task-editor-dialogue/TaskEditorDialogue";
-
 import prisma from "../utils/prisma";
+import { useSession, getSession } from 'next-auth/react';
 
-export async function getServerSideProps() {
-    const tasks = await prisma.task.findMany();
-    const categories = await prisma.category.findMany();
+
+export async function getServerSideProps({req, res}) {
+    const session = await getSession({ req });
+    if (!session) {
+      res.statusCode = 403;
+      return { props: { 
+        tasks: [],
+        categories: [],
+       } };
+    }
+  
+    const tasks = await prisma.task.findMany({
+        where: {
+            owner: { email: session.user.email },
+        },
+    });
+    const categories = await prisma.category.findMany({
+        where: {
+            owner: { email: session.user.email },
+        },
+    });
 
     return {
         props: {
@@ -60,35 +78,6 @@ export default function Calendar({tasks, categories}) {
         setOpened(false);
         setSelectedTask({});
     }
-
-    // function onTaskSaved(taskData) {
-    //     if (!taskData.id) {
-    //         taskData.id = uuidv4();
-    //         const copy = [...sampleTasks, {...taskData, dueDate: taskData.dueDate.toString()}];
-    //         setSampleTasks(copy);
-
-    //     } else {
-    //         let taskIndex = sampleTasks.findIndex(task => task.id === taskData.id);
-    //         let tasksCopy = [...sampleTasks];
-    //         let modifiedTask = {
-    //             ...tasksCopy[taskIndex],
-    //             title: taskData.title,
-    //             details: taskData.details,
-    //             dueDate: taskData.dueDate,
-    //             start: taskData.start,
-    //             end: taskData.end,
-    //             category: taskData.categoryId,
-    //             reminders: taskData.reminders,
-    //             priority: taskData.priority,
-    //         }
-
-    //         tasksCopy[taskIndex] = modifiedTask;
-    //         setSampleTasks(tasksCopy);
-    //     }
-
-    //     setOpened(false);
-    //     setSelectedTask({});
-    // }
 
     function onDateClicked(date){
         setSelectedDate(new Date(date));

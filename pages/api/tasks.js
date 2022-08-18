@@ -1,12 +1,14 @@
 import { PrismaClient } from '@prisma/client';
+import { getSession } from 'next-auth/react';
 
 const prisma = new PrismaClient();
 
 export default async function handler(req, res) {
+    const session = await getSession({ req });
     if(req.method === 'POST'){
         try{         
             const taskData = {
-                owner: { connect: {id: req.body.ownerId } },
+                owner: { connect: { email: session?.user?.email } },
                 title: req.body.title, 
                 details: req.body.details, 
                 completed: req.body.completed, 
@@ -14,10 +16,14 @@ export default async function handler(req, res) {
                 start: req.body.start, 
                 end: req.body.end,
                 priority: req.body.priority, 
-                category: req.body.categoryId !== '' ? { connect: {id: req.body.categoryId } } : undefined, 
+                category: req.body.categoryId !== '' && req.body.categoryId !== null 
+                ? { connect: {id: req.body.categoryId } } 
+                : undefined, 
                 reminders: req.body.reminders,
                 subtasks: req.body.subtasks,
             }
+
+            console.log("TaskData: ", taskData, "TaskId: ", req.query.id);
 
             const task = await prisma.task.create({
                 data: taskData
@@ -25,7 +31,6 @@ export default async function handler(req, res) {
     
             res.status(201).json(task);
         } catch (e) {
-            console.log("FUCKING ERROR", e);
             res.status(500).json({error: e});
         }
     } else {
