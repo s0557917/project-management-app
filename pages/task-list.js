@@ -4,16 +4,18 @@ import { useState } from 'react';
 import TaskEditorDialogue from "../components/task-editor-dialogue/TaskEditorDialogue";
 import AddTaskButton from "../components/task-editor-dialogue/AddTaskButton";
 import prisma from "../utils/prisma";
-import { useSession, getSession } from 'next-auth/react';
+import { getSession } from 'next-auth/react';
 
 export async function getServerSideProps({req, res}) {
     const session = await getSession({ req });
     if (!session) {
       res.statusCode = 403;
-      return { props: { 
-        tasks: [],
-        categories: [],
-       } };
+      return { 
+            redirect: {
+                destination: '/',
+                permanent: false,
+            },
+        };
     }
   
     const tasks = await prisma.task.findMany({
