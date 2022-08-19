@@ -145,7 +145,8 @@ export default function TaskList({tasks, categories}) {
                     tasks={tasksState} 
                     categories={categoriesState}
                     modalState={[openedTaskEditor, setOpenedTaskEditor]} 
-                    selectedTaskState={selectedTask}
+                    selectedTask={selectedTask}
+                    selectedTaskSetter={setSelectedTask}
                     saveEditedTaskCallback={onEditedTaskSaved}
                     saveNewTaskCallback={onNewTaskSaved}
                     onModalClosed={onModalClosed}

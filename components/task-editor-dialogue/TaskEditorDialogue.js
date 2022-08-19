@@ -9,10 +9,10 @@ import RemindersDialogue from './RemindersDialogue';
 import CategoryDialogue from './CategoryDialogue';
 import IconButton from './IconButton';
 
-export default function TaskEditorDialogue({ tasks, categories, modalState, selectedTaskState, saveEditedTaskCallback, saveNewTaskCallback, onModalClosed, date}) {
+export default function TaskEditorDialogue({ tasks, categories, modalState, selectedTask, selectedTaskSetter, saveEditedTaskCallback, saveNewTaskCallback, onModalClosed, date}) {
     const [opened, setOpened] = modalState;
-    const [taskTitle, setTaskTitle] = useState(selectedTaskState.title || '');
-    const [taskDetails, setTaskDetails] = useState(selectedTaskState.details || '');
+    const [taskTitle, setTaskTitle] = useState(selectedTask.title || '');
+    const [taskDetails, setTaskDetails] = useState(selectedTask.details || '');
 
     const [dateTimeDialogOpened, setDateTimeDialogOpened] = useState(false);
     const [priorityDialogueOpened, setPriorityDialogueOpened] = useState(false);
@@ -20,20 +20,42 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
     const [categoryDialogueOpened, setCategoryDialogueOpened] = useState(false);
     
     const [dueDate, setDueDate] = useState(() => {
-        if(selectedTaskState.dueDate && !isNaN(new Date(selectedTaskState.dueDate))){
-            return new Date(selectedTaskState.dueDate);
+        if(selectedTask.dueDate && !isNaN(new Date(selectedTask.dueDate))){
+            return new Date(selectedTask.dueDate);
         } else if(date && !isNaN(new Date(date))){
             return new Date(date);
         } else {
             return null;
         }
     });
-    const [startPoint, setStartPoint] = useState(new Date(selectedTaskState.start) || null);
-    const [endPoint, setEndPoint] = useState(selectedTaskState.end || null);
-    const [pickedPriority, setPickedPriority] = useState(selectedTaskState.priority || 1);
-    const [pickedReminders, setPickedReminders] = useState(selectedTaskState.reminders || []);
-    const [pickedCategory, setPickedCategory] = useState(selectedTaskState.categoryId || '');
-    const [userTimezone, setUserTimezone] = useState(selectedTaskState.timeZone || null);
+    const [startPoint, setStartPoint] = useState(new Date(selectedTask.start) || null);
+    const [endPoint, setEndPoint] = useState(selectedTask.end || null);
+    const [pickedPriority, setPickedPriority] = useState(selectedTask.priority || 1);
+    const [pickedReminders, setPickedReminders] = useState(selectedTask.reminders || []);
+    const [pickedCategory, setPickedCategory] = useState(selectedTask.categoryId || '');
+    const [userTimezone, setUserTimezone] = useState(selectedTask.timeZone || null);
+    const [subtasks, setSubtasks] = useState(selectedTask.subtasks);
+
+    useEffect(() => {
+        setTaskTitle(selectedTask.title || '');
+        setTaskDetails(selectedTask.details || '');
+        setPickedCategory(selectedTask.categoryId || '');
+        setDueDate(() => {
+            if(selectedTask.dueDate && !isNaN(new Date(selectedTask.dueDate))){
+                return new Date(selectedTask.dueDate);
+            } else if(date && !isNaN(new Date(date))){
+                return new Date(date);
+            } else {
+                return null;
+            }
+        });
+        setStartPoint(selectedTask.start || null);
+        setEndPoint(selectedTask.end || null);
+        setPickedPriority(selectedTask.priority || 1);
+        setPickedReminders(selectedTask.reminders || {"time": 3, "unit": "Days"});
+        setUserTimezone(selectedTask.timeZone || null);
+        setSubtasks(selectedTask.subtasks);
+    }, [selectedTask, date]);
 
     function dateTimePickerCallback(dueDate, start, end, userTimezone) {
         setDueDate(dueDate);
@@ -45,41 +67,21 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
         setDateTimeDialogOpened(false);
     }
 
-    useEffect(() => {
-        setTaskTitle(selectedTaskState.title || '');
-        setTaskDetails(selectedTaskState.details || '');
-        setPickedCategory(selectedTaskState.categoryId || '');
-        setDueDate(() => {
-            if(selectedTaskState.dueDate && !isNaN(new Date(selectedTaskState.dueDate))){
-                return new Date(selectedTaskState.dueDate);
-            } else if(date && !isNaN(new Date(date))){
-                return new Date(date);
-            } else {
-                return null;
-            }
-        });
-        setStartPoint(selectedTaskState.start || null);
-        setEndPoint(selectedTaskState.end || null);
-        setPickedPriority(selectedTaskState.priority || 1);
-        setPickedReminders(selectedTaskState.reminders || {"time": 3, "unit": "Days"});
-        setUserTimezone(selectedTaskState.timeZone || null);
-    }, [selectedTaskState, date]);
-
     function onSaveButtonClicked(){
         const taskData = {
             title: taskTitle,
             details: taskDetails,
-            completed: selectedTaskState.completed || false,
+            completed: selectedTask.completed || false,
             dueDate: dueDate,
             start: startPoint,
             end: endPoint,
             categoryId: pickedCategory,
             reminders: pickedReminders,
             priority: pickedPriority,
-            subtasks: selectedTaskState.subtasks || [],
+            subtasks: subtasks || [],
         }
-        if(selectedTaskState.id){
-            saveEditedTaskCallback(taskData, selectedTaskState.id);
+        if(selectedTask.id){
+            saveEditedTaskCallback(taskData, selectedTask.id);
         } else {
             saveNewTaskCallback(taskData);
         }
@@ -146,12 +148,38 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
                     <br/>
                 </div>
 
-                <DateTimePickerDialogue dateTimeDialogState={[ dateTimeDialogOpened, setDateTimeDialogOpened ]} dateTimePickerCallback={dateTimePickerCallback} dueDate={dueDate} startPoint={startPoint} endPoint={endPoint} timeZoneState={userTimezone}/>
-                <PriorityDialogue priorityDialogueState={[ priorityDialogueOpened, setPriorityDialogueOpened ]} priorityDialogueCallback={setPickedPriority} priorityState={pickedPriority}/>
-                <RemindersDialogue remindersDialogueState={[remindersDialogueOpened, setRemindersDialogueOpened]} remindersDialogueCallback={setPickedReminders} remindersState={pickedReminders}/>
-                <CategoryDialogue categoryDialogueState={[categoryDialogueOpened, setCategoryDialogueOpened]} category={pickedCategory} categoryDialogueCallback={setPickedCategory} categories={categories}/>
+                <DateTimePickerDialogue 
+                    dateTimeDialogState={[ dateTimeDialogOpened, setDateTimeDialogOpened ]} 
+                    dateTimePickerCallback={dateTimePickerCallback} 
+                    dueDate={dueDate} 
+                    startPoint={startPoint} 
+                    endPoint={endPoint} 
+                    timeZoneState={userTimezone}
+                />
+                <PriorityDialogue 
+                    priorityDialogueState={[ priorityDialogueOpened, setPriorityDialogueOpened ]} 
+                    priorityDialogueCallback={setPickedPriority} 
+                    priorityState={pickedPriority}
+                />
+                <RemindersDialogue 
+                    remindersDialogueState={[remindersDialogueOpened, setRemindersDialogueOpened]} 
+                    remindersDialogueCallback={setPickedReminders} 
+                    remindersState={pickedReminders}
+                />
+                <CategoryDialogue 
+                    categoryDialogueState={[categoryDialogueOpened, setCategoryDialogueOpened]} 
+                    category={pickedCategory} 
+                    categoryDialogueCallback={setPickedCategory} 
+                    categories={categories}
+                />
 
-                <SubtaskSection tasks={tasks} categories={categories} selectedTask={selectedTaskState} />
+                <SubtaskSection 
+                    tasks={tasks} 
+                    categories={categories} 
+                    selectedTask={selectedTask} 
+                    selectedTaskSetter={selectedTaskSetter}
+                    subtasksState={[subtasks, setSubtasks]}
+                />
             </>
         </Dialogue>
     );
