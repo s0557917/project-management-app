@@ -50,7 +50,7 @@ export default function TaskList({tasks, categories}) {
         categories.map(category => { 
             return {
                 id: category.id, 
-                active: true
+                active: category.active
             }
         })
     );

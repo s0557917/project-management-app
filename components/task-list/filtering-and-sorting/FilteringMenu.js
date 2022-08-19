@@ -9,12 +9,21 @@ export default function FilteringMenu ({categories, activeCategoriesState}) {
     const [newCategoryTitle, setNewCategoryTitle] = useState('');
     const [activeCategories, setActiveCategories] = activeCategoriesState;
 
-    function onCategoryStatusChanged(category, status) {
-        console.log("Category clicked: ", category, status);
-        const modifiedCategoryIndex = activeCategories.findIndex((activeCategory) => activeCategory.id === category.id);
-        const modifiedCategories = [...activeCategories];
-        modifiedCategories[modifiedCategoryIndex].active = status;
-        setActiveCategories(modifiedCategories);
+    async function onCategoryStatusChanged(category, status) {
+        const modifiedTask = {...category, active: status};
+
+        await fetch(`/api/categories/${category.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(modifiedTask),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                const modifiedCategoryIndex = activeCategories.findIndex((activeCategory) => activeCategory.id === data.id);
+                const modifiedCategories = [...activeCategories];
+                modifiedCategories[modifiedCategoryIndex] = data;
+                setActiveCategories(modifiedCategories);
+            });
     }
 
     function onCategoryAdded(categoryTitle) {
