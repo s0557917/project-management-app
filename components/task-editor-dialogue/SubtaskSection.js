@@ -6,9 +6,10 @@ import { useState } from "react";
 export default function SubtaskSection({ tasks, categories, selectedTask, subtasksState }) {
     
     const [subtasks, setSubtasks] = subtasksState;
+    const [newTasks, setNewTasks] = useState([]);
 
     function onSubtaskClicked(subtaskId){
-        console.log("SUBTASK CLICKED", subtaskId); 
+         
     }
 
     function onSubtaskRemoved(subtaskId){
@@ -21,7 +22,7 @@ export default function SubtaskSection({ tasks, categories, selectedTask, subtas
     }
 
     function onDialogueSubtaskAdded(title){
-
+        setNewTasks([...newTasks, title]);
     }
 
     return (
@@ -29,7 +30,7 @@ export default function SubtaskSection({ tasks, categories, selectedTask, subtas
             <div className='flex items-center justify-between mb-2'>
                 <Title order={4}>Subtasks</Title>
                 <SubtaskDialogue 
-                    tasks={tasks?.filter((task) => task.id !== selectedTask.id && !subtasks?.includes(task.id))} 
+                    tasks={tasks?.filter((task) => task.id !== selectedTask?.id && !subtasks?.includes(task.id))} 
                     categories={categories} 
                     selectedTask={selectedTask}
                     onSubtaskClicked={onDialogueSubtaskClicked}

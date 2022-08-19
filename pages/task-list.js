@@ -3,9 +3,10 @@ import AddTaskButton from "../components/task-editor-dialogue/AddTaskButton";
 import Navbar from "../components/general/navbar/Navbar";
 import List from "../components/task-list/List";
 import { getSession } from 'next-auth/react';
-import { Select } from '@mantine/core';
 import prisma from "../utils/prisma";
 import { useState } from 'react';
+import SortingMenu from "../components/task-list/filtering-and-sorting/SortingMenu";
+import FilteringMenu from "../components/task-list/filtering-and-sorting/FilteringMenu";
 
 export async function getServerSideProps({req, res}) {
     const session = await getSession({ req });
@@ -109,29 +110,9 @@ export default function TaskList({tasks, categories}) {
             <div className="h-full p-5">       
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold underline">Task List</h1>
-                    <div>
-                        <button className="left-" onClick={() => setOpenedCategoryEditor(true)}>Categories</button>
-                        {openedCategoryEditor && <Select
-                            label="Categories"
-                            placeholder="Select items"
-                            nothingFound="Nothing found"
-                            data={ categories?.map(category =>(
-                                    { 
-                                        value: category.id, 
-                                        label: category.name
-                                    }
-                                ))
-                            }
-                            searchable
-                            creatable
-                            getCreateLabel={(query) => `+ Create ${query}`}
-                            onCreate={(query) => {
-                                // const item = { value: query, label: query };
-                                console.log("ITEM: ", query);
-                                // setData((current) => [...current, item]);
-                                // return item;
-                            }}
-                        />}
+                    <div className="mx-5">
+                        <SortingMenu />
+                        <FilteringMenu />
                     </div>
                 </div>
                 <List 

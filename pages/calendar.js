@@ -1,12 +1,9 @@
-import Navbar from '../components/general/navbar/Navbar';
-import { v4 as uuidv4 } from 'uuid';
-import EventCalendar from "../components/calendar/EventCalendar"
-import sampleData from "../data/sample-tasks";
-import sampleCategories from "../data/sample-categories";
-import { useState } from "react";
 import TaskEditorDialogue from "../components/task-editor-dialogue/TaskEditorDialogue";
-import prisma from "../utils/prisma";
+import EventCalendar from "../components/calendar/EventCalendar"
+import Navbar from '../components/general/navbar/Navbar';
 import { getSession } from 'next-auth/react';
+import prisma from "../utils/prisma";
+import { useState } from "react";
 
 
 export async function getServerSideProps({req, res}) {
@@ -87,6 +84,7 @@ export default function Calendar({tasks, categories}) {
     }
 
     function onTaskClicked(task){
+        console.log("TASK CLICKED: ", task);
         setSelectedTask(task);
         setOpened(true);
     }
@@ -129,7 +127,8 @@ export default function Calendar({tasks, categories}) {
                     tasks={tasksState} 
                     categories={categories}
                     modalState={[opened, setOpened]} 
-                    selectedTaskState={selectedTask}
+                    selectedTask={selectedTask}
+                    selectedTaskSetter={setSelectedTask}
                     saveEditedTaskCallback={onEditedTaskSaved}
                     saveNewTaskCallback={onNewTaskSaved}
                     onModalClosed={onModalClosed}

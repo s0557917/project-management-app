@@ -1,29 +1,30 @@
-import { Menu, ScrollArea, TextInput, ActionIcon } from '@mantine/core';
-import { ArrowRight, Circle } from 'phosphor-react';
-import Subtask from '../task-list/Subtask';
-import { useState } from 'react';
+import { Menu, ActionIcon, ScrollArea, TextInput } from '@mantine/core'
+import { Tag, ArrowRight } from 'phosphor-react';
 
-export default function SubtaskDialogue({ tasks, categories, onSubtaskClicked, onSubtaskAdded }) {
+export default function MenuWithInput({ openedState, inputState, title, label, placeholder, icon, listContent }) {
     
-    const [newTaskTitle, setNewTaskTitle] = useState('');
-    const [opened, setOpened] = useState(false);
-    
-    return (
-        <Menu shadow="md" width={200} position="top" opened={opened} onChange={setOpened}>
+    const [opened, setOpened] = openedState;
+    const [inputText, setInputText] = inputState;
+
+    return(
+        <Menu shadow="md" width={200} opened={opened}>
             <Menu.Target>
                 <button 
                     className='text-xl hover:bg-blue-700 bg-cyan-500 text-white rounded-full w-8 h-8' 
                     onClick={() => console.log("CLICKED ADD NEW TASK")}
                 >
-                    +
+                    {icon}
                 </button>
+                {/* <ActionIcon>
+                    <Tag size={60} color="cyan" weight="fill" />
+                </ActionIcon> */}
             </Menu.Target>
 
             <Menu.Dropdown>
-                <Menu.Label>Subtasks</Menu.Label>
-                <ScrollArea style={{ height:100 }} offsetScrollbars>
+                <Menu.Label>{title}</Menu.Label>
+                <ScrollArea style={{ height:100 }}>
                     <ul>
-                        {tasks
+                        {/* {tasks
                             ?.map((task) => 
                                 <Subtask 
                                     key={task.id} 
@@ -34,21 +35,21 @@ export default function SubtaskDialogue({ tasks, categories, onSubtaskClicked, o
                                     circleSize={16}
                                 />
                             )
-                        }
+                        } */}
                     </ul>
                 </ScrollArea>
                 <Menu.Divider></Menu.Divider>
                 
                 <TextInput 
-                    value={newTaskTitle} 
-                    onChange={(event) => setNewTaskTitle(event.currentTarget.value)} 
-                    label="Create a new task"
-                    placeholder='Title'
+                    value={inputText}
+                    onChange={(event) => setInputText(event.currentTarget.value)} 
+                    label={label}
+                    placeholder={placeholder}
                     rightSection={
                         <button 
                             className='bg-cyan-500 hover:bg-cyan-700 p-1 rounded-full' 
                             onClick={() => {
-                                onSubtaskAdded(newTaskTitle);
+                                // onSubtaskAdded(newTaskTitle);
                                 setOpened(false);
                             }}
                         >

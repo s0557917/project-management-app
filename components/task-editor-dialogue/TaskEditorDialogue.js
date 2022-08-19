@@ -10,9 +10,10 @@ import CategoryDialogue from './CategoryDialogue';
 import IconButton from './IconButton';
 
 export default function TaskEditorDialogue({ tasks, categories, modalState, selectedTask, selectedTaskSetter, saveEditedTaskCallback, saveNewTaskCallback, onModalClosed, date}) {
+
     const [opened, setOpened] = modalState;
-    const [taskTitle, setTaskTitle] = useState(selectedTask.title || '');
-    const [taskDetails, setTaskDetails] = useState(selectedTask.details || '');
+    const [taskTitle, setTaskTitle] = useState(selectedTask?.title || '');
+    const [taskDetails, setTaskDetails] = useState(selectedTask?.details || '');
 
     const [dateTimeDialogOpened, setDateTimeDialogOpened] = useState(false);
     const [priorityDialogueOpened, setPriorityDialogueOpened] = useState(false);
@@ -20,41 +21,41 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
     const [categoryDialogueOpened, setCategoryDialogueOpened] = useState(false);
     
     const [dueDate, setDueDate] = useState(() => {
-        if(selectedTask.dueDate && !isNaN(new Date(selectedTask.dueDate))){
-            return new Date(selectedTask.dueDate);
+        if(selectedTask?.dueDate && !isNaN(new Date(selectedTask?.dueDate))){
+            return new Date(selectedTask?.dueDate);
         } else if(date && !isNaN(new Date(date))){
             return new Date(date);
         } else {
             return null;
         }
     });
-    const [startPoint, setStartPoint] = useState(new Date(selectedTask.start) || null);
-    const [endPoint, setEndPoint] = useState(selectedTask.end || null);
-    const [pickedPriority, setPickedPriority] = useState(selectedTask.priority || 1);
-    const [pickedReminders, setPickedReminders] = useState(selectedTask.reminders || []);
-    const [pickedCategory, setPickedCategory] = useState(selectedTask.categoryId || '');
-    const [userTimezone, setUserTimezone] = useState(selectedTask.timeZone || null);
-    const [subtasks, setSubtasks] = useState(selectedTask.subtasks);
+    const [startPoint, setStartPoint] = useState(new Date(selectedTask?.start) || null);
+    const [endPoint, setEndPoint] = useState(selectedTask?.end || null);
+    const [pickedPriority, setPickedPriority] = useState(selectedTask?.priority || 1);
+    const [pickedReminders, setPickedReminders] = useState(selectedTask?.reminders || []);
+    const [pickedCategory, setPickedCategory] = useState(selectedTask?.categoryId || '');
+    const [userTimezone, setUserTimezone] = useState(selectedTask?.timeZone || null);
+    const [subtasks, setSubtasks] = useState(selectedTask?.subtasks);
 
     useEffect(() => {
-        setTaskTitle(selectedTask.title || '');
-        setTaskDetails(selectedTask.details || '');
-        setPickedCategory(selectedTask.categoryId || '');
+        setTaskTitle(selectedTask?.title || '');
+        setTaskDetails(selectedTask?.details || '');
+        setPickedCategory(selectedTask?.categoryId || '');
         setDueDate(() => {
-            if(selectedTask.dueDate && !isNaN(new Date(selectedTask.dueDate))){
-                return new Date(selectedTask.dueDate);
+            if(selectedTask?.dueDate && !isNaN(new Date(selectedTask?.dueDate))){
+                return new Date(selectedTask?.dueDate);
             } else if(date && !isNaN(new Date(date))){
                 return new Date(date);
             } else {
                 return null;
             }
         });
-        setStartPoint(selectedTask.start || null);
-        setEndPoint(selectedTask.end || null);
-        setPickedPriority(selectedTask.priority || 1);
-        setPickedReminders(selectedTask.reminders || {"time": 3, "unit": "Days"});
-        setUserTimezone(selectedTask.timeZone || null);
-        setSubtasks(selectedTask.subtasks);
+        setStartPoint(selectedTask?.start || null);
+        setEndPoint(selectedTask?.end || null);
+        setPickedPriority(selectedTask?.priority || 1);
+        setPickedReminders(selectedTask?.reminders || {"time": 3, "unit": "Days"});
+        setUserTimezone(selectedTask?.timeZone || null);
+        setSubtasks(selectedTask?.subtasks);
     }, [selectedTask, date]);
 
     function dateTimePickerCallback(dueDate, start, end, userTimezone) {
