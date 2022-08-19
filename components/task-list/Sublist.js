@@ -1,12 +1,12 @@
 import Subtask from "./Subtask";
 import { ScrollArea } from '@mantine/core';
 
-export default function Sublist({ tasks, categories, onSubtaskClicked }) {
+export default function Sublist({ tasks, categories, onSubtaskClicked, onSubtaskRemoved }) {
   return (
     <div className="border-cyan-500">
       {(!tasks || tasks.length === 0)
         ? <p>No subtasks yet...</p> 
-        : <ScrollArea style={{ height: 100 }}>
+        : <ScrollArea style={{ height: 100 }} offsetScrollbars>
             <ul>
               {tasks?.map(task => 
                 <Subtask 
@@ -16,6 +16,8 @@ export default function Sublist({ tasks, categories, onSubtaskClicked }) {
                   onSubtaskClicked={onSubtaskClicked}
                   textSize={'text-md'}
                   circleSize={20}
+                  removable={true}
+                  onSubtaskRemoved={onSubtaskRemoved}
                 />
               )}
             </ul>

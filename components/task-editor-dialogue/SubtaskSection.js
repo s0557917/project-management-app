@@ -7,8 +7,13 @@ export default function SubtaskSection({ tasks, categories, selectedTask, subtas
     
     const [subtasks, setSubtasks] = subtasksState;
 
-    function onSubtaskClicked(subtask){
-        console.log("SUBTASK CLICKED", subtask); 
+    function onSubtaskClicked(subtaskId){
+        console.log("SUBTASK CLICKED", subtaskId); 
+    }
+
+    function onSubtaskRemoved(subtaskId){
+        const filteredSubtasks = subtasks.filter(subtask => subtask !== subtaskId);
+        setSubtasks(filteredSubtasks);
     }
 
     async function onDialogueSubtaskClicked(subtask){
@@ -16,24 +21,12 @@ export default function SubtaskSection({ tasks, categories, selectedTask, subtas
     }
 
     function onDialogueSubtaskAdded(title){
-        // async function onNewTaskSaved(taskData) {
-        //     await fetch('/api/tasks', {
-        //         method: 'POST',
-        //         headers: { 'Content-Type': 'application/json' },
-        //         body: JSON.stringify(taskData),
-        //     })
-        //         .then((response) => response.json())
-        //         .then((data) => setTasksState([...tasksState, data]));
-    
-        //     setOpenedTaskEditor(false);
-        //     setSelectedTask({});
-        // }
-        console.log("New Title", title);
+
     }
 
     return (
         <div className='bg-zinc-800 rounded-lg p-3 my-3'>
-            <div className='flex justify-between mb-2 items-center'>
+            <div className='flex items-center justify-between mb-2'>
                 <Title order={4}>Subtasks</Title>
                 <SubtaskDialogue 
                     tasks={tasks?.filter((task) => task.id !== selectedTask.id && !subtasks?.includes(task.id))} 
@@ -47,6 +40,7 @@ export default function SubtaskSection({ tasks, categories, selectedTask, subtas
                     tasks={tasks?.filter((task) => subtasks?.includes(task.id))}
                     categories={categories}
                     onSubtaskClicked={onSubtaskClicked}
+                    onSubtaskRemoved={onSubtaskRemoved}
                 />
         </div>
     )
