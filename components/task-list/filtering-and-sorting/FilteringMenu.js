@@ -1,36 +1,50 @@
 import { Menu, ActionIcon, ScrollArea, TextInput } from '@mantine/core'
 import { Tag, ArrowRight } from 'phosphor-react';
 import { useState } from 'react';
+import CategoryListItem from '../category/CategoryListItem';
 
-export default function FilteringMenu ({categories}) {
+export default function FilteringMenu ({categories, activeCategoriesState}) {
     
     const [opened, setOpened] = useState(false);
     const [newCategoryTitle, setNewCategoryTitle] = useState('');
+    const [activeCategories, setActiveCategories] = activeCategoriesState;
+
+    function onCategoryStatusChanged(category, status) {
+        console.log("Category clicked: ", category, status);
+        const modifiedCategoryIndex = activeCategories.findIndex((activeCategory) => activeCategory.id === category.id);
+        const modifiedCategories = [...activeCategories];
+        modifiedCategories[modifiedCategoryIndex].active = status;
+        setActiveCategories(modifiedCategories);
+    }
+
+    function onCategoryAdded(categoryTitle) {
+        console.log("Category added: " + categoryTitle);
+    }
 
     return (
-        <Menu shadow="md" width={200} opened={opened}>
+        <Menu shadow="md" width={200}>
             <Menu.Target>
-                <ActionIcon>
-                    <Tag size={60} color="cyan" weight="fill" />
-                </ActionIcon>
+                <button onClick={() => console.log("TEST")}>
+                    <Tag size={32} color="cyan" weight="fill" />
+                </button>
             </Menu.Target>
 
             <Menu.Dropdown>
                 <Menu.Label>Categories</Menu.Label>
-                <ScrollArea style={{ height:100 }}>
+                <ScrollArea style={{ height:100 }} offsetScrollbars>
                     <ul>
-                        {/* {tasks
-                            ?.map((task) => 
-                                <Subtask 
-                                    key={task.id} 
-                                    task={task} 
-                                    categories={categories} 
-                                    onSubtaskClicked={onSubtaskClicked} 
-                                    textSize={'text-xs'}
-                                    circleSize={16}
-                                />
-                            )
-                        } */}
+                        {categories?.map((category) =>
+                            <CategoryListItem 
+                                key={category.id}
+                                category={category}
+                                circleSize={16}
+                                onCategoryStatusChanged={onCategoryStatusChanged}
+                                textSize={'text-xs'}
+                                completed={ activeCategories.find(
+                                    activeCategory => activeCategory.id === category.id)?.active
+                                }
+                            />
+                        )}
                     </ul>
                 </ScrollArea>
                 <Menu.Divider></Menu.Divider>
@@ -44,7 +58,7 @@ export default function FilteringMenu ({categories}) {
                         <button 
                             className='bg-cyan-500 hover:bg-cyan-700 p-1 rounded-full' 
                             onClick={() => {
-                                // onSubtaskAdded(newTaskTitle);
+                                onCategoryAdded(newCategoryTitle);
                                 setOpened(false);
                             }}
                         >

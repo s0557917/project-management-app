@@ -46,6 +46,14 @@ export default function TaskList({tasks, categories}) {
     const [selectedTask, setSelectedTask] = useState({});
     const [tasksState, setTasksState] = useState(tasks);
     const [categoriesState, setCategoriesState] = useState(categories);
+    const [activeCategories, setActiveCategories] = useState(
+        categories.map(category => { 
+            return {
+                id: category.id, 
+                active: true
+            }
+        })
+    );
 
     async function onNewTaskSaved(taskData) {
         await fetch('/api/tasks', {
@@ -112,12 +120,16 @@ export default function TaskList({tasks, categories}) {
                     <h1 className="text-3xl font-bold underline">Task List</h1>
                     <div className="mx-5">
                         <SortingMenu />
-                        <FilteringMenu />
+                        <FilteringMenu 
+                            categories={categories}
+                            activeCategoriesState={[activeCategories, setActiveCategories]}
+                        />
                     </div>
                 </div>
                 <List 
                     tasks={tasksState} 
                     categories={categoriesState}
+                    activeCategories={activeCategories}
                     selectedTaskSetter={setSelectedTask} 
                     modalStateSetter={setOpenedTaskEditor}
                     onCompletionStateChanged={onCompletionStateChanged}

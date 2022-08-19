@@ -1,11 +1,14 @@
 import Category from "./category/Category";
 import CategoryCompletedTasks from "./category/CategoryCompletedTasks";
 
-export default function List({ tasks, categories, modalStateSetter, selectedTaskSetter, onCompletionStateChanged }) {
+export default function List({ tasks, categories, activeCategories, modalStateSetter, selectedTaskSetter, onCompletionStateChanged }) {
   function buildAllCategorySections() {
     let categoriesJSX = [];
     
     categories.forEach(category => {
+      if(!activeCategories.find(activeCategory => activeCategory.id === category.id).active) 
+        return;
+        
       let tasksInCategory = tasks.filter(task => task.categoryId === category.id);        
       categoriesJSX.push(
         <Category
