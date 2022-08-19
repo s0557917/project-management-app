@@ -4,16 +4,16 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from "@fullcalendar/interaction";
 import { useState, useEffect } from 'react';
 
-export default function EventCalendar({tasks, categories, dateClickCallback, taskClickCallback, taskDroppedCallback}) {
+export default function EventCalendar({tasks, categories, dateClickCallback, taskClickCallback, taskDroppedCallback, activeCategories}) {
 
   const [eventSource, setEventSource] = useState(mapEvents)
 
   useEffect(() => {
     setEventSource(mapEvents)
-  }, [tasks])
+  }, [tasks, activeCategories])
 
   function mapEvents(){
-    const filteredEvents = tasks?.filter(event => event.dueDate !== '')
+    const filteredEvents = tasks?.filter(event => event.dueDate !== '' && activeCategories.find(category => category.id === event.categoryId).active)
     const mappedEvents = filteredEvents.map(event => {
       const startTime = event.start !== '' && event.start !== null 
         ? new Date(event.start)

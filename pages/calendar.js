@@ -1,10 +1,11 @@
+import FilteringMenu from "../components/task-list/filtering-and-sorting/FilteringMenu";
 import TaskEditorDialogue from "../components/task-editor-dialogue/TaskEditorDialogue";
+import SortingMenu from "../components/task-list/filtering-and-sorting/SortingMenu";
 import EventCalendar from "../components/calendar/EventCalendar"
 import Navbar from '../components/general/navbar/Navbar';
 import { getSession } from 'next-auth/react';
 import prisma from "../utils/prisma";
 import { useState } from "react";
-
 
 export async function getServerSideProps({req, res}) {
     const session = await getSession({ req });
@@ -45,6 +46,15 @@ export default function Calendar({tasks, categories}) {
     const [opened, setOpened] = useState(false);
 
     const [selectedDate, setSelectedDate] = useState('');
+
+    const [activeCategories, setActiveCategories] = useState(
+        categories.map(category => { 
+            return {
+                id: category.id, 
+                active: category.active
+            }
+        })
+    );
 
     async function onNewTaskSaved(taskData) {
         await fetch('/api/tasks', {
@@ -113,7 +123,16 @@ export default function Calendar({tasks, categories}) {
         <div>
             <Navbar />
             <div className="h-screen p-5">
-                <h1>Calendar</h1>
+                <div className="flex items-center justify-between">
+                    <h1 className="text-3xl font-bold underline">Calendar</h1>
+                    <div className="mx-5">
+                        <SortingMenu />
+                        <FilteringMenu 
+                            categories={categories}
+                            activeCategoriesState={[activeCategories, setActiveCategories]}
+                        />
+                    </div>
+                </div>
 
                 <EventCalendar 
                     tasks={tasksState}
@@ -121,6 +140,7 @@ export default function Calendar({tasks, categories}) {
                     dateClickCallback={onDateClicked}
                     taskClickCallback={onTaskClicked}
                     taskDroppedCallback={onTaskDropped}
+                    activeCategories={activeCategories}
                 />
 
                 <TaskEditorDialogue 
