@@ -3,7 +3,10 @@ import CategoryContainer from "./CategoryContainer"
 
 export default function Category({tasks, onTaskClicked, onCompletionStateChanged, category, title}) {
     return (
-        <CategoryContainer title={title}>
+        <CategoryContainer 
+            title={title}
+            color={category.color}
+        >
             <div>
                 {tasks.map(task => {
                     if(!task.completed) {

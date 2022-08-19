@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { TextInput, Textarea, Title } from '@mantine/core';
 import {Calendar, Flag, Tag, BellRinging } from 'phosphor-react';
-import Sublist from '../task-list/Sublist';
+import SubtaskSection from './SubtaskSection';
 import DateTimePickerDialogue from './DateTimePickerDialogue';
 import PriorityDialogue from './PriorityDialogue';
 import Dialogue from '../general/dialogues/Dialogue';
@@ -67,7 +67,6 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
 
     function onSaveButtonClicked(){
         const taskData = {
-            ownerId: "64cece17-1c3d-49a9-aacc-b8ed9e2c9087",
             title: taskTitle,
             details: taskDetails,
             completed: selectedTaskState.completed || false,
@@ -152,8 +151,7 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
                 <RemindersDialogue remindersDialogueState={[remindersDialogueOpened, setRemindersDialogueOpened]} remindersDialogueCallback={setPickedReminders} remindersState={pickedReminders}/>
                 <CategoryDialogue categoryDialogueState={[categoryDialogueOpened, setCategoryDialogueOpened]} category={pickedCategory} categoryDialogueCallback={setPickedCategory} categories={categories}/>
 
-                <Title order={4}>Subtasks</Title>
-                <Sublist tasks={tasks?.filter((task) => selectedTaskState?.subtasks?.includes(task.id))}/>
+                <SubtaskSection tasks={tasks} categories={categories} selectedTask={selectedTaskState} />
             </>
         </Dialogue>
     );

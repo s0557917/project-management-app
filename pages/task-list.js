@@ -1,10 +1,11 @@
-import Navbar from "../components/general/navbar/Navbar";
-import List from "../components/task-list/List";
-import { useState } from 'react';
 import TaskEditorDialogue from "../components/task-editor-dialogue/TaskEditorDialogue";
 import AddTaskButton from "../components/task-editor-dialogue/AddTaskButton";
-import prisma from "../utils/prisma";
+import Navbar from "../components/general/navbar/Navbar";
+import List from "../components/task-list/List";
 import { getSession } from 'next-auth/react';
+import { Select } from '@mantine/core';
+import prisma from "../utils/prisma";
+import { useState } from 'react';
 
 export async function getServerSideProps({req, res}) {
     const session = await getSession({ req });
@@ -39,7 +40,8 @@ export async function getServerSideProps({req, res}) {
 
 export default function TaskList({tasks, categories}) {
 
-    const [opened, setOpened] = useState(false);
+    const [openedTaskEditor, setOpenedTaskEditor] = useState(false);
+    const [openedCategoryEditor, setOpenedCategoryEditor] = useState(false);
     const [selectedTask, setSelectedTask] = useState({});
     const [tasksState, setTasksState] = useState(tasks);
     const [categoriesState, setCategoriesState] = useState(categories);
@@ -53,7 +55,7 @@ export default function TaskList({tasks, categories}) {
             .then((response) => response.json())
             .then((data) => setTasksState([...tasksState, data]));
 
-        setOpened(false);
+        setOpenedTaskEditor(false);
         setSelectedTask({});
     }
 
@@ -72,7 +74,7 @@ export default function TaskList({tasks, categories}) {
                 setTasksState(tasksCopy);
             });
             
-        setOpened(false);
+        setOpenedTaskEditor(false);
         setSelectedTask({});
     }
 
@@ -105,24 +107,50 @@ export default function TaskList({tasks, categories}) {
         <div className="h-screen">
             <Navbar /> 
             <div className="h-full p-5">       
-                <h1 className="text-3xl font-bold underline">Task List</h1>
+                <div className="flex items-center justify-between">
+                    <h1 className="text-3xl font-bold underline">Task List</h1>
+                    <div>
+                        <button className="left-" onClick={() => setOpenedCategoryEditor(true)}>Categories</button>
+                        {openedCategoryEditor && <Select
+                            label="Categories"
+                            placeholder="Select items"
+                            nothingFound="Nothing found"
+                            data={ categories?.map(category =>(
+                                    { 
+                                        value: category.id, 
+                                        label: category.name
+                                    }
+                                ))
+                            }
+                            searchable
+                            creatable
+                            getCreateLabel={(query) => `+ Create ${query}`}
+                            onCreate={(query) => {
+                                // const item = { value: query, label: query };
+                                console.log("ITEM: ", query);
+                                // setData((current) => [...current, item]);
+                                // return item;
+                            }}
+                        />}
+                    </div>
+                </div>
                 <List 
                     tasks={tasksState} 
                     categories={categoriesState}
                     selectedTaskSetter={setSelectedTask} 
-                    modalStateSetter={setOpened}
+                    modalStateSetter={setOpenedTaskEditor}
                     onCompletionStateChanged={onCompletionStateChanged}
                 />
                 <TaskEditorDialogue 
                     tasks={tasksState} 
                     categories={categoriesState}
-                    modalState={[opened, setOpened]} 
+                    modalState={[openedTaskEditor, setOpenedTaskEditor]} 
                     selectedTaskState={selectedTask}
                     saveEditedTaskCallback={onEditedTaskSaved}
                     saveNewTaskCallback={onNewTaskSaved}
                     onModalClosed={onModalClosed}
                 />
-                <AddTaskButton modalStateSetter={setOpened}/>
+                <AddTaskButton modalStateSetter={setOpenedTaskEditor}/>
             </div>
         </div>
     )
