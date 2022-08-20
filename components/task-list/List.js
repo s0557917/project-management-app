@@ -3,13 +3,13 @@ import CategoryCompletedTasks from "./category/CategoryCompletedTasks";
 import { useState, useEffect } from "react";
 import Task from "./Task";
 
-export default function List({ tasks, categories, activeCategories, modalStateSetter, selectedTaskSetter, onCompletionStateChanged, sortingMethod }) {
+export default function List({ tasks, categories, activeCategories, modalStateSetter, selectedTaskSetter, onCompletionStateChanged, sortingMethod, displaySettings }) {
   
   const [listContent, setListContent] = useState(generateListElements());
   
   useEffect(() => {
     setListContent(generateListElements());
-  }, [sortingMethod, activeCategories, tasks]);
+  }, [sortingMethod, activeCategories, tasks, displaySettings, categories]);
 
   function generateListElements(){
     switch(sortingMethod){
@@ -88,6 +88,10 @@ export default function List({ tasks, categories, activeCategories, modalStateSe
   }
 
   function buildUncategorizedSection(){
+    if(!displaySettings?.find(setting => setting.label === 'Uncategorized').value){
+      return null;   
+    } 
+
     let uncategorizedTasks = tasks.filter(task => task.categoryId === null || task.category === '');     
     return <Category
       key={'uncategorized'}
@@ -100,6 +104,10 @@ export default function List({ tasks, categories, activeCategories, modalStateSe
   }
 
   function buildCompletedSection(){
+    if(!displaySettings?.find(setting => setting.label === 'Completed').value){
+      return null;   
+    } 
+
     let completedTasks = tasks.filter(task => task.completed);     
     return <CategoryCompletedTasks
       key={'completed'}

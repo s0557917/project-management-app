@@ -2,7 +2,7 @@ import { Circle } from "phosphor-react";
 import { Checkbox } from "@mantine/core";
 import { useState } from "react";
 
-export default function CategoryListItem ({category, circleSize, onCategoryStatusChanged, textSize, completed}) {
+export default function CategoryFilter ({category, circleSize, onCategoryStatusChanged, textSize, completed}) {
     
     const [checked, setChecked] = useState(completed);
 

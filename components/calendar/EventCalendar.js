@@ -4,16 +4,39 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from "@fullcalendar/interaction";
 import { useState, useEffect } from 'react';
 
-export default function EventCalendar({tasks, categories, dateClickCallback, taskClickCallback, taskDroppedCallback, activeCategories}) {
+export default function EventCalendar({tasks, categories, dateClickCallback, taskClickCallback, taskDroppedCallback, activeCategories, displaySettings}) {
 
   const [eventSource, setEventSource] = useState(mapEvents)
 
   useEffect(() => {
     setEventSource(mapEvents)
-  }, [tasks, activeCategories])
+  }, [tasks, activeCategories, displaySettings, categories]);
 
   function mapEvents(){
-    const filteredEvents = tasks?.filter(event => event.dueDate !== '' && activeCategories.find(category => category.id === event.categoryId).active)
+    const filteredEvents = tasks?.filter(event => 
+      (event.dueDate !== null && event.dueDate !== undefined && event.dueDate != '') 
+      && 
+      (
+        (
+          event.categoryId !== null 
+          && event.categoryId !== undefined 
+          && event.categoryId !== '' 
+          && activeCategories?.find(activeCategory => activeCategory.id === event.categoryId)?.active
+          ) 
+        || 
+        (
+          (
+            event.categoryId === null
+            || event.categoryId === undefined
+            || event.categoryId === ''
+          )
+          && displaySettings.find(setting => setting.label === 'Uncategorized')?.value
+        )
+      )
+      // event.dueDate !== '' 
+      // && (event.categoryId !== '' && event.categoryId !== null && activeCategories.find(category => category.id === event.categoryId).active)
+      
+    )
     const mappedEvents = filteredEvents.map(event => {
       const startTime = event.start !== '' && event.start !== null 
         ? new Date(event.start)

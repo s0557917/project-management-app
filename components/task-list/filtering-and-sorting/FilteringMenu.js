@@ -1,13 +1,15 @@
 import { Menu, ScrollArea, TextInput } from '@mantine/core'
 import { Tag, ArrowRight } from 'phosphor-react';
 import { useState } from 'react';
-import CategoryListItem from '../category/CategoryListItem';
+import CategoryFilter from '../category/CategoryFilter';
+import Filter from './Filter';
 
-export default function FilteringMenu ({categories, activeCategoriesState}) {
+export default function FilteringMenu ({categories, activeCategoriesState, displaySettingsState}) {
     
     const [opened, setOpened] = useState(false);
     const [newCategoryTitle, setNewCategoryTitle] = useState('');
     const [activeCategories, setActiveCategories] = activeCategoriesState;
+    const [displaySettings, setDisplaySettings] = displaySettingsState;
 
     async function onCategoryStatusChanged(category, status) {
         const modifiedTask = {...category, active: status};
@@ -30,6 +32,13 @@ export default function FilteringMenu ({categories, activeCategoriesState}) {
         console.log("Category added: " + categoryTitle);
     }
 
+    function onFilterStatusChanged(filterName, status) {
+        const index = displaySettings.findIndex(setting => setting.label === filterName);
+        const modifiedSettings = [...displaySettings];
+        modifiedSettings[index].value = status;
+        setDisplaySettings(modifiedSettings);
+    }
+
     return (
         <Menu shadow="md" width={200}>
             <Menu.Target>
@@ -42,18 +51,33 @@ export default function FilteringMenu ({categories, activeCategoriesState}) {
                 <Menu.Label>Categories</Menu.Label>
                 <ScrollArea style={{ height:100 }} offsetScrollbars>
                     <ul>
-                        {categories?.map((category) =>
-                            <CategoryListItem 
-                                key={category.id}
-                                category={category}
-                                circleSize={16}
-                                onCategoryStatusChanged={onCategoryStatusChanged}
-                                textSize={'text-xs'}
-                                completed={ activeCategories.find(
-                                    activeCategory => activeCategory.id === category.id)?.active
-                                }
-                            />
-                        )}
+                        {
+                            categories?.map((category) =>
+                                <CategoryFilter 
+                                    key={category.id}
+                                    category={category}
+                                    circleSize={16}
+                                    onCategoryStatusChanged={onCategoryStatusChanged}
+                                    textSize={'text-xs'}
+                                    completed={ activeCategories.find(
+                                        activeCategory => activeCategory.id === category.id)?.active
+                                    }
+                                />
+                            )
+                        }
+                        {
+                            displaySettings?.map((displaySetting) => {
+                                return (
+                                    <Filter 
+                                        key={displaySetting.id}
+                                        filterName={displaySetting.label}
+                                        textSize={'text-xs'}
+                                        onFilterStatusChanged={onFilterStatusChanged}
+                                        active={displaySetting.value}
+                                    />
+                                )
+                            })
+                        }
                     </ul>
                 </ScrollArea>
                 <Menu.Divider></Menu.Divider>

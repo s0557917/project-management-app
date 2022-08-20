@@ -55,6 +55,13 @@ export default function Calendar({tasks, categories}) {
             }
         })
     );
+    const [displaySettings, setDisplaySettings] = useState([
+        {
+            setting: "displayUncategorized",
+            label: "Uncategorized",
+            value: false
+        }
+    ]);
 
     async function onNewTaskSaved(taskData) {
         await fetch('/api/tasks', {
@@ -129,6 +136,7 @@ export default function Calendar({tasks, categories}) {
                         <FilteringMenu 
                             categories={categories}
                             activeCategoriesState={[activeCategories, setActiveCategories]}
+                            displaySettingsState={[displaySettings, setDisplaySettings]}
                         />
                     </div>
                 </div>
@@ -140,6 +148,7 @@ export default function Calendar({tasks, categories}) {
                     taskClickCallback={onTaskClicked}
                     taskDroppedCallback={onTaskDropped}
                     activeCategories={activeCategories}
+                    displaySettings={displaySettings}
                 />
 
                 <TaskEditorDialogue 

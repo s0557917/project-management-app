@@ -55,7 +55,18 @@ export default function TaskList({tasks, categories}) {
             }
         })
     );
-    
+    const [displaySettings, setDisplaySettings] = useState([
+        {
+            setting: "displayUncategorized",
+            label: "Uncategorized",
+            value: false
+        },
+        {
+            setting: "displayCompleted",
+            label: "Completed",
+            value: false
+        }
+    ]);
 
     async function onNewTaskSaved(taskData) {
         await fetch('/api/tasks', {
@@ -127,6 +138,7 @@ export default function TaskList({tasks, categories}) {
                         <FilteringMenu 
                             categories={categories}
                             activeCategoriesState={[activeCategories, setActiveCategories]}
+                            displaySettingsState={[displaySettings, setDisplaySettings]}
                         />
                     </div>
                 </div>
@@ -138,6 +150,7 @@ export default function TaskList({tasks, categories}) {
                     modalStateSetter={setOpenedTaskEditor}
                     onCompletionStateChanged={onCompletionStateChanged}
                     sortingMethod={sortingMethod}
+                    displaySettings={displaySettings}
                 />
                 <TaskEditorDialogue 
                     tasks={tasksState} 
