@@ -46,6 +46,7 @@ export default function TaskList({tasks, categories}) {
     const [selectedTask, setSelectedTask] = useState({});
     const [tasksState, setTasksState] = useState(tasks);
     const [categoriesState, setCategoriesState] = useState(categories);
+    const [sortingMethod, setSortingMethod] = useState("category");
     const [activeCategories, setActiveCategories] = useState(
         categories.map(category => { 
             return {
@@ -54,6 +55,7 @@ export default function TaskList({tasks, categories}) {
             }
         })
     );
+    
 
     async function onNewTaskSaved(taskData) {
         await fetch('/api/tasks', {
@@ -119,7 +121,9 @@ export default function TaskList({tasks, categories}) {
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold underline">Task List</h1>
                     <div className="mx-5">
-                        <SortingMenu />
+                        <SortingMenu 
+                            sortingMethodSetter={setSortingMethod}
+                        />
                         <FilteringMenu 
                             categories={categories}
                             activeCategoriesState={[activeCategories, setActiveCategories]}
@@ -133,6 +137,7 @@ export default function TaskList({tasks, categories}) {
                     selectedTaskSetter={setSelectedTask} 
                     modalStateSetter={setOpenedTaskEditor}
                     onCompletionStateChanged={onCompletionStateChanged}
+                    sortingMethod={sortingMethod}
                 />
                 <TaskEditorDialogue 
                     tasks={tasksState} 

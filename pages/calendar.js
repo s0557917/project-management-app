@@ -126,7 +126,6 @@ export default function Calendar({tasks, categories}) {
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold underline">Calendar</h1>
                     <div className="mx-5">
-                        <SortingMenu />
                         <FilteringMenu 
                             categories={categories}
                             activeCategoriesState={[activeCategories, setActiveCategories]}

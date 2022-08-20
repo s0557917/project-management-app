@@ -1,4 +1,4 @@
-import { Menu, ActionIcon, ScrollArea, TextInput } from '@mantine/core'
+import { Menu, ScrollArea, TextInput } from '@mantine/core'
 import { Tag, ArrowRight } from 'phosphor-react';
 import { useState } from 'react';
 import CategoryListItem from '../category/CategoryListItem';
