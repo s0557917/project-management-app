@@ -29,6 +29,7 @@
     "@mantine/modals": "^5.0.0",
     "@mantine/next": "^5.0.0",
     "@mantine/notifications": "^5.0.0",
+    "@monaco-editor/react": "^4.4.5",
     "@next-auth/prisma-adapter": "^1.0.4",
     "@prisma/client": "^4.2.1",
     "@supabase/supabase-js": "^1.35.6",
