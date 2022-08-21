@@ -2,14 +2,15 @@ import Category from "./category/Category";
 import CategoryCompletedTasks from "./category/CategoryCompletedTasks";
 import { useState, useEffect } from "react";
 import Task from "./Task";
+import { ScrollArea } from "@mantine/core";
 
-export default function List({ tasks, categories, activeCategories, modalStateSetter, selectedTaskSetter, onCompletionStateChanged, sortingMethod, displaySettings }) {
+export default function List({ tasks, categories, activeCategories, modalStateSetter, selectedTaskSetter, onCompletionStateChanged, sortingMethod, userSettings, isFetching }) {
   
   const [listContent, setListContent] = useState(generateListElements());
-  
+
   useEffect(() => {
     setListContent(generateListElements());
-  }, [sortingMethod, activeCategories, tasks, displaySettings, categories]);
+  }, [sortingMethod, activeCategories, tasks, userSettings, categories, isFetching]);
 
   function generateListElements(){
     switch(sortingMethod){
@@ -88,7 +89,7 @@ export default function List({ tasks, categories, activeCategories, modalStateSe
   }
 
   function buildUncategorizedSection(){
-    if(!displaySettings?.find(setting => setting.name === 'Uncategorized').value){
+    if(!userSettings?.filters?.find(setting => setting.name === 'Uncategorized').value){
       return null;   
     } 
 
@@ -104,7 +105,7 @@ export default function List({ tasks, categories, activeCategories, modalStateSe
   }
 
   function buildCompletedSection(){
-    if(!displaySettings?.find(setting => setting.name === 'Completed').value){
+    if(!userSettings?.filters?.find(setting => setting.name === 'Completed').value){
       return null;   
     } 
 
@@ -124,9 +125,13 @@ export default function List({ tasks, categories, activeCategories, modalStateSe
 
   return (
     <div className="w-11/12">
-      <ul>
-        {listContent}
-      </ul>
+        <ScrollArea
+          offsetScrollbars={true}
+          style={{ height: 600 }} 
+          type="auto"
+        >
+          {listContent}
+        </ScrollArea>
     </div>
   );
 }

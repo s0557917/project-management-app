@@ -2,24 +2,22 @@ import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { signOut, useSession } from 'next-auth/react';
+import { useQuery } from '@tanstack/react-query'
+import { fetchUserSettings } from '../../../utils/db/settings';
 
 const Header = ({}) => {
+  const {data: userSettings, isLoading, isError} = useQuery(['settings'], fetchUserSettings);
+  const { data: session, status } = useSession();
   const router = useRouter();
+
   const isActive = (pathname) => router.pathname === pathname;
 
-  const { data: session, status } = useSession();
-
-  async function redirectToDefaultView() {
-    await fetch(`/api/settings`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(),
-    })
-    .then((response) => response.json())
-    .then((data) => {
-      router.push(`/${data.defaultView}`)
-    });
+  const redirectToDefaultView = async () => {
+    if(!isLoading && !isError && userSettings) {
+      router.push(`/${userSettings.defaultView}`);
+    }
   }
+
 
   let left = (
     <div className="left">
@@ -125,6 +123,7 @@ const Header = ({}) => {
   }
 
   if (session) {
+    console.log("")
     redirectToDefaultView();
     left = (
       <div className="left">
@@ -157,6 +156,7 @@ const Header = ({}) => {
         `}</style>
       </div>
     );
+
     right = (
       <div className="right">
         <p>

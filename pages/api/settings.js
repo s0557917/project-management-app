@@ -4,7 +4,6 @@ import prisma from '../../utils/prisma';
 export default async function handler(req, res) {
     const session = await getSession({ req });
     if(req.method === 'PUT' && session){
-        console.log("PUT", req.body);
         try{
             const settings = await prisma.user.update({
                 where: { email: session.user.email },
@@ -17,7 +16,7 @@ export default async function handler(req, res) {
                     settings: req.body,
                 }
             });
-            console.log("settings", settings);
+
             res.status(201).json(settings);
         } catch (e) {
             console.log("ERROR", e);

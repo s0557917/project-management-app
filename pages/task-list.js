@@ -8,6 +8,8 @@ import { useState } from 'react';
 import SortingMenu from "../components/task-list/filtering-and-sorting/SortingMenu";
 import FilteringMenu from "../components/task-list/filtering-and-sorting/FilteringMenu";
 import TextEditorSplitScreen from "../components/text-editor/TextEditorSplitScreen";
+import { useQuery } from '@tanstack/react-query';
+import { fetchUserSettings } from "../utils/db/settings";
 
 export async function getServerSideProps({req, res}) {
     const session = await getSession({ req });
@@ -47,6 +49,9 @@ export async function getServerSideProps({req, res}) {
 }
 
 export default function TaskList({tasks, categories, user}) {
+
+    const {data: userSettings, isFetching: isFetchingUserSettings} = useQuery(['settings'], fetchUserSettings);
+    // const {data: userSettings, isLoading, isError, isFetched, isFetching} = useQuery(['settings'], fetchUserSettings);
 
     const [splitScreenOpen, setSplitScreenOpen] = useState(false);
     const [openedTaskEditor, setOpenedTaskEditor] = useState(false);
@@ -123,7 +128,7 @@ export default function TaskList({tasks, categories, user}) {
     }
 
     return (
-        <div className="h-screen flex flex-col flex-1 bg-green-500">
+        <div className="relative h-screen flex flex-col flex-1 bg-fuchsia-800">
             <Navbar /> 
             <div className="h-full p-5">       
                 <div className="flex items-center justify-between">
@@ -135,7 +140,7 @@ export default function TaskList({tasks, categories, user}) {
                         <FilteringMenu 
                             categories={categories}
                             activeCategoriesState={[activeCategories, setActiveCategories]}
-                            displaySettingsState={[displaySettings, setDisplaySettings]}
+                            userSettings={userSettings}
                             user={user}
                         />
                     </div>
@@ -148,7 +153,8 @@ export default function TaskList({tasks, categories, user}) {
                     modalStateSetter={setOpenedTaskEditor}
                     onCompletionStateChanged={onCompletionStateChanged}
                     sortingMethod={sortingMethod}
-                    displaySettings={displaySettings}
+                    userSettings={userSettings}
+                    isFetching={isFetchingUserSettings}
                 />
                 <TaskEditorDialogue 
                     tasks={tasksState} 
@@ -164,7 +170,14 @@ export default function TaskList({tasks, categories, user}) {
             </div>
             <div className="">
                 {splitScreenOpen 
-                    ? <TextEditorSplitScreen className="flex-1"/> 
+                    ? 
+                        <>
+                            <button 
+                            className="fixed right-2/4 bottom-2/4 hover:bg-cyan-700 bg-cyan-500 rounded-lg p-4"
+                            onClick={() => setSplitScreenOpen(false)}
+                            >Test</button>
+                            <TextEditorSplitScreen className="flex-1"/> 
+                        </>
                     : <button 
                         className="fixed right-2/4 bottom-5 hover:bg-cyan-700 bg-cyan-500 rounded-lg p-4"
                         onClick={() => setSplitScreenOpen(true)}
