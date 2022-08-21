@@ -7,6 +7,7 @@ import prisma from "../utils/prisma";
 import { useState } from 'react';
 import SortingMenu from "../components/task-list/filtering-and-sorting/SortingMenu";
 import FilteringMenu from "../components/task-list/filtering-and-sorting/FilteringMenu";
+import TextEditorSplitScreen from "../components/text-editor/TextEditorSplitScreen";
 
 export async function getServerSideProps({req, res}) {
     const session = await getSession({ req });
@@ -30,17 +31,24 @@ export async function getServerSideProps({req, res}) {
             owner: { email: session.user.email },
         },
     });
+    const user = await prisma.user.findUnique({
+        where: {
+            email: session.user.email,
+        },
+    });
 
     return {
         props: {
             tasks: JSON.parse(JSON.stringify(tasks)),
-            categories: JSON.parse(JSON.stringify(categories))
+            categories: JSON.parse(JSON.stringify(categories)),
+            user: JSON.parse(JSON.stringify(user))
         },
     }
 }
 
-export default function TaskList({tasks, categories}) {
+export default function TaskList({tasks, categories, user}) {
 
+    const [splitScreenOpen, setSplitScreenOpen] = useState(false);
     const [openedTaskEditor, setOpenedTaskEditor] = useState(false);
     const [openedCategoryEditor, setOpenedCategoryEditor] = useState(false);
     const [selectedTask, setSelectedTask] = useState({});
@@ -55,18 +63,7 @@ export default function TaskList({tasks, categories}) {
             }
         })
     );
-    const [displaySettings, setDisplaySettings] = useState([
-        {
-            setting: "displayUncategorized",
-            label: "Uncategorized",
-            value: false
-        },
-        {
-            setting: "displayCompleted",
-            label: "Completed",
-            value: false
-        }
-    ]);
+    const [displaySettings, setDisplaySettings] = useState(user.settings.filters);
 
     async function onNewTaskSaved(taskData) {
         await fetch('/api/tasks', {
@@ -126,7 +123,7 @@ export default function TaskList({tasks, categories}) {
     }
 
     return (
-        <div className="h-screen">
+        <div className="h-screen flex flex-col flex-1 bg-green-500">
             <Navbar /> 
             <div className="h-full p-5">       
                 <div className="flex items-center justify-between">
@@ -139,6 +136,7 @@ export default function TaskList({tasks, categories}) {
                             categories={categories}
                             activeCategoriesState={[activeCategories, setActiveCategories]}
                             displaySettingsState={[displaySettings, setDisplaySettings]}
+                            user={user}
                         />
                     </div>
                 </div>
@@ -163,6 +161,14 @@ export default function TaskList({tasks, categories}) {
                     onModalClosed={onModalClosed}
                 />
                 <AddTaskButton modalStateSetter={setOpenedTaskEditor}/>
+            </div>
+            <div className="">
+                {splitScreenOpen 
+                    ? <TextEditorSplitScreen className="flex-1"/> 
+                    : <button 
+                        className="fixed right-2/4 bottom-5 hover:bg-cyan-700 bg-cyan-500 rounded-lg p-4"
+                        onClick={() => setSplitScreenOpen(true)}
+                        >Test</button>}
             </div>
         </div>
     )

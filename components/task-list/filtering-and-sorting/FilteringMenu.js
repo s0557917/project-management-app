@@ -4,8 +4,7 @@ import { useState } from 'react';
 import CategoryFilter from '../category/CategoryFilter';
 import Filter from './Filter';
 
-export default function FilteringMenu ({categories, activeCategoriesState, displaySettingsState}) {
-    
+export default function FilteringMenu ({categories, activeCategoriesState, displaySettingsState, user}) {
     const [opened, setOpened] = useState(false);
     const [newCategoryTitle, setNewCategoryTitle] = useState('');
     const [activeCategories, setActiveCategories] = activeCategoriesState;
@@ -32,11 +31,22 @@ export default function FilteringMenu ({categories, activeCategoriesState, displ
         console.log("Category added: " + categoryTitle);
     }
 
-    function onFilterStatusChanged(filterName, status) {
-        const index = displaySettings.findIndex(setting => setting.label === filterName);
+    async function onFilterStatusChanged(filterName, status) {
+        const index = displaySettings.findIndex(setting => setting.name === filterName);
         const modifiedSettings = [...displaySettings];
         modifiedSettings[index].value = status;
-        setDisplaySettings(modifiedSettings);
+        const modifiedUserSettings = {...user.settings, filters: modifiedSettings};
+
+        await fetch(`/api/settings`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(modifiedUserSettings),
+        })
+        .then((response) => response.json())
+        .then((data) => {
+            console.log("User settings updated: ", data);
+            setDisplaySettings(data.settings.filters);
+        });
     }
 
     return (
@@ -70,7 +80,7 @@ export default function FilteringMenu ({categories, activeCategoriesState, displ
                                 return (
                                     <Filter 
                                         key={displaySetting.id}
-                                        filterName={displaySetting.label}
+                                        filterName={displaySetting.name}
                                         textSize={'text-xs'}
                                         onFilterStatusChanged={onFilterStatusChanged}
                                         active={displaySetting.value}

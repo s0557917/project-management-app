@@ -32,10 +32,7 @@ export default function EventCalendar({tasks, categories, dateClickCallback, tas
           )
           && displaySettings.find(setting => setting.label === 'Uncategorized')?.value
         )
-      )
-      // event.dueDate !== '' 
-      // && (event.categoryId !== '' && event.categoryId !== null && activeCategories.find(category => category.id === event.categoryId).active)
-      
+      )      
     )
     const mappedEvents = filteredEvents.map(event => {
       const startTime = event.start !== '' && event.start !== null 

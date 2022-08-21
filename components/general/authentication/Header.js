@@ -3,11 +3,23 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { signOut, useSession } from 'next-auth/react';
 
-const Header = () => {
+const Header = ({}) => {
   const router = useRouter();
   const isActive = (pathname) => router.pathname === pathname;
 
   const { data: session, status } = useSession();
+
+  async function redirectToDefaultView() {
+    await fetch(`/api/settings`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(),
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      router.push(`/${data.defaultView}`)
+    });
+  }
 
   let left = (
     <div className="left">
@@ -113,6 +125,7 @@ const Header = () => {
   }
 
   if (session) {
+    redirectToDefaultView();
     left = (
       <div className="left">
         <Link href="/">

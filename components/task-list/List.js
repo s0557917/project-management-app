@@ -88,7 +88,7 @@ export default function List({ tasks, categories, activeCategories, modalStateSe
   }
 
   function buildUncategorizedSection(){
-    if(!displaySettings?.find(setting => setting.label === 'Uncategorized').value){
+    if(!displaySettings?.find(setting => setting.name === 'Uncategorized').value){
       return null;   
     } 
 
@@ -104,7 +104,7 @@ export default function List({ tasks, categories, activeCategories, modalStateSe
   }
 
   function buildCompletedSection(){
-    if(!displaySettings?.find(setting => setting.label === 'Completed').value){
+    if(!displaySettings?.find(setting => setting.name === 'Completed').value){
       return null;   
     } 
 
