@@ -8,7 +8,7 @@ export default function Category({tasks, onTaskClicked, onCompletionStateChanged
             color={category.color}
         >
             <div>
-                {tasks.map(task => {
+                {tasks?.map(task => {
                     if(!task.completed) {
                         return <Task 
                         taskData={task} 

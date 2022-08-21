@@ -1,64 +1,59 @@
 import { Menu, NativeSelect } from "@mantine/core";
 import { UserCircle } from "phosphor-react";
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateUserSettings } from "../../../utils/db/settings";
 
-export default function UserMenu () {
+export default function UserMenu ({ userSettings, session }) {
+    const queryClient = useQueryClient();
 
-    const { data: session, status } = useSession();
     const [userName, setUserName] = useState('');
     const [userEmail, setUserEmail] = useState('');
     const [themePreference, setThemePreference] = useState('');
     const [defaultView, setDefaultView] = useState('');
-    const [userSettings, setUserSettings] = useState({});
-    const [updateSettingsPending, setUpdateSettingsPending] = useState(false);
 
     useEffect(() => {
-        setUserName(session?.user.name);
-        setUserEmail(session?.user.email);
-
-        async function getUser() {
-            await fetch(`/api/settings`, {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(),
-            })
-            .then((response) => response.json())
-            .then((data) => {
-                setUserSettings(data);
-                setThemePreference(capitalizeFirstLetter(data.theme));
-                setDefaultView(capitalizeFirstLetter(data.defaultView));
-            });
+        if (userSettings) {
+            setThemePreference(userSettings.theme);
+            setDefaultView(userSettings.defaultView);
         }
 
-        if(userSettings 
-            && Object.keys(userSettings).length === 0
-            && Object.getPrototypeOf(userSettings) === Object.prototype
-        ) {
-            getUser();
+        if(session) {
+            setUserName(session.user.name);
+            setUserEmail(session.user.email);
         }
-    }, []);
+    }, [userSettings, session])
+
+    const userSettingsMutation = useMutation(
+        (updatedUserSettings) => updateUserSettings(updatedUserSettings),
+        {onSuccess: async () => {
+            queryClient.invalidateQueries('settings');
+        }}
+    );
 
     useEffect(() => {
+        console.log("THEME: ", themePreference, "DEFAULT VIEW: ", defaultView);
         const modifiedSettings = {...userSettings, theme: themePreference, defaultView: defaultView};
-        
-        async function updateSettings() {
-            await fetch(`/api/settings`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(modifiedSettings),
-            })
-            .then((response) => response.json())
-            .then((data) => {
-                console.log("User settings updated: ", data);
-                setUserSettings(data.settings);
-            });
-            setUpdateSettingsPending(false);
-        }
+        console.log("Modified settings: " + JSON.stringify(modifiedSettings));
+        userSettingsMutation.mutate(modifiedSettings);        
 
-        if(updateSettingsPending) {
-            updateSettings();
-        }
+        // async function updateSettings() {
+        //     await fetch(`/api/settings`, {
+        //         method: 'PUT',
+        //         headers: { 'Content-Type': 'application/json' },
+        //         body: JSON.stringify(modifiedSettings),
+        //     })
+        //     .then((response) => response.json())
+        //     .then((data) => {
+        //         console.log("User settings updated: ", data);
+        //         setUserSettings(data.settings);
+        //     });
+        //     setUpdateSettingsPending(false);
+        // }
+
+        // if(updateSettingsPending) {
+        //     updateSettings();
+        // }
     }, [themePreference, defaultView]);
 
     function capitalizeFirstLetter(string) {
@@ -97,7 +92,7 @@ export default function UserMenu () {
                         value={themePreference}
                         onChange={(event) => {
                             setThemePreference(uncapitalizeFirstLetter(event.target.value));
-                            setUpdateSettingsPending(true);
+                            // setUpdateSettingsPending(true);
                         }}
                         data={[
                             { value: 'dark', label: 'Dark' },
@@ -111,7 +106,7 @@ export default function UserMenu () {
                         value={defaultView}
                         onChange={(event) => {
                             setDefaultView(uncapitalizeFirstLetter(event.target.value));
-                            setUpdateSettingsPending(true);
+                            // setUpdateSettingsPending(true);
                         }}
                         data={[
                             { value: 'task-list', label: 'Task List' },

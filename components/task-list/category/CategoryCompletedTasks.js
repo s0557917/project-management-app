@@ -5,7 +5,7 @@ export default function CategoryCompletedTasks({tasks, onTaskClicked, onCompleti
     return (
         <CategoryContainer title={"Completed"}>
             <div>
-                {tasks.map(task => {
+                {tasks?.map(task => {
                     return <Task 
                         taskData={task} 
                         onTaskClicked={onTaskClicked} 

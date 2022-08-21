@@ -13,38 +13,24 @@ export default function FilteringMenu ({categories, activeCategoriesState, userS
     
     const [opened, setOpened] = useState(false);
     const [newCategoryTitle, setNewCategoryTitle] = useState('');
-    const [activeCategories, setActiveCategories] = activeCategoriesState;
     
     const settingsMutation = useMutation(
-        updatedUserSettings => updateUserSettings(updatedUserSettings),
+        (updatedUserSettings) => updateUserSettings(updatedUserSettings),
         {onSuccess: async () => {
             queryClient.invalidateQueries('settings');
         }}
     );
 
     const categoryMutation = useMutation(
-        (updatedCategoryId, updatedCategoryState) => updateCategory(updatedCategoryId, updatedCategoryState),
+        (updatedCategory) => updateCategory(updatedCategory),
         {onSuccess: async () => {
-            queryClient.invalidateQueries('settings');
+            queryClient.invalidateQueries('categories');
         }}
     )
     
     async function onCategoryStatusChanged(category, status) {
-        const modifiedTask = {...category, active: status};
-        categoryMutation.mutate(category.id, modifiedTask);
-
-        // await fetch(`/api/categories/${category.id}`, {
-        //     method: 'PUT',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(modifiedTask),
-        // })
-        //     .then((response) => response.json())
-        //     .then((data) => {
-        //         const modifiedCategoryIndex = activeCategories.findIndex((activeCategory) => activeCategory.id === data.id);
-        //         const modifiedCategories = [...activeCategories];
-        //         modifiedCategories[modifiedCategoryIndex] = data;
-        //         setActiveCategories(modifiedCategories);
-        //     });
+        const modifiedCategory = {...category, active: status};
+        categoryMutation.mutate(modifiedCategory);
     }
 
     function onCategoryAdded(categoryTitle) {
@@ -80,14 +66,12 @@ export default function FilteringMenu ({categories, activeCategoriesState, userS
                                     circleSize={16}
                                     onCategoryStatusChanged={onCategoryStatusChanged}
                                     textSize={'text-xs'}
-                                    completed={ activeCategories.find(
-                                        activeCategory => activeCategory.id === category.id)?.active
-                                    }
+                                    completed={ category?.active }
                                 />
                             )
                         }
                         {
-                            userSettings?.filters.map((displaySetting) => {
+                            userSettings?.filters?.map((displaySetting) => {
                                 return (
                                     <Filter 
                                         key={displaySetting.id}

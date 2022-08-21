@@ -7,7 +7,10 @@ export default function Task({ taskData, onTaskClicked, onCompletionStateChanged
             <div>
                 <button 
                     className={`rounded-full w-10 h-10 m-3 ${taskData.completed ? "bg-green-500 hover:bg-green-300 hover:border-white hover:border-2" : "bg-red-600 hover:bg-red-400 hover:border-white hover:border-2"}`}
-                    onClick={() => onCompletionStateChanged(taskData.id, !taskData.completed)}
+                    onClick={() => {
+                        console.log("CLICKED TASK", taskData);
+                        onCompletionStateChanged(taskData.id, !taskData.completed)
+                    }}
                 >   
                 </button>
             </div>

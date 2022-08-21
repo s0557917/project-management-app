@@ -9,7 +9,7 @@ import RemindersDialogue from './RemindersDialogue';
 import CategoryDialogue from './CategoryDialogue';
 import IconButton from './IconButton';
 
-export default function TaskEditorDialogue({ tasks, categories, modalState, selectedTask, selectedTaskSetter, saveEditedTaskCallback, saveNewTaskCallback, onModalClosed, date}) {
+export default function TaskEditorDialogue({ tasks, categories, modalState, selectedTask, selectedTaskSetter, saveEditedTaskCallback, saveNewTaskCallback, onModalClosed, date }) {
 
     const [opened, setOpened] = modalState;
     const [taskTitle, setTaskTitle] = useState(selectedTask?.title || '');
@@ -35,7 +35,7 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
     const [pickedReminders, setPickedReminders] = useState(selectedTask?.reminders || []);
     const [pickedCategory, setPickedCategory] = useState(selectedTask?.categoryId || '');
     const [userTimezone, setUserTimezone] = useState(selectedTask?.timeZone || null);
-    const [subtasks, setSubtasks] = useState(selectedTask?.subtasks);
+    const [subtasks, setSubtasks] = useState(selectedTask?.subtasks || []);
 
     useEffect(() => {
         setTaskTitle(selectedTask?.title || '');
@@ -135,7 +135,7 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
                     </IconButton>
 
                     <IconButton
-                        state={categories.find(category => category.id === pickedCategory)?.name}
+                        state={categories?.find(category => category.id === pickedCategory)?.name}
                         buttonCallback={() => setCategoryDialogueOpened(true)}
                     >
                         <Tag size={28} className="m-1"/>

@@ -3,7 +3,7 @@ import prisma from '../../../utils/prisma';
 
 export default async function handler(req, res) {
     const session = await getSession({ req });
-    if(req.method === 'PUT'){
+    if(req.method === 'PUT' && session){
         try{
             const taskData = {
                 title: req.body.title, 

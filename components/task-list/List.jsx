@@ -2,15 +2,15 @@ import Category from "./category/Category";
 import CategoryCompletedTasks from "./category/CategoryCompletedTasks";
 import { useState, useEffect } from "react";
 import Task from "./Task";
-import { ScrollArea } from "@mantine/core";
+import { ScrollArea, Loader } from "@mantine/core";
 
-export default function List({ tasks, categories, activeCategories, modalStateSetter, selectedTaskSetter, onCompletionStateChanged, sortingMethod, userSettings, isFetching }) {
+export default function List({ tasks, categories, modalStateSetter, selectedTaskSetter, onCompletionStateChanged, sortingMethod, userSettings, isFetchingUserSettings, isFetchingTasks, isFetchingCategories }) {
   
   const [listContent, setListContent] = useState(generateListElements());
 
   useEffect(() => {
     setListContent(generateListElements());
-  }, [sortingMethod, activeCategories, tasks, userSettings, categories, isFetching]);
+  }, [sortingMethod, isFetchingUserSettings, tasks, categories, isFetchingTasks, isFetchingCategories]);
 
   function generateListElements(){
     switch(sortingMethod){
@@ -38,7 +38,7 @@ export default function List({ tasks, categories, activeCategories, modalStateSe
 
   function generateDateSortedList() {
     return tasks
-    ?.filter(task => activeCategories?.find(activeCategory => activeCategory.id === task.categoryId)?.active)
+    ?.filter(task => categories?.find(category => category.id === task.categoryId)?.active)
     ?.sort((a, b) => (new Date(a.dueDate).getTime() || -Infinity) - (new Date(b.dueDate).getTime() || -Infinity))
     ?.map(task => 
       <Task
@@ -53,7 +53,7 @@ export default function List({ tasks, categories, activeCategories, modalStateSe
 
   function generatePrioritySortedList() {
     return tasks
-      ?.filter(task => activeCategories?.find(activeCategory => activeCategory.id === task.categoryId)?.active)
+      ?.filter(task => categories?.find(category => category.id === task.categoryId)?.active)
       ?.sort((a, b) => b.priority - a.priority)
       ?.map(task => 
         <Task
@@ -69,11 +69,11 @@ export default function List({ tasks, categories, activeCategories, modalStateSe
   function buildAllCategorySections() {
     let categoriesJSX = [];
     
-    categories.forEach(category => {
-      if(!activeCategories.find(activeCategory => activeCategory.id === category.id).active) 
+    categories?.forEach(category => {
+      if(!category.active) 
         return;
         
-      let tasksInCategory = tasks.filter(task => task.categoryId === category.id);        
+      let tasksInCategory = tasks?.filter(task => task.categoryId === category.id);        
       categoriesJSX.push(
         <Category
           key={category.id}
@@ -93,7 +93,7 @@ export default function List({ tasks, categories, activeCategories, modalStateSe
       return null;   
     } 
 
-    let uncategorizedTasks = tasks.filter(task => task.categoryId === null || task.category === '');     
+    let uncategorizedTasks = tasks?.filter(task => task.categoryId === null || task.category === '');     
     return <Category
       key={'uncategorized'}
       tasks={uncategorizedTasks}
@@ -109,7 +109,7 @@ export default function List({ tasks, categories, activeCategories, modalStateSe
       return null;   
     } 
 
-    let completedTasks = tasks.filter(task => task.completed);     
+    let completedTasks = tasks?.filter(task => task.completed);     
     return <CategoryCompletedTasks
       key={'completed'}
       tasks={completedTasks}
@@ -125,13 +125,16 @@ export default function List({ tasks, categories, activeCategories, modalStateSe
 
   return (
     <div className="w-11/12">
-        <ScrollArea
+      {isFetchingTasks === true
+      ? console.log("Loading tasks...")
+      : <ScrollArea
           offsetScrollbars={true}
           style={{ height: 600 }} 
           type="auto"
         >
           {listContent}
         </ScrollArea>
+      }
     </div>
-  );
+  )
 }

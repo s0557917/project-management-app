@@ -1,4 +1,4 @@
-export const fetchUserSettings = async () => {
+export const getUserSettings = async () => {
     const res = await fetch(`/api/settings`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },

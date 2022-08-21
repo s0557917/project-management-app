@@ -4,7 +4,7 @@ import Sublist from "../task-list/Sublist"
 import { useState } from "react";
 
 export default function SubtaskSection({ tasks, categories, selectedTask, subtasksState }) {
-    
+
     const [subtasks, setSubtasks] = subtasksState;
     const [newTasks, setNewTasks] = useState([]);
 
@@ -18,7 +18,11 @@ export default function SubtaskSection({ tasks, categories, selectedTask, subtas
     }
 
     async function onDialogueSubtaskClicked(subtask){
-        setSubtasks([...subtasks, subtask]);
+        if(subtasks !== undefined) {
+            setSubtasks([...subtasks, subtask]);
+        } else {
+            setSubtasks([subtask]);
+        }
     }
 
     function onDialogueSubtaskAdded(title){

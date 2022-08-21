@@ -7,9 +7,10 @@ import prisma from "../utils/prisma";
 import { useState } from 'react';
 import SortingMenu from "../components/task-list/filtering-and-sorting/SortingMenu";
 import FilteringMenu from "../components/task-list/filtering-and-sorting/FilteringMenu";
-import TextEditorSplitScreen from "../components/text-editor/TextEditorSplitScreen";
-import { useQuery } from '@tanstack/react-query';
-import { fetchUserSettings } from "../utils/db/settings";
+import { dehydrate, QueryClient, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getUserSettings } from "../utils/db/settings";
+import { prismaGetAllTasks, getAllTasks, addNewTask, updateTask } from "../utils/db/tasks";
+import { getAllCategories, prismaGetAllCategories } from "../utils/db/categories";
 
 export async function getServerSideProps({req, res}) {
     const session = await getSession({ req });
@@ -23,16 +24,10 @@ export async function getServerSideProps({req, res}) {
         };
     }
   
-    const tasks = await prisma.task.findMany({
-        where: {
-            owner: { email: session.user.email },
-        },
-    });
-    const categories = await prisma.category.findMany({
-        where: {
-            owner: { email: session.user.email },
-        },
-    });
+    const queryClient = new QueryClient();
+    await queryClient.prefetchQuery(['tasks'], prismaGetAllTasks(session.user.email));
+    await queryClient.prefetchQuery(['settings'], prismaGetAllCategories(session.user.email));
+  
     const user = await prisma.user.findUnique({
         where: {
             email: session.user.email,
@@ -41,86 +36,58 @@ export async function getServerSideProps({req, res}) {
 
     return {
         props: {
-            tasks: JSON.parse(JSON.stringify(tasks)),
-            categories: JSON.parse(JSON.stringify(categories)),
-            user: JSON.parse(JSON.stringify(user))
+            dehydratedState: dehydrate(queryClient),
+            user: JSON.parse(JSON.stringify(user)),
         },
     }
 }
 
-export default function TaskList({tasks, categories, user}) {
+export default function TaskList({user}) {
 
-    const {data: userSettings, isFetching: isFetchingUserSettings} = useQuery(['settings'], fetchUserSettings);
-    // const {data: userSettings, isLoading, isError, isFetched, isFetching} = useQuery(['settings'], fetchUserSettings);
+    const {data: userSettings, isFetching: isFetchingUserSettings} = useQuery(['settings'], getUserSettings);
+    const {data: tasks, isFetching: isFetchingTasks} = useQuery(['tasks'], getAllTasks);
+    const {data: categories, isFetching: isFetchingCategories} = useQuery(['categories'], getAllCategories);
 
-    const [splitScreenOpen, setSplitScreenOpen] = useState(false);
-    const [openedTaskEditor, setOpenedTaskEditor] = useState(false);
-    const [openedCategoryEditor, setOpenedCategoryEditor] = useState(false);
-    const [selectedTask, setSelectedTask] = useState({});
-    const [tasksState, setTasksState] = useState(tasks);
-    const [categoriesState, setCategoriesState] = useState(categories);
-    const [sortingMethod, setSortingMethod] = useState("category");
-    const [activeCategories, setActiveCategories] = useState(
-        categories.map(category => { 
-            return {
-                id: category.id, 
-                active: category.active
-            }
-        })
+    const queryClient = useQueryClient();
+
+    const newTaskMutation = useMutation(
+        (newTask) => addNewTask(newTask),
+        {onSuccess: async () => {
+            queryClient.invalidateQueries('tasks');
+        }}
     );
-    const [displaySettings, setDisplaySettings] = useState(user.settings.filters);
+
+    const updateTaskMutation = useMutation(
+        (updatedTask) => updateTask(updatedTask),
+        {onSuccess: async () => {
+            queryClient.invalidateQueries('tasks');
+        }}
+    )
+
+    const [openedTaskEditor, setOpenedTaskEditor] = useState(false);
+    const [selectedTask, setSelectedTask] = useState({});
+    const [sortingMethod, setSortingMethod] = useState("category");
+
 
     async function onNewTaskSaved(taskData) {
-        await fetch('/api/tasks', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(taskData),
-        })
-            .then((response) => response.json())
-            .then((data) => setTasksState([...tasksState, data]));
+        newTaskMutation.mutate(taskData);
 
         setOpenedTaskEditor(false);
         setSelectedTask({});
     }
 
     async function onEditedTaskSaved(taskData, taskId){
-        await fetch(`/api/tasks/${taskId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(taskData),
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                const taskIndex = tasksState.findIndex(task => task.id === data.id);
-                const tasksCopy = [...tasksState];
-                tasksCopy[taskIndex] = data;
-                
-                setTasksState(tasksCopy);
-            });
+        const modifiedTask = {...taskData, id: taskId};
+        updateTaskMutation.mutate(modifiedTask);
             
         setOpenedTaskEditor(false);
         setSelectedTask({});
     }
 
     async function onCompletionStateChanged(taskId, isCompleted) {    
-        const modifiedTasks = [...tasksState];
-        const taskIndex = tasksState.findIndex(task => task.id === taskId);
-        modifiedTasks[taskIndex].completed = isCompleted;
-        setTasksState(modifiedTasks);
-
-        await fetch(`/api/tasks/${taskId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(modifiedTasks[taskIndex]),
-        })
-        .then((response) => response.json())
-        .then((data) => {
-            const taskIndex = tasksState.findIndex(task => task.id === data.id);
-            const tasksCopy = [...tasksState];
-            modifiedTasks[taskIndex] = data;
-            
-            setTasksState(tasksCopy);
-        });
+        const modifiedTask = {...tasks.find(task => task.id === taskId), completed: isCompleted};
+        console.log("modifiedTask", modifiedTask);
+        updateTaskMutation.mutate(modifiedTask);
     }
 
     function onModalClosed() {
@@ -139,26 +106,26 @@ export default function TaskList({tasks, categories, user}) {
                         />
                         <FilteringMenu 
                             categories={categories}
-                            activeCategoriesState={[activeCategories, setActiveCategories]}
                             userSettings={userSettings}
                             user={user}
                         />
                     </div>
                 </div>
                 <List 
-                    tasks={tasksState} 
-                    categories={categoriesState}
-                    activeCategories={activeCategories}
+                    tasks={tasks} 
+                    categories={categories}
                     selectedTaskSetter={setSelectedTask} 
                     modalStateSetter={setOpenedTaskEditor}
                     onCompletionStateChanged={onCompletionStateChanged}
                     sortingMethod={sortingMethod}
                     userSettings={userSettings}
-                    isFetching={isFetchingUserSettings}
+                    isFetchingUserSettings={isFetchingUserSettings}
+                    isFetchingTasks={isFetchingTasks}
+                    isFetchingCategories={isFetchingCategories}
                 />
                 <TaskEditorDialogue 
-                    tasks={tasksState} 
-                    categories={categoriesState}
+                    tasks={tasks} 
+                    categories={categories}
                     modalState={[openedTaskEditor, setOpenedTaskEditor]} 
                     selectedTask={selectedTask}
                     selectedTaskSetter={setSelectedTask}
@@ -167,21 +134,6 @@ export default function TaskList({tasks, categories, user}) {
                     onModalClosed={onModalClosed}
                 />
                 <AddTaskButton modalStateSetter={setOpenedTaskEditor}/>
-            </div>
-            <div className="">
-                {splitScreenOpen 
-                    ? 
-                        <>
-                            <button 
-                            className="fixed right-2/4 bottom-2/4 hover:bg-cyan-700 bg-cyan-500 rounded-lg p-4"
-                            onClick={() => setSplitScreenOpen(false)}
-                            >Test</button>
-                            <TextEditorSplitScreen className="flex-1"/> 
-                        </>
-                    : <button 
-                        className="fixed right-2/4 bottom-5 hover:bg-cyan-700 bg-cyan-500 rounded-lg p-4"
-                        onClick={() => setSplitScreenOpen(true)}
-                        >Test</button>}
             </div>
         </div>
     )

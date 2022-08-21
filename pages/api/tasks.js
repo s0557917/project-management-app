@@ -3,7 +3,7 @@ import prisma from '../../utils/prisma';
 
 export default async function handler(req, res) {
     const session = await getSession({ req });
-    if(req.method === 'POST'){
+    if(req.method === 'POST' && session){
         try{         
             const taskData = {
                 owner: { connect: { email: session?.user?.email } },
@@ -28,6 +28,17 @@ export default async function handler(req, res) {
             });
     
             res.status(201).json(task);
+        } catch (e) {
+            res.status(500).json({error: e});
+        }
+    } else if(req.method === 'GET' && session){
+        try {
+            const tasks = await prisma.task.findMany({
+                where: {
+                    owner: { email: session?.user?.email },
+                },
+            });
+            res.status(200).json(tasks);
         } catch (e) {
             res.status(500).json({error: e});
         }
