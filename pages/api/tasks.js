@@ -21,8 +21,6 @@ export default async function handler(req, res) {
                 subtasks: req.body.subtasks,
             }
 
-            console.log("TaskData: ", taskData, "TaskId: ", req.query.id);
-
             const task = await prisma.task.create({
                 data: taskData
             });

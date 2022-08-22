@@ -118,7 +118,7 @@ export default function List({ tasks, categories, modalStateSetter, selectedTask
   return (
     <div className="w-11/12">
       {isFetchingTasks === true
-      ? console.log("Loading tasks...")
+      ? <></>
       : <ul>
           {listContent}
         </ul>

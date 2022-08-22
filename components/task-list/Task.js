@@ -3,7 +3,7 @@ import IconInformation from "../task-editor-dialogue/IconInformation";
 
 export default function Task({ taskData, onTaskClicked, onCompletionStateChanged, category }) {
     return(
-        <div className="flex items-center active:scale-95 transition-all">
+        <div className="flex items-center">
             <div>
                 <button 
                     className={`rounded-full w-10 h-10 m-3 ${taskData.completed ? "bg-green-500 hover:bg-green-300 hover:border-white hover:border-2" : "bg-red-600 hover:bg-red-400 hover:border-white hover:border-2"}`}

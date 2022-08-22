@@ -16,6 +16,15 @@ export const getAllCategories = async () => {
     return res.json();
 }
 
+export const addNewCategory = async (newCategory) => {
+    const res = await fetch(`/api/categories`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newCategory),
+    });
+    return res.json();
+}
+
 export const updateCategory = async (modifiedCategory) => {
     const res = await fetch(`/api/categories/${modifiedCategory.id}`, {
         method: 'PUT',

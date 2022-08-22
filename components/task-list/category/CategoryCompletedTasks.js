@@ -9,8 +9,8 @@ export default function CategoryCompletedTasks({tasks, onTaskClicked, onCompleti
     return (
         <>
             {active &&
-                <CategoryContainer title={"Completed"}>
-                    <div>
+                <div className="rounded-md bg-zinc-800">
+                    <CategoryContainer title={"Completed"}>
                         {tasks?.map(task => {
                             return <Task 
                                 taskData={task} 
@@ -20,8 +20,8 @@ export default function CategoryCompletedTasks({tasks, onTaskClicked, onCompleti
                                 key={task.id}
                             />
                         })}
-                    </div>
-                </CategoryContainer>
+                    </CategoryContainer>
+                </div>
             }
         </>
     )

@@ -8,7 +8,7 @@ export default function CategoryFilter ({category, circleSize, onCategoryStatusC
 
     return (
         <li 
-            className={`flex items-center justify-between p-2 m-1 bg-zinc-700 rounded-sm cursor-pointer ${textSize}`}
+            className={`flex items-center justify-between p-2 m-1 bg-zinc-700 rounded-sm ${textSize}`}
         >
             <div
                 className="flex items-center grow"

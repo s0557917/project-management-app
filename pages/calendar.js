@@ -109,7 +109,7 @@ export default function Calendar({user}) {
             <Navbar />
             <div className="h-screen p-5">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold underline">Calendar</h1>
+                    <h1 className="text-3xl font-bold">Calendar</h1>
                     <div className="mx-5">
                         <FilteringMenu 
                             categories={categories}

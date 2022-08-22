@@ -105,11 +105,11 @@ export default function TaskList({user}) {
     }
 
     return (
-        <div className={`relative h-screen flex flex-col flex-1 scroll overflow-scroll`}>
+        <div className={`relative w-screen h-screen flex flex-col flex-1 scroll overflow-scroll `}>
             <Navbar /> 
             <div className="h-full p-5">       
                 <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold underline">Task List</h1>
+                    <h1 className="text-3xl font-bold">Task List</h1>
                     <div className="mx-5">
                         <SortingMenu 
                             sortingMethodSetter={setSortingMethod}

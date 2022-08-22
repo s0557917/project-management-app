@@ -5,7 +5,7 @@ import { useState } from "react"
 export default function Category({tasks, onTaskClicked, onCompletionStateChanged, category, title, active}) {
     
     return (
-        <>
+        <div className="rounded-md bg-zinc-800">
             {active &&
                 <CategoryContainer 
                     title={title}
@@ -27,6 +27,6 @@ export default function Category({tasks, onTaskClicked, onCompletionStateChanged
                     </div>
                 </CategoryContainer>
             }
-        </>
+        </div>
     )
 }
