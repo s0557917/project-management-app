@@ -28,15 +28,14 @@ export const languageDef = {
       { include: "@strings" },
       { include: "@tags" },
       [/^@\w+/, { cases: { "@keywords": "keyword" } }],
-      [/(\\p1)(?=[\s\S]*\\t)/gm, "p1"],
+      [/\\p1/g, "p1"],
       [/\\p2/g, "p2"],
       [/\\p3/g, "p3"],
       [/\\p4/g, "p4"],
       [/\\p5/g, "p5"],
-      [/\\t(?!oday|omorrow)/g, "t"],
       [/\\today/g, "today"],
       [/\\tomorrow/g, "tomorrow"],
-      
+      [/\\t\s/g, "t"],
     ],
     whitespace: [
       // [comment, "comment"],
@@ -68,6 +67,6 @@ export const configuration = {
     lineComment: "#",
   },
   brackets: [
-    ["{", "}"], ["[", "]"], ["(", ")"], ["\\t", "\\t"]
+    ["{", "}"], ["[", "]"], ["(", ")"], ["\\t", "\\t "]
   ],
 }

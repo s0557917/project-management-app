@@ -6,7 +6,7 @@ export default function SortingMenu ({ sortingMethodSetter }) {
     return (
         <Menu shadow="md" width={200}>
             <Menu.Target>
-                <button>
+                <button className='hover:scale-110 active:scale-90 transition-all'>
                     <FunnelSimple size={32} color="cyan" weight="fill" /> 
                 </button>
             </Menu.Target>

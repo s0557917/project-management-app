@@ -12,7 +12,7 @@ export default function SubtaskDialogue({ tasks, categories, onSubtaskClicked, o
         <Menu shadow="md" width={200} position="top" opened={opened} onChange={setOpened}>
             <Menu.Target>
                 <button 
-                    className='text-xl hover:bg-blue-700 bg-cyan-500 text-white rounded-full w-8 h-8' 
+                    className='text-xl hover:bg-blue-700 bg-cyan-500 text-white rounded-full w-8 h-8 hover:scale-105 active:scale-95 transition-all' 
                     onClick={() => console.log("CLICKED ADD NEW TASK")}
                 >
                     +

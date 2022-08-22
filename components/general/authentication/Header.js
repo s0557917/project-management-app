@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { signOut, useSession } from 'next-auth/react';
 import { useQuery } from '@tanstack/react-query'
-import { getUserSettings } from '../../../utils/db/settings';
+import { getUserSettings } from '../../../utils/db/queryFunctions/settings';
 
 const Header = ({}) => {
   const {data: userSettings, isLoading, isError} = useQuery(['settings'], getUserSettings);

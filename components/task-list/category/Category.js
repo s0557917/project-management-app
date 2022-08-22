@@ -20,7 +20,7 @@ export default function Category({tasks, onTaskClicked, onCompletionStateChanged
                                     taskData={task} 
                                     onTaskClicked={onTaskClicked} 
                                     onCompletionStateChanged={onCompletionStateChanged}
-                                    category={(category.id === task.category)?.name || '' } 
+                                    category={category.name || ''} 
                                     key={task.id}
                                 />
                             }

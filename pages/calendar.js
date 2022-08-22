@@ -115,12 +115,10 @@ export default function Calendar({user}) {
                             categories={categories}
                             userSettings={userSettings}
                             user={user}
-                            displayFilters={false}
                         />
                     </div>
                 </div>
 
-                {console.log("FETCHING: ", isFetchingCategories, isFetchingTasks, isFetchingUserSettings)}
                 <EventCalendar 
                     tasks={tasks}
                     categories={categories}

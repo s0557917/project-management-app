@@ -7,7 +7,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateUserSettings } from '../../../../utils/db/queryFunctions/settings'; 
 import { updateCategory } from '../../../../utils/db/queryFunctions/categories';
 
-export default function FilteringMenu ({categories, userSettings, user, displayFilters}) {
+export default function FilteringMenu ({categories, userSettings, user}) {
     
     console.log("userSettings", userSettings);
     const queryClient = useQueryClient();
@@ -50,7 +50,10 @@ export default function FilteringMenu ({categories, userSettings, user, displayF
     return (
         <Menu shadow="md" width={200}>
             <Menu.Target>
-                <button onClick={() => console.log("TEST")}>
+                <button 
+                    className='hover:scale-110 active:scale-90 transition-all' 
+                    onClick={() => console.log("TEST")}
+                >
                     <Tag size={32} color="cyan" weight="fill" />
                 </button>
             </Menu.Target>
@@ -73,8 +76,7 @@ export default function FilteringMenu ({categories, userSettings, user, displayF
                                 />
                             )
                         }
-                        {   displayFilters &&
-                            userSettings?.filters
+                        {userSettings?.filters
                             ?.sort((a, b) => a.name.localeCompare(b.name))
                             ?.map((displaySetting) => {
                                 return (

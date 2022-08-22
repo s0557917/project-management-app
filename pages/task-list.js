@@ -118,7 +118,6 @@ export default function TaskList({user}) {
                             categories={categories}
                             userSettings={userSettings}
                             user={user}
-                            displayFilters={true}
                         />
                     </div>
                 </div>

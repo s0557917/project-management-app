@@ -2,7 +2,6 @@ import Category from "./category/Category";
 import CategoryCompletedTasks from "./category/CategoryCompletedTasks";
 import { useState, useEffect } from "react";
 import Task from "./Task";
-import { ScrollArea, Loader } from "@mantine/core";
 
 export default function List({ tasks, categories, modalStateSetter, selectedTaskSetter, onCompletionStateChanged, sortingMethod, userSettings, isFetchingUserSettings, isFetchingTasks, isFetchingCategories }) {
   
@@ -13,12 +12,13 @@ export default function List({ tasks, categories, modalStateSetter, selectedTask
   }, [sortingMethod, isFetchingUserSettings, tasks, categories, isFetchingTasks, isFetchingCategories]);
 
   function generateListElements(){
+
     switch(sortingMethod){
       case 'category':
         return <>
           {generateCategories()}
-          {buildUncategorizedSection()}
           {buildCompletedSection()}
+          {buildUncategorizedSection()}
         </>
       case 'date':
         return <>{generateDateSortedList()}</>;
@@ -63,14 +63,15 @@ export default function List({ tasks, categories, modalStateSetter, selectedTask
     return categories
     ?.sort((a, b) => a.name.localeCompare(b.name))
     ?.map(category => {
-
+      
       let tasksInCategory = tasks
       ?.sort((a, b) => a.title.localeCompare(b.title))
-      ?.filter(task => task.categoryId === category.id);  
+      ?.filter(task => task.categoryId === category.id && !task.completed);  
 
       return <Category
         key={category.id}
         tasks={tasksInCategory}
+        categories={categories}
         onTaskClicked={onTaskClicked}
         onCompletionStateChanged={onCompletionStateChanged}
         category={category}
@@ -87,6 +88,7 @@ export default function List({ tasks, categories, modalStateSetter, selectedTask
     return <Category
       key={'uncategorized'}
       tasks={uncategorizedTasks}
+      categories={categories}
       onTaskClicked={onTaskClicked}
       onCompletionStateChanged={onCompletionStateChanged}
       category={''}

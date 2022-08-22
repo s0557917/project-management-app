@@ -3,6 +3,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from "@fullcalendar/interaction";
 import { useState, useEffect } from 'react';
+import { hexToHSL, HSLToHex } from '../../utils/color/colorConvertion';
 
 export default function EventCalendar({tasks, categories, dateClickCallback, taskClickCallback, taskDroppedCallback, userSettings, isFetchingUserSettings, isFetchingTasks, isFetchingCategories}) {
   
@@ -12,28 +13,35 @@ export default function EventCalendar({tasks, categories, dateClickCallback, tas
     setEventSource(mapEvents);
   }, [tasks, userSettings, categories, isFetchingUserSettings, isFetchingTasks, isFetchingCategories]);
 
+  function showCompletedTasks(task) {
+    return !task.completed || userSettings?.filters?.find(filter => filter.name === 'Completed')?.value;
+  }
+
+  function hasDueDate(event) {
+    return event.dueDate !== null 
+      && event.dueDate !== undefined 
+      && event.dueDate != '';
+  }
+
+  function isCategoryPresentAndActive(event) {
+    return event.categoryId !== null 
+      && event.categoryId !== undefined 
+      && event.categoryId !== '' 
+      && categories?.find(category => category.id === event.categoryId)?.active
+  }
+
+  function isCategoryNotPresentAndUncategorizedVisible(event) {
+    return (event.categoryId === null
+      || event.categoryId === undefined
+      || event.categoryId === ''
+    ) && userSettings?.filters?.find(setting => setting.name === 'Uncategorized')?.value
+  } 
+
   function mapEvents(){
-    const filteredEvents = tasks?.filter(event => 
-      (event.dueDate !== null && event.dueDate !== undefined && event.dueDate != '') 
-      && 
-      (
-        (
-          event.categoryId !== null 
-          && event.categoryId !== undefined 
-          && event.categoryId !== '' 
-          && categories?.find(category => category.id === event.categoryId)?.active
-          ) 
-        || 
-        (
-          (
-            event.categoryId === null
-            || event.categoryId === undefined
-            || event.categoryId === ''
-          )
-          && userSettings?.filters?.find(setting => setting.label === 'Uncategorized')?.value
-        )
-      )      
-    )
+    const filteredEvents = tasks?.filter(event => ( hasDueDate(event) 
+      && showCompletedTasks(event) 
+      && (isCategoryPresentAndActive(event) || isCategoryNotPresentAndUncategorizedVisible(event)))     
+    );
     const mappedEvents = filteredEvents?.map(event => {
       const startTime = event.start !== '' && event.start !== null 
         ? new Date(event.start)
@@ -41,15 +49,15 @@ export default function EventCalendar({tasks, categories, dateClickCallback, tas
       const endTime = event.end !== '' && event.end !== null 
         ? new Date(event.end) 
         : null;
-      const categoryColor = categories?.find(category => category.id === event.categoryId)?.color || "#a39d9d";
-      
+      const categoryColor =  categories?.find(category => category.id === event.categoryId)?.color || "#a39d9d";
+
       return {
         id: event.id,
         title: event.title,
         allDay: (event.start === '' || event.start === null) && (event.end === '' || event.end === null),
         start: startTime,
         end: endTime,
-        color: categoryColor
+        color: categoryColor,
       }
     });
     return mappedEvents;
