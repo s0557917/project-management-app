@@ -4,8 +4,6 @@ import { useState } from "react"
 
 export default function Category({tasks, onTaskClicked, onCompletionStateChanged, category, title, active}) {
     
-    const [categoryTasks, setCategoryTasks] = useState(tasks);
-
     return (
         <>
             {active &&
@@ -14,7 +12,7 @@ export default function Category({tasks, onTaskClicked, onCompletionStateChanged
                     color={category.color}
                 >
                     <div>
-                        { categoryTasks?.map(task => {
+                        { tasks?.map(task => {
                             if(!task.completed) {
                                 return <Task 
                                     taskData={task} 

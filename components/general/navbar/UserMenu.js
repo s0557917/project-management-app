@@ -50,7 +50,7 @@ export default function UserMenu ({ userSettings, session }) {
     return (
         <Menu shadow="md" width={250}>
             <Menu.Target>
-                <button className="mx-3" onClick={() => console.log("TEST")}>
+                <button className="mx-3 hover:scale-105 transition-all active:scale-95" onClick={() => console.log("TEST")}>
                     <UserCircle size={60} color="2B2B2B" weight="fill" />
                 </button>
             </Menu.Target>
