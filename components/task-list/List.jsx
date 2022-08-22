@@ -15,25 +15,18 @@ export default function List({ tasks, categories, modalStateSetter, selectedTask
   function generateListElements(){
     switch(sortingMethod){
       case 'category':
-        return generateCategories();
+        return <>
+          {generateCategories()}
+          {buildUncategorizedSection()}
+          {buildCompletedSection()}
+        </>
       case 'date':
-        return generateDateSortedList();
+        return <>{generateDateSortedList()}</>;
       case 'priority':
-        return generatePrioritySortedList();
+        return <>{generatePrioritySortedList()}</>;
       default:
-        return;
+        return <></>;
     }
-  }
-
-  function generateCategories() {
-
-    let categoriesJSX = [];
-    categoriesJSX.push(
-      buildAllCategorySections(),
-      buildUncategorizedSection(),
-      buildCompletedSection()
-    );      
-    return categoriesJSX;
   }
 
   function generateDateSortedList() {
@@ -66,36 +59,29 @@ export default function List({ tasks, categories, modalStateSetter, selectedTask
       );
   }
 
-  function buildAllCategorySections() {
-    let categoriesJSX = [];
-    
-    categories
+  function generateCategories() {  
+    return categories
     ?.sort((a, b) => a.name.localeCompare(b.name))
-    ?.forEach(category => {
-      if(!category.active) 
-        return;
-        
+    ?.map(category => {
+
       let tasksInCategory = tasks
-        ?.sort((a, b) => a.title.localeCompare(b.title))
-        ?.filter(task => task.categoryId === category.id);        
-      categoriesJSX.push(
-        <Category
-          key={category.id}
-          tasks={tasksInCategory}
-          onTaskClicked={onTaskClicked}
-          onCompletionStateChanged={onCompletionStateChanged}
-          category={category}
-          title={category.name}
-        />
-      )
-    })
-    return categoriesJSX; 
+      ?.sort((a, b) => a.title.localeCompare(b.title))
+      ?.filter(task => task.categoryId === category.id);  
+
+      return <Category
+        key={category.id}
+        tasks={tasksInCategory}
+        onTaskClicked={onTaskClicked}
+        onCompletionStateChanged={onCompletionStateChanged}
+        category={category}
+        title={category.name}
+        active={category.active}
+      />
+    });
   }
 
   function buildUncategorizedSection(){
-    if(!userSettings?.filters?.find(setting => setting.name === 'Uncategorized').value){
-      return null;   
-    } 
+    const active = userSettings?.filters?.find(setting => setting.name === 'Uncategorized').value;
 
     let uncategorizedTasks = tasks?.filter(task => task.categoryId === null || task.category === '');     
     return <Category
@@ -105,20 +91,20 @@ export default function List({ tasks, categories, modalStateSetter, selectedTask
       onCompletionStateChanged={onCompletionStateChanged}
       category={''}
       title={'Uncategorized'}
+      active={active}
     />
   }
 
   function buildCompletedSection(){
-    if(!userSettings?.filters?.find(setting => setting.name === 'Completed').value){
-      return null;   
-    } 
-
+    const active = userSettings?.filters?.find(setting => setting.name === 'Completed').value;
     let completedTasks = tasks?.filter(task => task.completed);     
+    
     return <CategoryCompletedTasks
       key={'completed'}
       tasks={completedTasks}
       onTaskClicked={onTaskClicked}
       onCompletionStateChanged={onCompletionStateChanged}
+      active={active}
     />
   }
 

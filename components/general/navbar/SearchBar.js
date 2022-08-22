@@ -1,7 +1,7 @@
 import { TextInput, Menu } from '@mantine/core';
 import { MagnifyingGlass } from "phosphor-react";
 import useDebounce from '../../../utils/hooks/useDebounce';
-import { getSearchResults } from '../../../utils/db/search.js';
+import { getSearchResults } from '../../../utils/db/queryFunctions/search';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 

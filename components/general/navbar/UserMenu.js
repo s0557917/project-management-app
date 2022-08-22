@@ -2,7 +2,7 @@ import { Menu, NativeSelect } from "@mantine/core";
 import { UserCircle } from "phosphor-react";
 import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateUserSettings } from "../../../utils/db/settings";
+import { updateUserSettings } from "../../../utils/db/queryFunctions/settings";
 
 export default function UserMenu ({ userSettings, session }) {
     const queryClient = useQueryClient();
@@ -25,7 +25,7 @@ export default function UserMenu ({ userSettings, session }) {
     }, [userSettings, session])
 
     const userSettingsMutation = useMutation(
-        (updatedUserSettings) => updateUserSettings('USER MENU'),
+        (updatedUserSettings) => updateUserSettings(updatedUserSettings),
         {onSuccess: async () => {
             queryClient.invalidateQueries('settings');
         }}

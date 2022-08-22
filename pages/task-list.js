@@ -5,12 +5,12 @@ import List from "../components/task-list/List";
 import { getSession } from 'next-auth/react';
 import prisma from "../utils/prisma";
 import { useState } from 'react';
-import SortingMenu from "../components/task-list/filtering-and-sorting/SortingMenu";
-import FilteringMenu from "../components/task-list/filtering-and-sorting/FilteringMenu";
+import SortingMenu from "../components/general/menus/filtering-and-sorting/SortingMenu";
+import FilteringMenu from "../components/general/menus/filtering-and-sorting/FilteringMenu";
 import { dehydrate, QueryClient, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getUserSettings } from "../utils/db/settings";
-import { prismaGetAllTasks, getAllTasks, addNewTask, updateTask } from "../utils/db/tasks";
-import { getAllCategories, prismaGetAllCategories } from "../utils/db/categories";
+import { getUserSettings } from "../utils/db/queryFunctions/settings";
+import { prismaGetAllTasks, getAllTasks, addNewTask, updateTask } from "../utils/db/queryFunctions/tasks";
+import { getAllCategories, prismaGetAllCategories } from "../utils/db/queryFunctions/categories";
 
 export async function getServerSideProps({req, res}) {
     const session = await getSession({ req });
@@ -26,6 +26,7 @@ export async function getServerSideProps({req, res}) {
   
     const queryClient = new QueryClient();
     await queryClient.prefetchQuery(['tasks'], prismaGetAllTasks(session.user.email));
+    await queryClient.prefetchQuery(['categories'], prismaGetAllCategories(session.user.email));
     await queryClient.prefetchQuery(['settings'], prismaGetAllCategories(session.user.email));
   
     const user = await prisma.user.findUnique({
@@ -43,12 +44,13 @@ export async function getServerSideProps({req, res}) {
 }
 
 export default function TaskList({user}) {
+    
+    const queryClient = useQueryClient();
 
     const {data: userSettings, isFetching: isFetchingUserSettings} = useQuery(['settings'], getUserSettings);
     const {data: tasks, isFetching: isFetchingTasks} = useQuery(['tasks'], getAllTasks);
     const {data: categories, isFetching: isFetchingCategories} = useQuery(['categories'], getAllCategories);
 
-    const queryClient = useQueryClient();
 
     const newTaskMutation = useMutation(
         (newTask) => addNewTask(newTask),
@@ -116,6 +118,7 @@ export default function TaskList({user}) {
                             categories={categories}
                             userSettings={userSettings}
                             user={user}
+                            displayFilters={true}
                         />
                     </div>
                 </div>

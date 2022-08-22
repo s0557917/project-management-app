@@ -7,13 +7,12 @@ export const getUserSettings = async () => {
 }
 
 export const updateUserSettings = async (modifiedUserSettings) => {
-    console.log("MODIFIED USER SETTINGS: ", modifiedUserSettings);
     if(modifiedUserSettings && modifiedUserSettings.theme && modifiedUserSettings.filters && modifiedUserSettings.defaultView) {
-        // const res = await fetch(`/api/settings`, {
-        //     method: 'PUT',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(modifiedUserSettings),
-        // })
-        // return res.json();
+        const res = await fetch(`/api/settings`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(modifiedUserSettings),
+        })
+        return res.json();
     }
 }

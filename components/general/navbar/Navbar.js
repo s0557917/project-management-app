@@ -1,11 +1,11 @@
 import Tabbing from "./Tabbing";
 import { StatsRing } from "./StatsRing";
-import UserMenu from "../authentication/UserMenu";
+import UserMenu from "./UserMenu";
 import { useQuery } from "@tanstack/react-query";
-import { getUserSettings } from "../../../utils/db/settings";
+import { getUserSettings } from "../../../utils/db/queryFunctions/settings";
 import { useSession } from "next-auth/react";
 import SearchBar from "./Searchbar";
-import { getAllTasks } from "../../../utils/db/tasks";
+import { getAllTasks } from "../../../utils/db/queryFunctions/tasks";
 
 export default function Navbar(){
 

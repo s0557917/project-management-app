@@ -1,125 +1,103 @@
-import FilteringMenu from "../components/task-list/filtering-and-sorting/FilteringMenu";
+import FilteringMenu from "../components/general/menus/filtering-and-sorting/FilteringMenu";
 import TaskEditorDialogue from "../components/task-editor-dialogue/TaskEditorDialogue";
-import SortingMenu from "../components/task-list/filtering-and-sorting/SortingMenu";
+import SortingMenu from "../components/general/menus/filtering-and-sorting/SortingMenu";
 import EventCalendar from "../components/calendar/EventCalendar"
 import Navbar from '../components/general/navbar/Navbar';
 import { getSession } from 'next-auth/react';
-import prisma from "../utils/prisma";
 import { useState } from "react";
+import { dehydrate, QueryClient, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getUserSettings } from "../utils/db/queryFunctions/settings";
+import { prismaGetAllTasks, getAllTasks, addNewTask, updateTask } from "../utils/db/queryFunctions/tasks";
+import { getAllCategories, prismaGetAllCategories } from "../utils/db/queryFunctions/categories";
+import prisma from "../utils/prisma";
 
 export async function getServerSideProps({req, res}) {
     const session = await getSession({ req });
     if (!session) {
         res.statusCode = 403;
         return { 
-              redirect: {
-                  destination: '/',
-                  permanent: false,
-              },
-          };
-      }
+            redirect: {
+                destination: '/',
+                permanent: false,
+            },
+        };
+    }
   
-    const tasks = await prisma.task.findMany({
+    const queryClient = new QueryClient();
+
+    await queryClient.prefetchQuery(['tasks'], prismaGetAllTasks(session.user.email));
+    await queryClient.prefetchQuery(['categories'], prismaGetAllCategories(session.user.email));
+    await queryClient.prefetchQuery(['settings'], prismaGetAllCategories(session.user.email));
+
+    const user = await prisma.user.findUnique({
         where: {
-            owner: { email: session.user.email },
-        },
-    });
-    const categories = await prisma.category.findMany({
-        where: {
-            owner: { email: session.user.email },
+            email: session.user.email,
         },
     });
 
     return {
         props: {
-            tasks: JSON.parse(JSON.stringify(tasks)),
-            categories: JSON.parse(JSON.stringify(categories))
+            dehydratedState: dehydrate(queryClient),
+            user: JSON.parse(JSON.stringify(user)),
         },
     }
 }
 
-export default function Calendar({tasks, categories}) {
+export default function Calendar({user}) {
 
-    const [tasksState, setTasksState] = useState(tasks);
-    const [categoriesState, setCategoriesState] = useState(categories);
+    const queryClient = useQueryClient();
+
+    const {data: userSettings, isFetching: isFetchingUserSettings} = useQuery(['settings'], getUserSettings);
+    const {data: tasks, isFetching: isFetchingTasks} = useQuery(['tasks'], getAllTasks);
+    const {data: categories, isFetching: isFetchingCategories} = useQuery(['categories'], getAllCategories);
+
     const [selectedTask, setSelectedTask] = useState({});
-    const [opened, setOpened] = useState(false);
-
+    const [openedTaskEditor, setOpenedTaskEditor] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
 
-    const [activeCategories, setActiveCategories] = useState(
-        categories.map(category => { 
-            return {
-                id: category.id, 
-                active: category.active
-            }
-        })
-    );
-    const [displaySettings, setDisplaySettings] = useState([
+    const newTaskMutation = useMutation(
+        (newTask) => addNewTask(newTask),
         {
-            setting: "displayUncategorized",
-            label: "Uncategorized",
-            value: false
+            onSuccess: async () => {
+                queryClient.invalidateQueries('tasks');
+            }
         }
-    ]);
+    );
+
+    const updateTaskMutation = useMutation(
+        (updatedTask) => updateTask(updatedTask),
+        {onSuccess: async () => {
+            queryClient.invalidateQueries('tasks');
+        }}
+    )
 
     async function onNewTaskSaved(taskData) {
-        await fetch('/api/tasks', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(taskData),
-        })
-            .then((response) => response.json())
-            .then((data) => setTasksState([...tasksState, data]));
+        newTaskMutation.mutate(taskData);
 
-        setOpened(false);
+        setOpenedTaskEditor(false);
         setSelectedTask({});
     }
 
     async function onEditedTaskSaved(taskData, taskId){
-        await fetch(`/api/tasks/${taskId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(taskData),
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                const taskIndex = tasksState.findIndex(task => task.id === data.id);
-                const tasksCopy = [...tasksState];
-                tasksCopy[taskIndex] = data;
-                
-                setTasksState(tasksCopy);
-            });
+        const modifiedTask = {...taskData, id: taskId};
+        updateTaskMutation.mutate(modifiedTask);
             
-        setOpened(false);
+        setOpenedTaskEditor(false);
         setSelectedTask({});
     }
 
     function onDateClicked(date){
         setSelectedDate(new Date(date));
-        setOpened(true);
+        setOpenedTaskEditor(true);
     }
 
     function onTaskClicked(task){
-        console.log("TASK CLICKED: ", task);
         setSelectedTask(task);
-        setOpened(true);
+        setOpenedTaskEditor(true);
     }
 
     async function onTaskDropped(modifiedDroppedTask){
-        await fetch(`/api/tasks/${modifiedDroppedTask.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(modifiedDroppedTask),
-        })
-        .then((response) => response.json())
-        .then((data) => {
-            const taskIndex = tasksState.findIndex(task => task.id === data.id);
-            const tasksCopy = [...tasksState];
-            tasksCopy[taskIndex] = data;
-            
-            setTasksState(tasksCopy);
-        });
+        updateTaskMutation.mutate(modifiedDroppedTask);
     }
 
     function onModalClosed() {
@@ -135,26 +113,30 @@ export default function Calendar({tasks, categories}) {
                     <div className="mx-5">
                         <FilteringMenu 
                             categories={categories}
-                            activeCategoriesState={[activeCategories, setActiveCategories]}
-                            displaySettingsState={[displaySettings, setDisplaySettings]}
+                            userSettings={userSettings}
+                            user={user}
+                            displayFilters={false}
                         />
                     </div>
                 </div>
 
+                {console.log("FETCHING: ", isFetchingCategories, isFetchingTasks, isFetchingUserSettings)}
                 <EventCalendar 
-                    tasks={tasksState}
+                    tasks={tasks}
                     categories={categories}
                     dateClickCallback={onDateClicked}
                     taskClickCallback={onTaskClicked}
                     taskDroppedCallback={onTaskDropped}
-                    activeCategories={activeCategories}
-                    displaySettings={displaySettings}
+                    userSettings={userSettings}
+                    isFetchingUserSettings={isFetchingUserSettings}
+                    isFetchingTasks={isFetchingTasks}
+                    isFetchingCategories={isFetchingCategories}
                 />
 
                 <TaskEditorDialogue 
-                    tasks={tasksState} 
+                    tasks={tasks} 
                     categories={categories}
-                    modalState={[opened, setOpened]} 
+                    modalState={[openedTaskEditor, setOpenedTaskEditor]} 
                     selectedTask={selectedTask}
                     selectedTaskSetter={setSelectedTask}
                     saveEditedTaskCallback={onEditedTaskSaved}

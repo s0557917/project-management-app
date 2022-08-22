@@ -4,13 +4,13 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from "@fullcalendar/interaction";
 import { useState, useEffect } from 'react';
 
-export default function EventCalendar({tasks, categories, dateClickCallback, taskClickCallback, taskDroppedCallback, activeCategories, displaySettings}) {
-
+export default function EventCalendar({tasks, categories, dateClickCallback, taskClickCallback, taskDroppedCallback, userSettings, isFetchingUserSettings, isFetchingTasks, isFetchingCategories}) {
+  
   const [eventSource, setEventSource] = useState(mapEvents)
 
   useEffect(() => {
-    setEventSource(mapEvents)
-  }, [tasks, activeCategories, displaySettings, categories]);
+    setEventSource(mapEvents);
+  }, [tasks, userSettings, categories, isFetchingUserSettings, isFetchingTasks, isFetchingCategories]);
 
   function mapEvents(){
     const filteredEvents = tasks?.filter(event => 
@@ -21,7 +21,7 @@ export default function EventCalendar({tasks, categories, dateClickCallback, tas
           event.categoryId !== null 
           && event.categoryId !== undefined 
           && event.categoryId !== '' 
-          && activeCategories?.find(activeCategory => activeCategory.id === event.categoryId)?.active
+          && categories?.find(category => category.id === event.categoryId)?.active
           ) 
         || 
         (
@@ -30,11 +30,11 @@ export default function EventCalendar({tasks, categories, dateClickCallback, tas
             || event.categoryId === undefined
             || event.categoryId === ''
           )
-          && displaySettings.find(setting => setting.label === 'Uncategorized')?.value
+          && userSettings?.filters?.find(setting => setting.label === 'Uncategorized')?.value
         )
       )      
     )
-    const mappedEvents = filteredEvents.map(event => {
+    const mappedEvents = filteredEvents?.map(event => {
       const startTime = event.start !== '' && event.start !== null 
         ? new Date(event.start)
         : new Date(event.dueDate);
