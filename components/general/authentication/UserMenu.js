@@ -25,36 +25,18 @@ export default function UserMenu ({ userSettings, session }) {
     }, [userSettings, session])
 
     const userSettingsMutation = useMutation(
-        (updatedUserSettings) => updateUserSettings(updatedUserSettings),
+        (updatedUserSettings) => updateUserSettings('USER MENU'),
         {onSuccess: async () => {
             queryClient.invalidateQueries('settings');
         }}
     );
 
-    useEffect(() => {
-        console.log("THEME: ", themePreference, "DEFAULT VIEW: ", defaultView);
-        const modifiedSettings = {...userSettings, theme: themePreference, defaultView: defaultView};
-        console.log("Modified settings: " + JSON.stringify(modifiedSettings));
-        userSettingsMutation.mutate(modifiedSettings);        
-
-        // async function updateSettings() {
-        //     await fetch(`/api/settings`, {
-        //         method: 'PUT',
-        //         headers: { 'Content-Type': 'application/json' },
-        //         body: JSON.stringify(modifiedSettings),
-        //     })
-        //     .then((response) => response.json())
-        //     .then((data) => {
-        //         console.log("User settings updated: ", data);
-        //         setUserSettings(data.settings);
-        //     });
-        //     setUpdateSettingsPending(false);
-        // }
-
-        // if(updateSettingsPending) {
-        //     updateSettings();
-        // }
-    }, [themePreference, defaultView]);
+    function onInputChange() {
+        if(themePreference != '' && defaultView != '' && userSettings.filters.length > 0) {
+            const modifiedSettings = {...userSettings, theme: themePreference, defaultView: defaultView};
+            userSettingsMutation.mutate(modifiedSettings);    
+        }
+    }
 
     function capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
@@ -92,7 +74,7 @@ export default function UserMenu ({ userSettings, session }) {
                         value={themePreference}
                         onChange={(event) => {
                             setThemePreference(uncapitalizeFirstLetter(event.target.value));
-                            // setUpdateSettingsPending(true);
+                            onInputChange();
                         }}
                         data={[
                             { value: 'dark', label: 'Dark' },
@@ -106,7 +88,7 @@ export default function UserMenu ({ userSettings, session }) {
                         value={defaultView}
                         onChange={(event) => {
                             setDefaultView(uncapitalizeFirstLetter(event.target.value));
-                            // setUpdateSettingsPending(true);
+                            onInputChange();
                         }}
                         data={[
                             { value: 'task-list', label: 'Task List' },

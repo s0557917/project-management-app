@@ -69,11 +69,15 @@ export default function List({ tasks, categories, modalStateSetter, selectedTask
   function buildAllCategorySections() {
     let categoriesJSX = [];
     
-    categories?.forEach(category => {
+    categories
+    ?.sort((a, b) => a.name.localeCompare(b.name))
+    ?.forEach(category => {
       if(!category.active) 
         return;
         
-      let tasksInCategory = tasks?.filter(task => task.categoryId === category.id);        
+      let tasksInCategory = tasks
+        ?.sort((a, b) => a.title.localeCompare(b.title))
+        ?.filter(task => task.categoryId === category.id);        
       categoriesJSX.push(
         <Category
           key={category.id}
@@ -127,13 +131,9 @@ export default function List({ tasks, categories, modalStateSetter, selectedTask
     <div className="w-11/12">
       {isFetchingTasks === true
       ? console.log("Loading tasks...")
-      : <ScrollArea
-          offsetScrollbars={true}
-          style={{ height: 600 }} 
-          type="auto"
-        >
+      : <ul>
           {listContent}
-        </ScrollArea>
+        </ul>
       }
     </div>
   )

@@ -1,10 +1,17 @@
 import { getSession } from 'next-auth/react';
 import prisma from '../../../utils/prisma';
 
+//TODO ENSURE NO WRONG SETTINGS ARE STORED
 export default async function handler(req, res) {
     const session = await getSession({ req });
     if(req.method === 'PUT' && session){
         try{
+            const updatedSettings = {
+                theme: req.body.theme || 'dark',
+                filters: req.body.filters || [[{name: Uncategorized,value: true},{name: Completed,value: true}]],
+                defaultView: req.body.defaultView || 'task-list',
+            }
+
             const category = await prisma.user.update({
                 where: { email: session.user.email },
                 data: {
@@ -13,7 +20,7 @@ export default async function handler(req, res) {
                     email_verified: undefined,
                     password: undefined,
                     image: undefined,
-                    settings: req.body,
+                    settings: updatedSettings,
                 }
             });
 

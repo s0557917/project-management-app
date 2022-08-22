@@ -7,15 +7,16 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateUserSettings } from '../../../utils/db/settings';
 import { updateCategory } from '../../../utils/db/categories';
 
-export default function FilteringMenu ({categories, activeCategoriesState, userSettings, user}) {
+export default function FilteringMenu ({categories, userSettings, user}) {
     
+    console.log("userSettings", userSettings);
     const queryClient = useQueryClient();
     
     const [opened, setOpened] = useState(false);
     const [newCategoryTitle, setNewCategoryTitle] = useState('');
     
     const settingsMutation = useMutation(
-        (updatedUserSettings) => updateUserSettings(updatedUserSettings),
+        (updatedUserSettings) => updateUserSettings('FILTERING MENU'),
         {onSuccess: async () => {
             queryClient.invalidateQueries('settings');
         }}
@@ -59,7 +60,9 @@ export default function FilteringMenu ({categories, activeCategoriesState, userS
                 <ScrollArea style={{ height:100 }} offsetScrollbars>
                     <ul>
                         {
-                            categories?.map((category) =>
+                            categories
+                            ?.sort((a, b) => a.name.localeCompare(b.name))
+                            ?.map((category) =>
                                 <CategoryFilter 
                                     key={category.id}
                                     category={category}
@@ -71,7 +74,9 @@ export default function FilteringMenu ({categories, activeCategoriesState, userS
                             )
                         }
                         {
-                            userSettings?.filters?.map((displaySetting) => {
+                            userSettings?.filters
+                            ?.sort((a, b) => a.name.localeCompare(b.name))
+                            ?.map((displaySetting) => {
                                 return (
                                     <Filter 
                                         key={displaySetting.id}

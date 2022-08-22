@@ -52,9 +52,17 @@ export default function TaskList({user}) {
 
     const newTaskMutation = useMutation(
         (newTask) => addNewTask(newTask),
-        {onSuccess: async () => {
-            queryClient.invalidateQueries('tasks');
-        }}
+        {
+            onMutate: async (newTask) => {
+                console.log("newTask", newTask);
+            },
+            onSuccess: async () => {
+                queryClient.invalidateQueries('tasks');
+            },
+            onSettled: async (data, error, variables, context) => {
+                console.log("settled", data, error, variables, context);
+            }
+        }
     );
 
     const updateTaskMutation = useMutation(
@@ -95,7 +103,7 @@ export default function TaskList({user}) {
     }
 
     return (
-        <div className="relative h-screen flex flex-col flex-1 bg-fuchsia-800">
+        <div className={`relative h-screen flex flex-col flex-1 scroll overflow-scroll`}>
             <Navbar /> 
             <div className="h-full p-5">       
                 <div className="flex items-center justify-between">

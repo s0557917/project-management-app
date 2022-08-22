@@ -3,9 +3,14 @@ import prisma from '../../utils/prisma';
 
 export default async function handler(req, res) {
     const session = await getSession({ req });
-    console.log("REQ: ", req);
     if(req.method === 'PUT' && session){
         try{
+            const updatedSettings = {
+                theme: req.body.theme || 'dark',
+                filters: req.body.filters || [[{name: Uncategorized,value: true},{name: Completed,value: true}]],
+                defaultView: req.body.defaultView || 'task-list',
+            }
+
             const settings = await prisma.user.update({
                 where: { email: session.user.email },
                 data: {
@@ -14,10 +19,10 @@ export default async function handler(req, res) {
                     email_verified: undefined,
                     password: undefined,
                     image: undefined,
-                    settings: req.body,
+                    settings: updatedSettings,
                 }
             });
-            console.log("SETTINGS PRISMA: ", settings);
+            
             res.status(201).json(settings);
         } catch (e) {
             console.log("ERROR", e);
