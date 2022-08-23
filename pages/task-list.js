@@ -1,5 +1,5 @@
 import TaskEditorDialogue from "../components/task-editor-dialogue/TaskEditorDialogue";
-import AddTaskButton from "../components/task-editor-dialogue/AddTaskButton";
+import AddTaskButton from "../components/task-editor-dialogue/components/AddTaskButton";
 import Navbar from "../components/general/navbar/Navbar";
 import List from "../components/task-list/List";
 import { getSession } from 'next-auth/react';

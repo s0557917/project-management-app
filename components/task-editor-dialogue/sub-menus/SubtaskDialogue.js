@@ -1,6 +1,6 @@
 import { Menu, ScrollArea, TextInput, ActionIcon } from '@mantine/core';
 import { ArrowRight, Circle } from 'phosphor-react';
-import Subtask from '../task-list/Subtask';
+import Subtask from '../../task-list/subtasks/Subtask';
 import { useState } from 'react';
 
 export default function SubtaskDialogue({ tasks, categories, onSubtaskClicked, onSubtaskAdded }) {

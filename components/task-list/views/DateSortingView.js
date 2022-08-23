@@ -1,4 +1,4 @@
-import Category from "../category/Category";
+import Category from "../category/ListBlock";
 import { filterTasksToUserPreferences } from "../../../utils/task-filtering/taskFiltering";
 
 export default function DateSortingView({ tasks, categories, onTaskClicked, onCompletionStateChanged, userSettings}) {

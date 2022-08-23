@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import { useState } from 'react';
 import { Divider } from '@mantine/core'
 import { Calendar, TimeRangeInput } from '@mantine/dates'
-import Dialogue from '../general/dialogues/Dialogue';
+import Dialogue from "../../general/dialogues/Dialogue";;
 
 export default function DateTimePickerDialogue({ dateTimeDialogState, dateTimePickerCallback, dueDate, startPoint, endPoint, userTimezoneState }) {
     const now = new Date();

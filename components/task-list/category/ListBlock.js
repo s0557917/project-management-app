@@ -1,5 +1,5 @@
-import Task from "../Task"
-import CategoryContainer from "./CategoryContainer"
+import Task from "../task/Task"
+import CategoryContainer from "./ListBlockContainer"
 
 export default function Category({tasks, categories, onTaskClicked, onCompletionStateChanged, category, title, active}) {
     
@@ -24,7 +24,7 @@ export default function Category({tasks, categories, onTaskClicked, onCompletion
             />
         })
 
-        return (mappedTasks?.length > 0 ? mappedTasks : <div>No tasks in this category yet...</div>);
+        return (mappedTasks?.length > 0 ? mappedTasks : <div className="p-2">No tasks in this category yet...</div>);
     }
 
     return (

@@ -1,4 +1,4 @@
-import Dialogue from "../general/dialogues/Dialogue";
+import Dialogue from "../../general/dialogues/Dialogue";
 import { NativeSelect } from "@mantine/core";
 
 export default function CategoryDialogue({categoryDialogueState, category, categoryDialogueCallback, categories}) {

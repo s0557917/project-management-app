@@ -1,6 +1,6 @@
 import { Title } from "@mantine/core"
 import SubtaskDialogue from "./SubtaskDialogue"
-import Sublist from "../task-list/Sublist"
+import Sublist from "../../task-list/subtasks/Sublist"
 import { useState } from "react";
 
 export default function SubtaskSection({ tasks, categories, selectedTask, subtasksState }) {

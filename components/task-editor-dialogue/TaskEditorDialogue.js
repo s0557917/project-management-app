@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { TextInput, Textarea, Title } from '@mantine/core';
 import {Calendar, Flag, Tag, BellRinging } from 'phosphor-react';
-import SubtaskSection from './SubtaskSection';
-import DateTimePickerDialogue from './DateTimePickerDialogue';
-import PriorityDialogue from './PriorityDialogue';
+import SubtaskSection from './sub-menus/SubtaskSection';
+import DateTimePickerDialogue from './sub-menus/DateTimePickerDialogue';
+import PriorityDialogue from './sub-menus/PriorityDialogue';
 import Dialogue from '../general/dialogues/Dialogue';
-import RemindersDialogue from './RemindersDialogue';
-import CategoryDialogue from './CategoryDialogue';
-import IconButton from './IconButton';
+import RemindersDialogue from './sub-menus/RemindersDialogue';
+import CategoryDialogue from './sub-menus/CategoryDialogue';
+import IconButton from '../general/icons/IconButton';
 
 export default function TaskEditorDialogue({ tasks, categories, modalState, selectedTask, selectedTaskSetter, saveEditedTaskCallback, saveNewTaskCallback, onModalClosed, date }) {
 

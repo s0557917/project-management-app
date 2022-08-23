@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Task from "./Task";
+import Task from "./task/Task";
 import CategorySortingView from "./views/CategorySortingView";
 import DateSortingView from "./views/DateSortingView";
 import PrioritySortingView from "./views/PrioritySortingView";

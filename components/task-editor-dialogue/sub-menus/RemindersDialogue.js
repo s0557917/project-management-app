@@ -1,6 +1,6 @@
-import Dialogue from "../general/dialogues/Dialogue"
+import Dialogue from "../../general/dialogues/Dialogue";
 import { useState, useEffect } from "react";
-import ReminderInput from "./ReminderInput";
+import ReminderInput from "../components/ReminderInput";
 
 export default function RemindersDialogue({remindersDialogueState, remindersDialogueCallback, remindersState}) {
 

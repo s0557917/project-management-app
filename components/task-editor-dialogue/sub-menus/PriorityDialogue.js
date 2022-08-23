@@ -1,5 +1,5 @@
-import Dialogue from "../general/dialogues/Dialogue"
-import PriorityButton from "../general/buttons/PriorityButton";
+import Dialogue from "../../general/dialogues/Dialogue";
+import PriorityButton from "../../general/buttons/PriorityButton";
 
 export default function PriorityDialogue({ priorityDialogueState, priorityDialogueCallback, priorityState }) {
     
