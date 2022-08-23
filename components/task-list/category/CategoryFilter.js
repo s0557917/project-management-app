@@ -1,6 +1,7 @@
 import { Circle } from "phosphor-react";
 import { Checkbox } from "@mantine/core";
 import { useState } from "react";
+import getThemeColor from "../../../utils/color/getThemeColor";
 
 export default function CategoryFilter ({category, circleSize, onCategoryStatusChanged, textSize, completed}) {
     
@@ -8,7 +9,7 @@ export default function CategoryFilter ({category, circleSize, onCategoryStatusC
 
     return (
         <li 
-            className={`flex items-center justify-between p-2 m-1 bg-zinc-700 rounded-sm ${textSize}`}
+            className={`flex items-center justify-between p-2 m-1 rounded-sm ${textSize} ${getThemeColor('bg-gray-200', 'bg-zinc-800')}`}
         >
             <div
                 className="flex items-center grow"

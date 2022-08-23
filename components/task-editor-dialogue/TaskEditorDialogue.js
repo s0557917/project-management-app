@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { TextInput, Textarea, Title } from '@mantine/core';
 import {Calendar, Flag, Tag, BellRinging } from 'phosphor-react';
-import SubtaskSection from './sub-menus/SubtaskSection';
+import SubtaskSection from './subtasks/SubtaskSection';
 import DateTimePickerDialogue from './sub-menus/DateTimePickerDialogue';
 import PriorityDialogue from './sub-menus/PriorityDialogue';
 import Dialogue from '../general/dialogues/Dialogue';

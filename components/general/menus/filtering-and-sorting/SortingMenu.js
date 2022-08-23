@@ -8,7 +8,7 @@ export default function SortingMenu ({ sortingMethod, sortingMethodSetter }) {
             <Menu shadow="md" width={200}>
                 <Menu.Target>
                     <button className='hover:scale-110 active:scale-90 transition-all'>
-                        <FunnelSimple size={32} color="cyan" weight="fill" /> 
+                        <FunnelSimple size={32} color="#16a34a" weight="fill" /> 
                     </button>
                 </Menu.Target>
 
@@ -35,7 +35,7 @@ export default function SortingMenu ({ sortingMethod, sortingMethodSetter }) {
 
                 </Menu.Dropdown>
             </Menu>
-            <p className='text-white text-sm pl-1'>{capitalizeFirstLetter(sortingMethod)}</p>
+            {/* <p className='text-white text-sm pl-1'>{capitalizeFirstLetter(sortingMethod)}</p> */}
         </div>
     )
 }

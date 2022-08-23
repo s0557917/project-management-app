@@ -7,6 +7,7 @@ import Filter from './Filter';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateUserSettings } from '../../../../utils/db/queryFunctions/settings'; 
 import { updateCategory, addNewCategory } from '../../../../utils/db/queryFunctions/categories';
+import getThemeColor from '../../../../utils/color/getThemeColor';
 
 export default function FilteringMenu ({categories, userSettings, user}) {
         
@@ -53,10 +54,9 @@ export default function FilteringMenu ({categories, userSettings, user}) {
             });
         } else {
             newCategoryMutation.mutate({name: categoryTitle, color: selectedNewColor});
-            setSelectedNewColor('');
+            setSelectedNewColor('#d4d4d4');
             setNewCategoryTitle('');
         }
-        console.log("Category added: " + categoryTitle);
     }
 
     async function onFilterStatusChanged(filterName, status) {
@@ -83,14 +83,14 @@ export default function FilteringMenu ({categories, userSettings, user}) {
             shadow="md" 
             width={300} 
             classNames={{dropdown: classes.dropdown, label: classes.label}}
-            onClose={() => {setSelectedNewColor(''); setNewCategoryTitle('');}}
+            onClose={() => {setSelectedNewColor('#d4d4d4'); setNewCategoryTitle('');}}
         >
             <Menu.Target>
                 <button 
                     className='hover:scale-110 active:scale-90 transition-all' 
                     onClick={() => console.log("TEST")}
                 >
-                    <Tag size={32} color="cyan" weight="fill" />
+                    <Tag size={32} color="#16a34a" weight="fill" />
                 </button>
             </Menu.Target>
 
@@ -130,12 +130,12 @@ export default function FilteringMenu ({categories, userSettings, user}) {
                 </ScrollArea>
                 <Menu.Divider></Menu.Divider>
                 
-                <p className='text-white text-xs'>Create a new category</p>
+                <p className={`text-xs ${getThemeColor('text-gray-900', 'text-white')}`}>Create a new category</p>
                 <div className='flex items-end px-2'>
                     <Menu>
                         <Menu.Target>
                             <button className='hover:scale-105 active:scale-95 transition-all'>
-                                <Square size={40} color={selectedNewColor} weight="fill" />
+                                <Square size={40} color={selectedNewColor || '#d4d4d4'} weight="fill" />
                             </button>
                         </Menu.Target>
                         <Menu.Dropdown>

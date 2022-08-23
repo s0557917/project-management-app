@@ -1,5 +1,5 @@
 import TaskEditorDialogue from "../components/task-editor-dialogue/TaskEditorDialogue";
-import AddTaskButton from "../components/task-editor-dialogue/components/AddTaskButton";
+import AddTaskButton from "../components/general/buttons/AddTaskButton";
 import Navbar from "../components/general/navbar/Navbar";
 import List from "../components/task-list/List";
 import { getSession } from 'next-auth/react';
@@ -11,6 +11,7 @@ import { dehydrate, QueryClient, useQuery, useMutation, useQueryClient } from '@
 import { getUserSettings } from "../utils/db/queryFunctions/settings";
 import { prismaGetAllTasks, getAllTasks, addNewTask, updateTask } from "../utils/db/queryFunctions/tasks";
 import { getAllCategories, prismaGetAllCategories } from "../utils/db/queryFunctions/categories";
+import { useMantineColorScheme } from '@mantine/core';
 
 export async function getServerSideProps({req, res}) {
     const session = await getSession({ req });
@@ -44,7 +45,7 @@ export async function getServerSideProps({req, res}) {
 }
 
 export default function TaskList({user}) {
-    
+    const { colorScheme } = useMantineColorScheme();
     const queryClient = useQueryClient();
 
     const {data: userSettings, isFetching: isFetchingUserSettings} = useQuery(['settings'], getUserSettings);
@@ -78,7 +79,6 @@ export default function TaskList({user}) {
     const [selectedTask, setSelectedTask] = useState({});
     const [sortingMethod, setSortingMethod] = useState("category");
 
-
     async function onNewTaskSaved(taskData) {
         newTaskMutation.mutate(taskData);
 
@@ -109,7 +109,7 @@ export default function TaskList({user}) {
             <Navbar /> 
             <div className="h-full p-5">       
                 <div className="mx-auto flex items-center justify-between w-4/5">
-                    <h1 className="text-white text-2xl font-bold">Tasks</h1>
+                    <h1 className={`${colorScheme === 'dark' ? 'text-white' : 'text-gray-900'} text-2xl font-bold`}>Tasks</h1>
                     <div className="flex items-center">
                         <div className="px-2">
                             <SortingMenu 

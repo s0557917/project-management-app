@@ -1,8 +1,9 @@
 import {Calendar, Flag, Tag, BellRinging} from "phosphor-react";
 import { getPriorityColor } from "../../../utils/color/getPriorityColor";
 import IconInformation from "../../general/icons/IconInformation";
+import getCategoryColor from "../../../utils/color/getThemeColor";
 
-export default function IconSection({ taskData, category }) {
+export default function IconSection({ taskData, category, textColor }) {
     
     function formatData() {
         return taskData.dueDate && taskData.dueDate !== ''  
@@ -38,7 +39,7 @@ export default function IconSection({ taskData, category }) {
                 <Tag 
                     size={24} 
                     weight={category ? 'fill' : 'regular'} 
-                    color={category ? category.color : '#ffffff'} 
+                    color={category ? category.color : getCategoryColor('#1f2937','#ffffff')} 
                     className="m-1"
                 />
                 <p className="text-xs">{category?.name}</p>

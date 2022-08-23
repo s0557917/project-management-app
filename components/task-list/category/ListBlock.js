@@ -1,5 +1,6 @@
+import getThemeColor from "../../../utils/color/getThemeColor";
 import Task from "../task/Task"
-import CategoryContainer from "./ListBlockContainer"
+import ListBlockContainer from "./ListBlockContainer"
 
 export default function Category({tasks, categories, onTaskClicked, onCompletionStateChanged, category, title, active}) {
     
@@ -28,17 +29,17 @@ export default function Category({tasks, categories, onTaskClicked, onCompletion
     }
 
     return (
-        <div className="rounded-md bg-zinc-800 w-4/5 mx-auto">
+        <div className={`rounded-md w-4/5 mx-auto ${getThemeColor('bg-gray-200', 'bg-zinc-800')}`}>
             {
                 active &&
-                <CategoryContainer 
+                <ListBlockContainer 
                     title={title || ''}
                     color={category?.color || ''}
                 >
                     <div>
                         { generateCategoryContent() }
                     </div>
-                </CategoryContainer>
+                </ListBlockContainer>
             }
         </div>
     )

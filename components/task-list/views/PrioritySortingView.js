@@ -1,7 +1,7 @@
 import Category from "../category/ListBlock";
 import { filterTasksToUserPreferences } from "../../../utils/task-filtering/taskFiltering";
 
-export default function PrioritySortingView({tasks, categories, onTaskClicked, onCompletionStateChanged, userSettings}) {
+export default function PrioritySortingView({tasks, categories, onTaskClicked, onCompletionStateChanged, userSettings, theme}) {
     function generatePrioritySortedList() {
         const filteredAndSortedTasks = tasks
             ?.filter(task => filterTasksToUserPreferences(task, categories, userSettings))
@@ -16,6 +16,7 @@ export default function PrioritySortingView({tasks, categories, onTaskClicked, o
             category={''}
             title={'Priority'}
             active={true}
+            theme={theme}
         />
     }
 

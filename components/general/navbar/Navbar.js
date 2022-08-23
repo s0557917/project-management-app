@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getUserSettings } from "../../../utils/db/queryFunctions/settings";
 import { useSession } from "next-auth/react";
 import SearchBar from "./Searchbar";
+import getThemeColor from "../../../utils/color/getThemeColor";
 
 export default function Navbar(){
 
@@ -13,7 +14,7 @@ export default function Navbar(){
 
 
     return(
-        <div className="flex w-full justify-between bg-zinc-800">
+        <div className={`flex w-full justify-between ${getThemeColor('bg-gray-200', 'bg-zinc-800')}`}>
             <div className="flex items-center">
                 <UserMenu 
                     userSettings={userSettings} 

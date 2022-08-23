@@ -1,10 +1,14 @@
 import Dialogue from "../../general/dialogues/Dialogue";
 import PriorityButton from "../../general/buttons/PriorityButton";
+import getThemeColor from "../../../utils/color/getThemeColor";
 
 export default function PriorityDialogue({ priorityDialogueState, priorityDialogueCallback, priorityState }) {
     
     const [priorityDialogueOpened, setPriorityDialogueOpened] = priorityDialogueState;
-
+    
+    const border = `border-2 ${getThemeColor('border-gray-900', 'border-white')}`
+    const scale = `hover:scale-105 transition-all active:scale-95`
+    
     return (
         <Dialogue
             opened={priorityDialogueOpened}
@@ -13,7 +17,7 @@ export default function PriorityDialogue({ priorityDialogueState, priorityDialog
         >
             <div className="flex">
                 <PriorityButton 
-                    styling={`hover:bg-green-300 bg-green-500 ${priorityState === 1 ? 'border-4 border-white' : ''}`} 
+                    styling={`hover:bg-green-400 bg-green-500 ${scale} ${priorityState === 1 ? border : ''}`} 
                     buttonClickCallback={() => {
                         priorityDialogueCallback(1);
                         setPriorityDialogueOpened(false);
@@ -22,7 +26,7 @@ export default function PriorityDialogue({ priorityDialogueState, priorityDialog
                 />
 
                 <PriorityButton 
-                    styling={`hover:bg-lime-200 bg-lime-400 ${priorityState === 2 ? 'border-2 border-cyan-500' : ''}`} 
+                    styling={`hover:bg-lime-300 bg-lime-400 ${scale} ${priorityState === 2 ? border : ''}`} 
                     buttonClickCallback={() => {
                         priorityDialogueCallback(2);
                         setPriorityDialogueOpened(false);
@@ -31,7 +35,7 @@ export default function PriorityDialogue({ priorityDialogueState, priorityDialog
                 />
 
                 <PriorityButton 
-                    styling={`hover:bg-yellow-100 bg-yellow-300 ${priorityState === 3 ? 'border-2 border-cyan-500' : ''}`}  
+                    styling={`hover:bg-yellow-200 bg-yellow-300 ${scale} ${priorityState === 3 ? border : ''}`}  
                     buttonClickCallback={() => {
                         priorityDialogueCallback(3);
                         setPriorityDialogueOpened(false);
@@ -40,7 +44,7 @@ export default function PriorityDialogue({ priorityDialogueState, priorityDialog
                 />
 
                 <PriorityButton 
-                    styling={`hover:bg-amber-300 bg-amber-500 ${priorityState === 4 ? 'border-2 border-cyan-500' : ''}`} 
+                    styling={`hover:bg-amber-400 bg-amber-500 ${scale} ${priorityState === 4 ? border : ''}`} 
                     buttonClickCallback={() => {
                         priorityDialogueCallback(4);
                         setPriorityDialogueOpened(false);
@@ -49,7 +53,7 @@ export default function PriorityDialogue({ priorityDialogueState, priorityDialog
                 />
 
                 <PriorityButton
-                    styling={`hover:bg-red-400 bg-red-600 ${priorityState === 5 ? 'border-2 border-cyan-500' : ''}`} 
+                    styling={`hover:bg-red-500 bg-red-600 ${scale} ${priorityState === 5 ? border : ''}`} 
                     buttonClickCallback={() => {
                         priorityDialogueCallback(5);
                         setPriorityDialogueOpened(false);

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateUserSettings } from "../../../utils/db/queryFunctions/settings";
 import { uncapitalizeFirstLetter } from "../../../utils/text/textFormatting";
+import ThemeSwitcher from "../buttons/ThemeSwitcher";
 
 export default function UserMenu ({ userSettings, session }) {
     const queryClient = useQueryClient();
@@ -44,7 +45,7 @@ export default function UserMenu ({ userSettings, session }) {
             <Menu shadow="md" width={250}>
                 <Menu.Target>
                     <button className="mx-3 hover:scale-105 transition-all active:scale-95" onClick={() => console.log("TEST")}>
-                        <UserCircle size={44} color="#ffffff" weight="fill" />
+                        <UserCircle size={44} color="#16a34a" weight="fill" />
                     </button>
                 </Menu.Target>
 
@@ -63,7 +64,8 @@ export default function UserMenu ({ userSettings, session }) {
                     </Menu.Item>
                     <div className="flex mx-3 my-2 items-center">
                         <p className="mr-10 text-xs">Theme</p>
-                        <NativeSelect 
+                        <ThemeSwitcher />
+                        {/* <NativeSelect 
                             value={themePreference}
                             onChange={(event) => {
                                 setThemePreference(uncapitalizeFirstLetter(event.target.value));
@@ -73,7 +75,7 @@ export default function UserMenu ({ userSettings, session }) {
                                 { value: 'dark', label: 'Dark' },
                                 { value: 'light', label: 'Light' }
                             ]}
-                        />
+                        /> */}
                     </div>
                     <div className="flex mx-3 my-2 items-center">
                         <p className="mr-10 text-xs">Default View</p>

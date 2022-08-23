@@ -1,8 +1,12 @@
 import IconSection from "./IconSection"
+import getThemeColor from "../../../utils/color/getThemeColor"
 
 export default function Task({ taskData, onTaskClicked, onCompletionStateChanged, category }) {
+    
+    const textColor = getThemeColor('text-gray-900', 'text-white');
+
     return(
-        <div className="flex items-center border-y border-y-neutral-600 hover:bg-neutral-700">
+        <div className={`flex items-center border-y ${getThemeColor('bg-gray-200 hover:bg-gray-300 hover:rounded-sm border-y-gray-300', 'border-y-neutral-600 hover:bg-neutral-700 hover:rounded-sm')}`}>
             <div>
                 <button 
                     className={`rounded-full w-7 h-7 mx-3 ${taskData.completed ? "bg-green-500 hover:bg-green-300 hover:border-white hover:border-2" : "bg-red-600 hover:bg-red-400 hover:border-white hover:border-2"}`}
@@ -23,18 +27,19 @@ export default function Task({ taskData, onTaskClicked, onCompletionStateChanged
                 >
                     {(taskData.completed) 
                         ? <div>
-                            <p className="text-white text-sm pb-0.5 font-bold"><s>{taskData.title}</s></p>
-                            <p className="text-white text-xs font-light">{taskData.details}</p>
+                            <p className={` text-sm pb-0.5 font-bold ${textColor}`}><s>{taskData.title}</s></p>
+                            <p className={`text-xs font-light ${textColor}`}>{taskData.details}</p>
                         </div> 
                         : <div>
-                            <p className="text-white text-sm pb-0.5 font-bold">{taskData.title}</p>
-                            <p className="text-white text-xs font-light">{taskData.details}</p>
+                            <p className={`text-sm pb-0.5 font-bold ${textColor}`}>{taskData.title}</p>
+                            <p className={`text-xs font-light ${textColor}`}>{taskData.details}</p>
                             </div>
                     }
                 </div>
                 <IconSection 
                     taskData={taskData}
                     category={category}
+                    textColor={textColor}
                 />
 
             </div>

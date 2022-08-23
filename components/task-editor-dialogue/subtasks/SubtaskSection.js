@@ -1,7 +1,8 @@
 import { Title } from "@mantine/core"
-import SubtaskDialogue from "./SubtaskDialogue"
-import Sublist from "../../task-list/subtasks/Sublist"
+import SubtaskDialogue from "../sub-menus/SubtaskDialogue"
+import Sublist from "./Sublist"
 import { useState } from "react";
+import getThemeColor from "../../../utils/color/getThemeColor";
 
 export default function SubtaskSection({ tasks, categories, selectedTask, subtasksState }) {
 
@@ -30,7 +31,7 @@ export default function SubtaskSection({ tasks, categories, selectedTask, subtas
     }
 
     return (
-        <div className='bg-zinc-800 rounded-lg p-3 my-3'>
+        <div className={`rounded-lg p-3 my-3 ${getThemeColor('bg-gray-200', 'bg-zinc-800')}`}>
             <div className='flex items-center justify-between mb-2'>
                 <Title order={4}>Subtasks</Title>
                 <SubtaskDialogue 
