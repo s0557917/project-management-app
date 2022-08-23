@@ -22,7 +22,7 @@ export function StatsRing({ data }: StatsRingProps) {
       <div> 
         <div className='flex items-center pt-1'>
           <RingProgress
-            size={55}
+            size={44}
             roundCaps
             thickness={4}
             sections={[{ value: data.progress, color: data.color }]}

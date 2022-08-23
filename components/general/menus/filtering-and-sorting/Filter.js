@@ -12,6 +12,7 @@ export default function Filter({filterName, textSize, onFilterStatusChanged, act
                 {filterName}
             </div>
             <Checkbox 
+                key={filterName}
                 checked={checked} 
                 onChange={(event) => {
                     setChecked(event.currentTarget.checked);

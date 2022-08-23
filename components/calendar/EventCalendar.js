@@ -4,6 +4,7 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from "@fullcalendar/interaction";
 import { useState, useEffect } from 'react';
 import { hexToHSL, HSLToHex } from '../../utils/color/colorConvertion';
+import { filterTasksToUserPreferences } from '../../utils/task-filtering/taskFiltering';
 
 export default function EventCalendar({tasks, categories, dateClickCallback, taskClickCallback, taskDroppedCallback, userSettings, isFetchingUserSettings, isFetchingTasks, isFetchingCategories}) {
   
@@ -13,35 +14,8 @@ export default function EventCalendar({tasks, categories, dateClickCallback, tas
     setEventSource(mapEvents);
   }, [tasks, userSettings, categories, isFetchingUserSettings, isFetchingTasks, isFetchingCategories]);
 
-  function showCompletedTasks(task) {
-    return !task.completed || userSettings?.filters?.find(filter => filter.name === 'Completed')?.value;
-  }
-
-  function hasDueDate(event) {
-    return event.dueDate !== null 
-      && event.dueDate !== undefined 
-      && event.dueDate != '';
-  }
-
-  function isCategoryPresentAndActive(event) {
-    return event.categoryId !== null 
-      && event.categoryId !== undefined 
-      && event.categoryId !== '' 
-      && categories?.find(category => category.id === event.categoryId)?.active
-  }
-
-  function isCategoryNotPresentAndUncategorizedVisible(event) {
-    return (event.categoryId === null
-      || event.categoryId === undefined
-      || event.categoryId === ''
-    ) && userSettings?.filters?.find(setting => setting.name === 'Uncategorized')?.value
-  } 
-
   function mapEvents(){
-    const filteredEvents = tasks?.filter(event => ( hasDueDate(event) 
-      && showCompletedTasks(event) 
-      && (isCategoryPresentAndActive(event) || isCategoryNotPresentAndUncategorizedVisible(event)))     
-    );
+    const filteredEvents = tasks?.filter(task => filterTasksToUserPreferences(task, categories, userSettings));
     const mappedEvents = filteredEvents?.map(event => {
       const startTime = event.start !== '' && event.start !== null 
         ? new Date(event.start)

@@ -18,7 +18,7 @@ export default function SearchBar() {
     );
 
     return (
-        <div className="self-center m-3 w-72">
+        <div className="self-center mx-3 w-72">
             <TextInput 
                 placeholder={"Search..."}
                 icon={<MagnifyingGlass size={16} />}

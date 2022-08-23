@@ -27,11 +27,12 @@ function MyApp({ Component, pageProps }) {
             withNormalizeCSS
             theme={{
               colorScheme: 'dark',
+              fontFamily: 'Roboto,sans-serif',
             }}
           >
             <NotificationsProvider>
               <Component {...pageProps} />
-              <ReactQueryDevtools initialIsOpen={false}/>
+              {/* <ReactQueryDevtools initialIsOpen={false}/> */}
             </NotificationsProvider>
           </MantineProvider>
         </AuthProvider>

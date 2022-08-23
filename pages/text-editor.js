@@ -118,11 +118,11 @@ export default function TextEditor() {
       });
       monaco.editor.setTheme('sampleTheme');
     }
-  }, [monaco, categories]);
+  }, [monaco, categories, isFetchingCategories]);
 
   function setLanguageTokens() {
     const expandedLanguageDef = {...languageDef};
-    categories.forEach(category => {
+    categories?.forEach(category => {
       expandedLanguageDef.tokenizer.root.push([new RegExp(`\\\\${category.name}`, 'g'), category.name]);
     });
 
@@ -141,7 +141,7 @@ export default function TextEditor() {
       { token: "p5", foreground: "#ff0000" },
     ]
 
-    categories.forEach(category => {
+    categories?.forEach(category => {
       categoryTokens.push({token: category.name, foreground: category.color});
     });
 

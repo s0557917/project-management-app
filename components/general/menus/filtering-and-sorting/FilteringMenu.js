@@ -130,7 +130,8 @@ export default function FilteringMenu ({categories, userSettings, user}) {
                 </ScrollArea>
                 <Menu.Divider></Menu.Divider>
                 
-                <div className='flex items-center px-1 py-2'>
+                <p className='text-white text-xs'>Create a new category</p>
+                <div className='flex items-end px-2'>
                     <Menu>
                         <Menu.Target>
                             <button className='hover:scale-105 active:scale-95 transition-all'>
@@ -157,7 +158,7 @@ export default function FilteringMenu ({categories, userSettings, user}) {
                     <TextInput 
                         value={newCategoryTitle}
                         onChange={(event) => setNewCategoryTitle(event.currentTarget.value)} 
-                        label="Create a new category"
+                        // label="Create a new category"
                         placeholder='Category Name'
                         
                         rightSection={

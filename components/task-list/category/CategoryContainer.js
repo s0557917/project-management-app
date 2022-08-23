@@ -6,7 +6,7 @@ export default function CategoryContainer({title, color, children}){
 
     return (
         <div className="my-6 mx-3 p-2">
-            <div class={`flex items-center my-1`}>
+            <div className={`flex items-center my-1`}>
                 {/* {
                     color && 
                     <Circle 
@@ -15,7 +15,12 @@ export default function CategoryContainer({title, color, children}){
                     weight="fill" 
                 />
                 } */}
-                <h2 className="text-3xl mx-2 py-1" style={titleColorStyle}>{title}</h2>
+                {title 
+                    ? <h2 className="text-white text-xl mx-2 mb-4 py-1 font-bold" style={titleColorStyle}>
+                        {title}
+                        </h2>
+                    : null
+                }
             </div>
             {children}
         </div>

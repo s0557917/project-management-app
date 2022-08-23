@@ -108,17 +108,22 @@ export default function TaskList({user}) {
         <div className={`relative w-screen h-screen flex flex-col flex-1 scroll overflow-scroll `}>
             <Navbar /> 
             <div className="h-full p-5">       
-                <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold">Task List</h1>
-                    <div className="mx-5">
-                        <SortingMenu 
-                            sortingMethodSetter={setSortingMethod}
-                        />
-                        <FilteringMenu 
-                            categories={categories}
-                            userSettings={userSettings}
-                            user={user}
-                        />
+                <div className="mx-auto flex items-center justify-between w-4/5">
+                    <h1 className="text-white text-2xl font-bold">Tasks</h1>
+                    <div className="flex items-center">
+                        <div className="px-2">
+                            <SortingMenu 
+                                sortingMethod={sortingMethod}
+                                sortingMethodSetter={setSortingMethod}
+                            />
+                        </div>
+                        <div className="px-2">
+                            <FilteringMenu 
+                                categories={categories}
+                                userSettings={userSettings}
+                                user={user}
+                            />
+                        </div>
                     </div>
                 </div>
                 <List 

@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { getUserSettings } from "../../../utils/db/queryFunctions/settings";
 import { useSession } from "next-auth/react";
 import SearchBar from "./Searchbar";
-import { getAllTasks } from "../../../utils/db/queryFunctions/tasks";
 
 export default function Navbar(){
 
@@ -14,12 +13,14 @@ export default function Navbar(){
 
 
     return(
-        <div className="flex w-full justify-between bg-cyan-800">
-            <UserMenu 
-                userSettings={userSettings} 
-                session={session}
-            />
-            <SearchBar />
+        <div className="flex w-full justify-between bg-zinc-800">
+            <div className="flex items-center">
+                <UserMenu 
+                    userSettings={userSettings} 
+                    session={session}
+                />
+                <SearchBar />
+            </div>
             <Tabbing />
             <div className="self-center">
                 <StatsRing
