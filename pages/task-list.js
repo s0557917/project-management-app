@@ -85,7 +85,6 @@ export default function TaskList() {
 
     async function onCompletionStateChanged(taskId, isCompleted) {    
         const modifiedTask = {...tasks.find(task => task.id === taskId), completed: isCompleted};
-        console.log("modifiedTask", modifiedTask);
         updateTaskMutation.mutate(modifiedTask);
     }
 

@@ -3,10 +3,10 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from "@fullcalendar/interaction";
 import { useState, useEffect } from 'react';
-import { hexToHSL, HSLToHex } from '../../utils/color/colorConvertion';
 import { filterTasksToUserPreferences } from '../../utils/task-filtering/taskFiltering';
 import { useQuery } from '@tanstack/react-query';
 import { getFilters } from '../../utils/db/queryFunctions/settings';
+import CalendarSkeleton from '../general/loading/CalendarSkeleton';
 
 export default function EventCalendar({tasks, categories, dateClickCallback, taskClickCallback, taskDroppedCallback, isFetchingTasks, isFetchingCategories}) {
   
@@ -64,38 +64,43 @@ export default function EventCalendar({tasks, categories, dateClickCallback, tas
   }
 
   return (
-    <Calendar 
-      plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]} 
-      headerToolbar={{
-        left:'today prev,next',
-        center:'title',
-        right:'dayGridMonth,timeGridWeek,timeGridDay'
-      }}
-      eventClick={(arg) => taskClickCallback(tasks.find((event) => event.id === arg.event.id))}
-      dateClick={(arg) => dateClickCallback(arg.date)}
-      initialView="dayGridMonth" 
-      events={eventSource}
-      eventTimeFormat={
-        {
-            hour: '2-digit',
-            minute: '2-digit',
-            meridiem: false,
-        }
+    <>
+      {isFetchingTasks || isFetchingCategories || isFetchingFilters 
+        ? <CalendarSkeleton />
+        :<Calendar 
+          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]} 
+          headerToolbar={{
+            left:'today prev,next',
+            center:'title',
+            right:'dayGridMonth,timeGridWeek,timeGridDay'
+          }}
+          eventClick={(arg) => taskClickCallback(tasks.find((event) => event.id === arg.event.id))}
+          dateClick={(arg) => dateClickCallback(arg.date)}
+          initialView="dayGridMonth" 
+          events={eventSource}
+          eventTimeFormat={
+            {
+                hour: '2-digit',
+                minute: '2-digit',
+                meridiem: false,
+            }
+          }
+          editable={true}
+          eventDrop={(args) => onTaskDropped(args.event)}
+          buttonText={{
+            today: 'Today',
+            month: 'Month',
+            week: 'Week',
+            day: 'Day',
+            prev: '<',
+            next: '>',
+          }}
+          locale={'en-gb'}
+          nowIndicator={true}
+          height={'85%'}
+        />
       }
-      editable={true}
-      eventDrop={(args) => onTaskDropped(args.event)}
-      buttonText={{
-        today: 'Today',
-        month: 'Month',
-        week: 'Week',
-        day: 'Day',
-        prev: '<',
-        next: '>',
-      }}
-      locale={'en-gb'}
-      nowIndicator={true}
-      height={'85%'}
-    />
-    );
+    </>
+  )
 }
 

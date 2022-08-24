@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getSorting } from "../../utils/db/queryFunctions/settings";
 import { getFilters } from "../../utils/db/queryFunctions/settings";
 import LoadingScreen from "../general/loading/LoadingScreen";
+import ListSkeleton from "../general/loading/ListSkeleton";
 
 export default function List({ tasks, categories, modalStateSetter, selectedTaskSetter, onCompletionStateChanged, userSettings }) {
   
@@ -42,7 +43,7 @@ export default function List({ tasks, categories, modalStateSetter, selectedTask
           return <></>;
       }
     } else {
-      return <LoadingScreen />;
+      return <ListSkeleton />;
     }
   }
 
@@ -54,8 +55,8 @@ export default function List({ tasks, categories, modalStateSetter, selectedTask
   return (
     <div className="w-full">
       <ul className="w-full">
-          {generateListContent()}
-        </ul>
+        {generateListContent()}
+      </ul>
     </div>
   )
 }

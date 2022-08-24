@@ -10,6 +10,7 @@ import { getUserSettings } from '../utils/db/queryFunctions/settings';
 import { prismaGetAllTasks, getAllTasks } from '../utils/db/queryFunctions/tasks';
 import { prismaGetAllCategories, getAllCategories } from '../utils/db/queryFunctions/categories';
 import { getSession } from 'next-auth/react';
+import TextEditorSkeleton from '../components/general/loading/TextEditorSkeleton';
 
 export async function getServerSideProps({req, res}) {
   const session = await getSession({ req });
@@ -186,7 +187,9 @@ export default function TextEditor() {
         <Navbar />
         <h1>Text Editor</h1>
         <div className='p-5'>
-          <MonacoEditor
+          {isFetchingUserSettings || isFetchingTasks || isFetchingCategories 
+          ? <TextEditorSkeleton />
+          :<MonacoEditor
             height="80vh"
             language='sampleLanguage'
             options={options}
@@ -194,7 +197,7 @@ export default function TextEditor() {
             value={mapTasksToEditor()}
             onChange={newText => onTextChanged(newText)}
             editorDidMount={editor => { editor.focus() }}
-          />
+          />}
         </div>
     </div>
   )
