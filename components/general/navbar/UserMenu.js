@@ -9,8 +9,8 @@ export default function UserMenu () {
         <div className="flex items-center justify-center">
             <Menu shadow="md" width={250}>
                 <Menu.Target>
-                    <button className="mx-3 hover:scale-105 transition-all active:scale-95" onClick={() => console.log("TEST")}>
-                        <UserCircle size={44} color="#16a34a" weight="fill" />
+                    <button className="mx-3 hover:scale-105 transition-all active:scale-95">
+                        <UserCircle size={50} color="#16a34a" weight="fill" />
                     </button>
                 </Menu.Target>
 

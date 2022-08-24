@@ -5,7 +5,6 @@ import { useState } from 'react';
 import CategoryFilter from '../../../task-list/ListBlock/CategoryFilter';
 import Filter from './Filter';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { updateUserSettings } from '../../../../utils/db/queryFunctions/settings'; 
 import { updateCategory, addNewCategory } from '../../../../utils/db/queryFunctions/categories';
 import getThemeColor from '../../../../utils/color/getThemeColor';
 import { useQuery } from '@tanstack/react-query';
@@ -20,13 +19,6 @@ export default function FilteringMenu ({categories, userSettings, user}) {
     const [opened, setOpened] = useState(false);
     const [newCategoryTitle, setNewCategoryTitle] = useState('');
     const [selectedNewColor, setSelectedNewColor] = useState('');
-
-    const settingsMutation = useMutation(
-        (updatedUserSettings) => updateUserSettings(updatedUserSettings),
-        {onSuccess: async () => {
-            queryClient.invalidateQueries('settings');
-        }}
-    );
 
     const modifiedFiltersMutation = useMutation(
         (updatedFilters) => updateFilters(updatedFilters),
@@ -75,7 +67,6 @@ export default function FilteringMenu ({categories, userSettings, user}) {
         const modifiedSettings = [...filters];
         modifiedSettings[index].value = status;
         modifiedFiltersMutation.mutate(modifiedSettings);
-        // settingsMutation.mutate(modifiedUserSettings);
     }
 
     const useStyles = createStyles((theme) => ({
@@ -87,7 +78,7 @@ export default function FilteringMenu ({categories, userSettings, user}) {
         },
     }));
     const classes = useStyles();
-    console.log("Filters: ", filters);
+
     return (
         <Menu 
             shadow="md" 

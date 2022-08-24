@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
-import Task from "./task/Task";
 import CategorySortingView from "./views/CategorySortingView";
 import DateSortingView from "./views/DateSortingView";
 import PrioritySortingView from "./views/PrioritySortingView";
 import { useQuery } from "@tanstack/react-query";
 import { getSorting } from "../../utils/db/queryFunctions/settings";
 import { getFilters } from "../../utils/db/queryFunctions/settings";
+import LoadingScreen from "../general/loading/LoadingScreen";
 
 export default function List({ tasks, categories, modalStateSetter, selectedTaskSetter, onCompletionStateChanged, userSettings }) {
   
@@ -43,7 +42,7 @@ export default function List({ tasks, categories, modalStateSetter, selectedTask
           return <></>;
       }
     } else {
-      return <h1>Loading...</h1>;
+      return <LoadingScreen />;
     }
   }
 
