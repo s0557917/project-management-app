@@ -3,21 +3,21 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { signOut, useSession } from 'next-auth/react';
 import { useQuery } from '@tanstack/react-query'
-import { getUserSettings } from '../../../utils/db/queryFunctions/settings';
+import { getDefaultView } from '../../../utils/db/queryFunctions/settings';
 
 const Header = ({}) => {
-  const {data: userSettings, isLoading, isError} = useQuery(['settings'], getUserSettings);
+  const {data: defaultView, isLoading:isLoadingDefaultView, isError:errorDefaultView} = useQuery(['defaultView'], getDefaultView);
+
   const { data: session, status } = useSession();
   const router = useRouter();
 
   const isActive = (pathname) => router.pathname === pathname;
 
   const redirectToDefaultView = async () => {
-    if(!isLoading && !isError && userSettings) {
-      router.push(`/${userSettings.defaultView}`);
+    if(!isLoadingDefaultView && !errorDefaultView && defaultView) {
+      router.push(`/${defaultView}`);
     }
   }
-
 
   let left = (
     <div className="left">

@@ -1,4 +1,4 @@
-import Category from "../category/ListBlock";
+import Category from "../ListBlock/ListBlock";
 
 export default function CategorySortingView ({tasks, categories, userSettings, onTaskClicked, onCompletionStateChanged}) {
     

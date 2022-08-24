@@ -2,7 +2,7 @@ import { Menu, ScrollArea, TextInput, createStyles  } from '@mantine/core'
 import { showNotification } from '@mantine/notifications';
 import { Tag, ArrowRight, Square } from 'phosphor-react';
 import { useState } from 'react';
-import CategoryFilter from '../../../task-list/category/CategoryFilter';
+import CategoryFilter from '../../../task-list/ListBlock/CategoryFilter';
 import Filter from './Filter';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateUserSettings } from '../../../../utils/db/queryFunctions/settings'; 

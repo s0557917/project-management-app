@@ -25,6 +25,15 @@ export const getDefaultView = async () => {
     return res.json();
 }
 
+export const updateDefaultView = async (updatedDefaultView) => {
+    const res = await fetch('/api/defaultView', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedDefaultView),
+    });
+    return res.json();
+}
+
 export const getFilters = async () => {
     const res = await fetch('/api/filters', {
         method: 'GET',
