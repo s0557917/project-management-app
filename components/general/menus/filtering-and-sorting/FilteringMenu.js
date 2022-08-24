@@ -9,9 +9,11 @@ import { updateCategory, addNewCategory } from '../../../../utils/db/queryFuncti
 import getThemeColor from '../../../../utils/color/getThemeColor';
 import { useQuery } from '@tanstack/react-query';
 import { getFilters, updateFilters } from '../../../../utils/db/queryFunctions/settings';
+import { getAllCategories } from '../../../../utils/db/queryFunctions/categories';
 
-export default function FilteringMenu ({categories, userSettings, user}) {
-        
+export default function FilteringMenu () {
+    
+    const {data: categories, isFetching: isFetchingCategories} = useQuery(['categories'], getAllCategories);
     const {data: filters, isFetching: isFetchingFilters} = useQuery(['filters'], getFilters);
 
     const queryClient = useQueryClient();

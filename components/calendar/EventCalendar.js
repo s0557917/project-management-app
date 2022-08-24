@@ -5,17 +5,20 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { useState, useEffect } from 'react';
 import { hexToHSL, HSLToHex } from '../../utils/color/colorConvertion';
 import { filterTasksToUserPreferences } from '../../utils/task-filtering/taskFiltering';
+import { useQuery } from '@tanstack/react-query';
+import { getFilters } from '../../utils/db/queryFunctions/settings';
 
-export default function EventCalendar({tasks, categories, dateClickCallback, taskClickCallback, taskDroppedCallback, userSettings, isFetchingUserSettings, isFetchingTasks, isFetchingCategories}) {
+export default function EventCalendar({tasks, categories, dateClickCallback, taskClickCallback, taskDroppedCallback, isFetchingTasks, isFetchingCategories}) {
   
+  const {data: filters, isFetching: isFetchingFilters} = useQuery(['filters'], getFilters);
   const [eventSource, setEventSource] = useState(mapEvents)
 
   useEffect(() => {
     setEventSource(mapEvents);
-  }, [tasks, userSettings, categories, isFetchingUserSettings, isFetchingTasks, isFetchingCategories]);
+  }, [tasks, categories, isFetchingTasks, isFetchingCategories]);
 
   function mapEvents(){
-    const filteredEvents = tasks?.filter(task => filterTasksToUserPreferences(task, categories, userSettings));
+    const filteredEvents = tasks?.filter(task => filterTasksToUserPreferences(task, categories, filters));
     const mappedEvents = filteredEvents?.map(event => {
       const startTime = event.start !== '' && event.start !== null 
         ? new Date(event.start)

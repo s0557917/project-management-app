@@ -6,10 +6,11 @@ import Navbar from '../components/general/navbar/Navbar';
 import { getSession } from 'next-auth/react';
 import { useState } from "react";
 import { dehydrate, QueryClient, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getUserSettings } from "../utils/db/queryFunctions/settings";
+// import { getUserSettings } from "../utils/db/queryFunctions/settings";
 import { prismaGetAllTasks, getAllTasks, addNewTask, updateTask } from "../utils/db/queryFunctions/tasks";
 import { getAllCategories, prismaGetAllCategories } from "../utils/db/queryFunctions/categories";
 import prisma from "../utils/prisma";
+import TitleBar from "../components/general/layout/TitleBar";
 
 export async function getServerSideProps({req, res}) {
     const session = await getSession({ req });
@@ -47,7 +48,7 @@ export default function Calendar({user}) {
 
     const queryClient = useQueryClient();
 
-    const {data: userSettings, isFetching: isFetchingUserSettings} = useQuery(['settings'], getUserSettings);
+    // const {data: userSettings, isFetching: isFetchingUserSettings} = useQuery(['settings'], getUserSettings);
     const {data: tasks, isFetching: isFetchingTasks} = useQuery(['tasks'], getAllTasks);
     const {data: categories, isFetching: isFetchingCategories} = useQuery(['categories'], getAllCategories);
 
@@ -108,16 +109,9 @@ export default function Calendar({user}) {
         <div>
             <Navbar />
             <div className="h-screen p-5">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold">Calendar</h1>
-                    <div className="mx-5">
-                        <FilteringMenu 
-                            categories={categories}
-                            userSettings={userSettings}
-                            user={user}
-                        />
-                    </div>
-                </div>
+                <TitleBar 
+                    displaySortingMenu={false}
+                />
 
                 <EventCalendar 
                     tasks={tasks}
@@ -125,8 +119,6 @@ export default function Calendar({user}) {
                     dateClickCallback={onDateClicked}
                     taskClickCallback={onTaskClicked}
                     taskDroppedCallback={onTaskDropped}
-                    userSettings={userSettings}
-                    isFetchingUserSettings={isFetchingUserSettings}
                     isFetchingTasks={isFetchingTasks}
                     isFetchingCategories={isFetchingCategories}
                 />

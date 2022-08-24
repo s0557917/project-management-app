@@ -12,6 +12,7 @@ import { getUserSettings } from "../utils/db/queryFunctions/settings";
 import { prismaGetAllTasks, getAllTasks, addNewTask, updateTask } from "../utils/db/queryFunctions/tasks";
 import { getAllCategories, prismaGetAllCategories } from "../utils/db/queryFunctions/categories";
 import { useMantineColorScheme } from '@mantine/core';
+import TitleBar from "../components/general/layout/TitleBar";
 
 export async function getServerSideProps({req, res}) {
     const session = await getSession({ req });
@@ -106,21 +107,9 @@ export default function TaskList({user}) {
         <div className={`relative w-screen h-screen flex flex-col flex-1 scroll overflow-scroll `}>
             <Navbar /> 
             <div className="h-full p-5">       
-                <div className="mx-auto flex items-center justify-between w-4/5">
-                    <h1 className={`${colorScheme === 'dark' ? 'text-white' : 'text-gray-900'} text-2xl font-bold`}>Tasks</h1>
-                    <div className="flex items-center">
-                        <div className="px-2">
-                            <SortingMenu />
-                        </div>
-                        <div className="px-2">
-                            <FilteringMenu 
-                                categories={categories}
-                                userSettings={userSettings}
-                                user={user}
-                            />
-                        </div>
-                    </div>
-                </div>
+                <TitleBar 
+                    displaySortingMenu={true}
+                />
                 <List 
                     tasks={tasks} 
                     categories={categories}
