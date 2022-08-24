@@ -81,6 +81,9 @@ model User {
   password      String?
   image         String?
   settings      Json?     @default("{\"theme\": \"dark\",\"defaultView\": \"task-list\",\"filters\": [{\"name\": \"Uncategorized\",\"value\": true},{\"name\": \"Completed\",\"value\": false}]}")
+  theme         String?   @default("dark")
+  defaultView   String?   @default("task-list")
+  filters       Json?     @default("[{\"name\": \"Uncategorized\",\"value\": true},{\"name\": \"Completed\",\"value\": false}]")
   tasks         Task[]
   categories    Category[]
   accounts      Account[]

@@ -1,4 +1,4 @@
-import { createStyles, Switch, Group, useMantineColorScheme } from '@mantine/core';
+import { createStyles, Switch, Group } from '@mantine/core';
 import { Sun, Moon } from 'phosphor-react';
 
 const useStyles = createStyles((theme) => ({
@@ -27,16 +27,20 @@ const useStyles = createStyles((theme) => ({
   },
 }));
 
-export default function ThemeSwitcher() {
-    const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+export default function ThemeSwitcher({ theme, updateThemeMutation }) {
     const { classes, cx } = useStyles();
 
     return (
-        <Group position="center" my={30}>
+        <Group position="center">
             <div className={classes.root}>
             <Sun className={cx(classes.icon, classes.iconLight)} size={18} />
             <Moon className={cx(classes.icon, classes.iconDark)} size={18} />
-            <Switch checked={colorScheme === 'dark'} onChange={() => toggleColorScheme()} size="md" />
+            <Switch 
+              checked={theme === 'dark'} 
+              onChange={(e) => {
+                updateThemeMutation.mutate(e.target.checked ? 'dark' : 'light')
+              }} 
+              size="md" />
             </div>
         </Group>
     )

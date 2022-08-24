@@ -1,22 +1,29 @@
-import { Menu, NativeSelect } from "@mantine/core";
+import { Menu, NativeSelect, useMantineColorScheme } from "@mantine/core";
 import { UserCircle } from "phosphor-react";
 import { useState, useEffect } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateUserSettings } from "../../../utils/db/queryFunctions/settings";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateUserSettings, updateTheme } from "../../../utils/db/queryFunctions/settings";
 import { uncapitalizeFirstLetter } from "../../../utils/text/textFormatting";
 import ThemeSwitcher from "../buttons/ThemeSwitcher";
+import { getTheme } from "../../../utils/db/queryFunctions/settings";
 
 export default function UserMenu ({ userSettings, session }) {
     const queryClient = useQueryClient();
 
     const [userName, setUserName] = useState('');
     const [userEmail, setUserEmail] = useState('');
-    const [themePreference, setThemePreference] = useState('');
     const [defaultView, setDefaultView] = useState('');
+
+    const { data: theme, isFetching: isFetchingTheme } = useQuery(['theme'], getTheme); 
+
+    const { toggleColorScheme } = useMantineColorScheme();
+
+    useEffect(() => {
+        toggleColorScheme(theme);
+    }, [isFetchingTheme])
 
     useEffect(() => {
         if (userSettings) {
-            setThemePreference(userSettings.theme);
             setDefaultView(userSettings.defaultView);
         }
 
@@ -33,12 +40,19 @@ export default function UserMenu ({ userSettings, session }) {
         }}
     );
 
-    function onInputChange() {
-        if(themePreference != '' && defaultView != '' && userSettings.filters.length > 0) {
-            const modifiedSettings = {...userSettings, theme: themePreference, defaultView: defaultView};
+    const updateThemeMutation = useMutation(
+        (updatedTheme) => updateTheme(updatedTheme),
+        {onSuccess: async () => {
+            queryClient.invalidateQueries('theme');
+        }}
+    )
+
+    useEffect(() => {
+        if(defaultView != '' && userSettings.filters.length > 0) {
+            const modifiedSettings = {...userSettings, theme: theme, defaultView: defaultView};
             userSettingsMutation.mutate(modifiedSettings);    
         }
-    }
+    }, [defaultView]);
 
     return (
         <div className="flex items-center justify-center">
@@ -63,34 +77,30 @@ export default function UserMenu ({ userSettings, session }) {
                         </div>
                     </Menu.Item>
                     <div className="flex mx-3 my-2 items-center">
-                        <p className="mr-10 text-xs">Theme</p>
-                        <ThemeSwitcher />
-                        {/* <NativeSelect 
-                            value={themePreference}
-                            onChange={(event) => {
-                                setThemePreference(uncapitalizeFirstLetter(event.target.value));
-                                onInputChange();
-                            }}
-                            data={[
-                                { value: 'dark', label: 'Dark' },
-                                { value: 'light', label: 'Light' }
-                            ]}
-                        /> */}
+                        <p className="text-xs w-2/4">Theme</p>
+                        <div className="w-2/4">
+                            <ThemeSwitcher 
+                                theme={theme}
+                                updateThemeMutation={updateThemeMutation}
+                            />
+                        </div>
                     </div>
                     <div className="flex mx-3 my-2 items-center">
-                        <p className="mr-10 text-xs">Default View</p>
-                        <NativeSelect 
-                            value={defaultView}
-                            onChange={(event) => {
-                                setDefaultView(uncapitalizeFirstLetter(event.target.value));
-                                onInputChange();
-                            }}
-                            data={[
-                                { value: 'task-list', label: 'Task List' },
-                                { value: 'calendar', label: 'Calendar' },
-                                { value: 'text-editor', label: 'Text Editor' }
-                            ]}
-                        />
+                        <p className="text-xs w-2/4">Default View</p>
+                        <div className="ml-5 w-2/4">
+                            <NativeSelect 
+                                value={defaultView}
+                                onChange={(event) => {
+                                    setDefaultView(uncapitalizeFirstLetter(event.target.value));
+                                    onInputChange();
+                                }}
+                                data={[
+                                    { value: 'task-list', label: 'Task List' },
+                                    { value: 'calendar', label: 'Calendar' },
+                                    { value: 'text-editor', label: 'Text Editor' }
+                                ]}
+                            />
+                        </div>
                     </div>        
                 </Menu.Dropdown>
             </Menu>

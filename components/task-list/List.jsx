@@ -6,6 +6,10 @@ import PrioritySortingView from "./views/PrioritySortingView";
 
 export default function List({ tasks, categories, modalStateSetter, selectedTaskSetter, onCompletionStateChanged, sortingMethod, userSettings, isFetchingUserSettings, isFetchingTasks, isFetchingCategories }) {
   
+  const [tasksState, setTasksState] = useState(prev => {
+    console.log("Prev: ", prev, " - CURR: ", tasks);
+    return tasks;
+  });
   const [listContent, setListContent] = useState(generateListElements());
 
   useEffect(() => {
