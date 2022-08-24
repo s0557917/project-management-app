@@ -1,6 +1,6 @@
 import Category from "../ListBlock/ListBlock";
 
-export default function CategorySortingView ({tasks, categories, userSettings, onTaskClicked, onCompletionStateChanged}) {
+export default function CategorySortingView ({tasks, categories, filters, onTaskClicked, onCompletionStateChanged}) {
     
   function generateCategories() {  
     return categories
@@ -25,7 +25,7 @@ export default function CategorySortingView ({tasks, categories, userSettings, o
   }
     
     function buildCompletedSection(){
-        const active = userSettings?.filters?.find(setting => setting.name === 'Completed').value;
+        const active = filters?.find(setting => setting.name === 'Completed').value;
         let completedTasks = tasks?.filter(task => task.completed);     
 
         return <Category
@@ -41,7 +41,7 @@ export default function CategorySortingView ({tasks, categories, userSettings, o
     }
 
     function buildUncategorizedSection(){
-        const active = userSettings?.filters?.find(setting => setting.name === 'Uncategorized').value;
+        const active = filters?.find(setting => setting.name === 'Uncategorized').value;
     
         let uncategorizedTasks = tasks?.filter(task => (task.categoryId === null || task.category === '') && !task.completed);     
         return <Category

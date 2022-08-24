@@ -1,6 +1,5 @@
 import { Menu } from "@mantine/core";
 import { UserCircle } from "phosphor-react";
-
 import UserInformation from "./user-menu/UserInformation";
 import ThemeInformation from "./user-menu/ThemeInformation";
 import DefaultViewInformation from "./user-menu/DefaultViewInformation";

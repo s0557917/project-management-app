@@ -5,11 +5,6 @@ import { uncapitalizeFirstLetter } from "../../../../utils/text/textFormatting";
 
 export default function DefaultViewInformation() {
     const queryClient = useQueryClient();
-    // const [defaultViewState, setDefaultViewState] = useState(defaultView);
-    
-    // useEffect(() => {
-    //     setDefaultViewState(defaultView);
-    // }, [isFetchingDefaultView]);
 
     const {data: defaultView, isFetching: isFetchingDefaultView} = useQuery(['defaultView'], getDefaultView);
     const updateDefaultViewMutation = useMutation(

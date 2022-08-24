@@ -3,48 +3,47 @@ import Task from "./task/Task";
 import CategorySortingView from "./views/CategorySortingView";
 import DateSortingView from "./views/DateSortingView";
 import PrioritySortingView from "./views/PrioritySortingView";
+import { useQuery } from "@tanstack/react-query";
+import { getSorting } from "../../utils/db/queryFunctions/settings";
+import { getFilters } from "../../utils/db/queryFunctions/settings";
 
-export default function List({ tasks, categories, modalStateSetter, selectedTaskSetter, onCompletionStateChanged, sortingMethod, userSettings, isFetchingUserSettings, isFetchingTasks, isFetchingCategories }) {
+export default function List({ tasks, categories, modalStateSetter, selectedTaskSetter, onCompletionStateChanged, userSettings }) {
   
-  const [tasksState, setTasksState] = useState(prev => {
-    console.log("Prev: ", prev, " - CURR: ", tasks);
-    return tasks;
-  });
-  const [listContent, setListContent] = useState(generateListElements());
+  const {data: sortingLogic, isFetching: isFetchingSorting} = useQuery(['sorting'], getSorting)
+  const {data: filters, isFetching: isFetchingFilters} = useQuery(['filters'], getFilters);
 
-  useEffect(() => {
-    setListContent(generateListElements());
-  }, [sortingMethod, isFetchingUserSettings, tasks, categories, isFetchingTasks, isFetchingCategories]);
-
-  function generateListElements(){
-
-    switch(sortingMethod){
-      case 'category':
-        return <CategorySortingView 
+  function generateListContent(){
+    if(sortingLogic && !isFetchingSorting) {
+      switch(sortingLogic){
+        case 'category':
+          return <CategorySortingView 
+              tasks={tasks}
+              categories={categories}
+              filters={filters}
+              onTaskClicked={onTaskClicked}
+              onCompletionStateChanged={onCompletionStateChanged}
+            />
+        case 'date':
+          return <DateSortingView 
             tasks={tasks}
             categories={categories}
-            userSettings={userSettings}
             onTaskClicked={onTaskClicked}
             onCompletionStateChanged={onCompletionStateChanged}
-          />
-      case 'date':
-        return <DateSortingView 
-          tasks={tasks}
-          categories={categories}
-          onTaskClicked={onTaskClicked}
-          onCompletionStateChanged={onCompletionStateChanged}
-          userSettings={userSettings}
-        />;
-      case 'priority':
-        return <PrioritySortingView 
-          tasks={tasks}
-          categories={categories}
-          onTaskClicked={onTaskClicked}
-          onCompletionStateChanged={onCompletionStateChanged}
-          userSettings={userSettings}
-        />;
-      default:
-        return <></>;
+            filters={filters}
+          />;
+        case 'priority':
+          return <PrioritySortingView 
+            tasks={tasks}
+            categories={categories}
+            onTaskClicked={onTaskClicked}
+            onCompletionStateChanged={onCompletionStateChanged}
+            filters={filters}
+          />;
+        default:
+          return <></>;
+      }
+    } else {
+      return <h1>Loading...</h1>;
     }
   }
 
@@ -55,12 +54,9 @@ export default function List({ tasks, categories, modalStateSetter, selectedTask
 
   return (
     <div className="w-full">
-      {isFetchingTasks === true
-      ? <></>
-      : <ul className="w-full">
-          {listContent}
+      <ul className="w-full">
+          {generateListContent()}
         </ul>
-      }
     </div>
   )
 }

@@ -8,9 +8,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateUserSettings } from '../../../../utils/db/queryFunctions/settings'; 
 import { updateCategory, addNewCategory } from '../../../../utils/db/queryFunctions/categories';
 import getThemeColor from '../../../../utils/color/getThemeColor';
+import { useQuery } from '@tanstack/react-query';
+import { getFilters, updateFilters } from '../../../../utils/db/queryFunctions/settings';
 
 export default function FilteringMenu ({categories, userSettings, user}) {
         
+    const {data: filters, isFetching: isFetchingFilters} = useQuery(['filters'], getFilters);
+
     const queryClient = useQueryClient();
     
     const [opened, setOpened] = useState(false);
@@ -23,6 +27,13 @@ export default function FilteringMenu ({categories, userSettings, user}) {
             queryClient.invalidateQueries('settings');
         }}
     );
+
+    const modifiedFiltersMutation = useMutation(
+        (updatedFilters) => updateFilters(updatedFilters),
+        {onSuccess: async () => {
+            queryClient.invalidateQueries('filters');
+        }}
+    )
 
     const categoryStatusMutation = useMutation(
         (updatedCategory) => updateCategory(updatedCategory),
@@ -60,12 +71,11 @@ export default function FilteringMenu ({categories, userSettings, user}) {
     }
 
     async function onFilterStatusChanged(filterName, status) {
-        const index = userSettings.filters.findIndex(setting => setting.name === filterName);
-        const modifiedSettings = [...userSettings.filters];
+        const index = filters.findIndex(setting => setting.name === filterName);
+        const modifiedSettings = [...filters];
         modifiedSettings[index].value = status;
-        const modifiedUserSettings = {...user.settings, filters: modifiedSettings};
-
-        settingsMutation.mutate(modifiedUserSettings);
+        modifiedFiltersMutation.mutate(modifiedSettings);
+        // settingsMutation.mutate(modifiedUserSettings);
     }
 
     const useStyles = createStyles((theme) => ({
@@ -77,7 +87,7 @@ export default function FilteringMenu ({categories, userSettings, user}) {
         },
     }));
     const classes = useStyles();
-
+    console.log("Filters: ", filters);
     return (
         <Menu 
             shadow="md" 
@@ -112,7 +122,7 @@ export default function FilteringMenu ({categories, userSettings, user}) {
                                 />
                             )
                         }
-                        {userSettings?.filters
+                        {filters
                             ?.sort((a, b) => a.name.localeCompare(b.name))
                             ?.map((displaySetting) => {
                                 return (

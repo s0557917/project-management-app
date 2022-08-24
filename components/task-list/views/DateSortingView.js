@@ -1,12 +1,12 @@
 import Category from "../ListBlock/ListBlock";
 import { filterTasksToUserPreferences } from "../../../utils/task-filtering/taskFiltering";
 
-export default function DateSortingView({ tasks, categories, onTaskClicked, onCompletionStateChanged, userSettings}) {
+export default function DateSortingView({ tasks, categories, onTaskClicked, onCompletionStateChanged, filters}) {
     
     function generateDateSortedList() {
 
         const matchingTasks = tasks
-        ?.filter(task => filterTasksToUserPreferences(task, categories, userSettings))
+        ?.filter(task => filterTasksToUserPreferences(task, categories, filters))
         ?.sort((a, b) => (new Date(a.dueDate).getTime() || -Infinity) - (new Date(b.dueDate).getTime() || -Infinity))
         
         return generateDateBlocks(matchingTasks);
@@ -14,7 +14,7 @@ export default function DateSortingView({ tasks, categories, onTaskClicked, onCo
 
     function generateDateBlocks(sortedTasks) {
         const dates = new Set();
-        sortedTasks.forEach(task => {
+        sortedTasks?.forEach(task => {
             if(task.dueDate) {
                 dates.add(new Date(task.dueDate).toLocaleDateString('en-GB'));
             }

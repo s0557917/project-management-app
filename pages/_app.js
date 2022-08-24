@@ -8,6 +8,7 @@ import { SessionProvider as AuthProvider } from 'next-auth/react';
 import { Hydrate, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState } from 'react';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import '../utils/wdyr/wdyr'
 
 function MyApp({ Component, pageProps }) {
 

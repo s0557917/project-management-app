@@ -42,6 +42,38 @@ export const getFilters = async () => {
     return res.json();
 }
 
+export const updateFilters = async (updatedFilters) => {
+    if(updatedFilters && updatedFilters.length == 2) {
+        const res = await fetch('/api/filters', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedFilters),
+        });
+        return res.json();
+    }
+}
+
+export const getSorting = async () => {
+    const res = await fetch('/api/sorting', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+    console.log("SORTING GET");
+    return res.json();
+}
+
+export const updateSorting = async (updatedSorting) => {
+    console.log("SORTING UPDATE", updatedSorting);
+    if(updatedSorting && updatedSorting != '') {
+        const res = await fetch('/api/sorting', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedSorting),
+        });
+        return res.json();
+    }
+}
+
 export const getUserSettings = async () => {
     const res = await fetch(`/api/settings`, {
       method: 'GET',

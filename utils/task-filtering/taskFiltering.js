@@ -1,7 +1,7 @@
-export function filterTasksToUserPreferences(task, categories, userSettings) {
+export function filterTasksToUserPreferences(task, categories, filters) {
     return hasDueDate(task) 
-    && showCompletedTasks(task, userSettings) 
-    && (isCategoryPresentAndActive(task, categories) || isCategoryNotPresentAndUncategorizedVisible(task, userSettings));
+    && showCompletedTasks(task, filters) 
+    && (isCategoryPresentAndActive(task, categories) || isCategoryNotPresentAndUncategorizedVisible(task, filters));
 }
 
 export function hasDueDate(task) {
@@ -10,8 +10,8 @@ export function hasDueDate(task) {
       && task.dueDate != '';
 }
 
-function showCompletedTasks(task, userSettings) {
-    return !task.completed || userSettings?.filters?.find(filter => filter.name === 'Completed')?.value;
+function showCompletedTasks(task, filters) {
+    return !task.completed || filters?.find(filter => filter.name === 'Completed')?.value;
 }
 
 export function isCategoryPresentAndActive(task, categories) {
@@ -21,9 +21,9 @@ export function isCategoryPresentAndActive(task, categories) {
         && categories?.find(category => category.id === task.categoryId)?.active
 }
 
-export function isCategoryNotPresentAndUncategorizedVisible(task, userSettings) {
+export function isCategoryNotPresentAndUncategorizedVisible(task, filters) {
     return (task.categoryId === null
         || task.categoryId === undefined
         || task.categoryId === ''
-    ) && userSettings?.filters?.find(setting => setting.name === 'Uncategorized')?.value
+    ) && filters?.find(setting => setting.name === 'Uncategorized')?.value
 } 

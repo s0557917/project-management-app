@@ -3,8 +3,8 @@ import prisma from '../../utils/prisma';
 
 export default async function handler(req, res) {
     const session = await getSession({ req });
-    if(req.method === 'PUT' && session && req.body.length === 2){
-        try{
+    if(req.method === 'PUT' && session){
+        try{            
             const settings = await prisma.user.update({
                 where: { email: session.user.email },
                 data: {
@@ -13,11 +13,12 @@ export default async function handler(req, res) {
                     email_verified: undefined,
                     password: undefined,
                     image: undefined,
-                    filters: req.body
+                    settings: undefined,
+                    sorting: req.body
                 }
             });
-            
-            res.status(201).json('ok');
+
+            res.status(201).json(settings);
         } catch (e) {
             console.log("ERROR", e);
             res.status(500).json({error: e});
@@ -27,8 +28,8 @@ export default async function handler(req, res) {
             const user = await prisma.user.findUnique({
                 where: { email: session.user.email },
             });
-            
-            res.status(200).json(user.filters);
+
+            res.status(200).json(user.sorting);
         } catch (e) {
             console.log("ERROR", e);
             res.status(500).json({error: e});

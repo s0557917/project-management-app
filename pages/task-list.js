@@ -52,7 +52,6 @@ export default function TaskList({user}) {
     const {data: tasks, isFetching: isFetchingTasks} = useQuery(['tasks'], getAllTasks);
     const {data: categories, isFetching: isFetchingCategories} = useQuery(['categories'], getAllCategories);
 
-
     const newTaskMutation = useMutation(
         (newTask) => addNewTask(newTask),
         {
@@ -77,7 +76,6 @@ export default function TaskList({user}) {
 
     const [openedTaskEditor, setOpenedTaskEditor] = useState(false);
     const [selectedTask, setSelectedTask] = useState({});
-    const [sortingMethod, setSortingMethod] = useState("category");
 
     async function onNewTaskSaved(taskData) {
         newTaskMutation.mutate(taskData);
@@ -112,10 +110,7 @@ export default function TaskList({user}) {
                     <h1 className={`${colorScheme === 'dark' ? 'text-white' : 'text-gray-900'} text-2xl font-bold`}>Tasks</h1>
                     <div className="flex items-center">
                         <div className="px-2">
-                            <SortingMenu 
-                                sortingMethod={sortingMethod}
-                                sortingMethodSetter={setSortingMethod}
-                            />
+                            <SortingMenu />
                         </div>
                         <div className="px-2">
                             <FilteringMenu 
@@ -132,10 +127,8 @@ export default function TaskList({user}) {
                     selectedTaskSetter={setSelectedTask} 
                     modalStateSetter={setOpenedTaskEditor}
                     onCompletionStateChanged={onCompletionStateChanged}
-                    sortingMethod={sortingMethod}
                     userSettings={userSettings}
                     isFetchingUserSettings={isFetchingUserSettings}
-                    isFetchingTasks={isFetchingTasks}
                     isFetchingCategories={isFetchingCategories}
                 />
                 <TaskEditorDialogue 

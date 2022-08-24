@@ -1,8 +1,17 @@
-import { Menu, ScrollArea, TextInput } from '@mantine/core'
+import { Menu } from '@mantine/core'
 import { FunnelSimple, Calendar, Tag } from 'phosphor-react'
-import { capitalizeFirstLetter } from '../../../../utils/text/textFormatting'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { updateSorting } from '../../../../utils/db/queryFunctions/settings'
 
-export default function SortingMenu ({ sortingMethod, sortingMethodSetter }) {
+export default function SortingMenu () {
+    const queryClient = useQueryClient()
+    const updateSortingMutation = useMutation(
+        (updatedSorting) => updateSorting(updatedSorting),
+        {onSuccess: async () => {
+            queryClient.invalidateQueries('sorting')
+        }}
+    )
+
     return (
         <div className='flex items-center'>
             <Menu shadow="md" width={200}>
@@ -16,19 +25,19 @@ export default function SortingMenu ({ sortingMethod, sortingMethodSetter }) {
                     <Menu.Label>Sort by:</Menu.Label>
                     <Menu.Item 
                         icon={<Calendar size={18} />}
-                        onClick={() => sortingMethodSetter('date')} 
+                        onClick={() => updateSortingMutation.mutate('date')} 
                     >
                         Date
                     </Menu.Item>
                     <Menu.Item 
                         icon={<Tag size={18} weight="fill" />}
-                        onClick={() => sortingMethodSetter('category')} 
+                        onClick={() => updateSortingMutation.mutate('category')} 
                     >
                         Category
                     </Menu.Item>
                     <Menu.Item 
                         icon={<p className='text-lg font-bold'>P</p>}
-                        onClick={() => sortingMethodSetter('priority')} 
+                        onClick={() => updateSortingMutation.mutate('priority')} 
                     >
                         Priority
                     </Menu.Item>
