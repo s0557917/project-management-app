@@ -20,10 +20,9 @@ export default function Tab({link, route, text}){
     const hoverAndTextColor = getThemeColor('hover:bg-gray-300' ,'hover:bg-zinc-600');  
     const fontColor = getThemeColor('text-gray-900', 'text-white');
     return(
-        <li key={'task-list-tab'} className={`${border} ${activeColor} ${hoverAndTextColor} flex items-center cursor-pointer`}>
-            <Link href={link}>
-                <button className={`${ fontColor } px-2 text-md`} component='a'>{text}</button>
+        // <li key={'task-list-tab'} className={`${border} ${activeColor} ${hoverAndTextColor} flex items-center cursor-pointer`}>
+            <Link key={`${text}-tab`} href={link}>
+                <button className={`${ fontColor } px-2 text-md ${border} ${activeColor} ${hoverAndTextColor} flex items-center cursor-pointer`} component='a'>{text}</button>
             </Link>
-        </li>
     )
 }

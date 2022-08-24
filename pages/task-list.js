@@ -3,10 +3,7 @@ import AddTaskButton from "../components/general/buttons/AddTaskButton";
 import Navbar from "../components/general/navbar/Navbar";
 import List from "../components/task-list/List";
 import { getSession } from 'next-auth/react';
-import prisma from "../utils/prisma";
 import { useState } from 'react';
-import SortingMenu from "../components/general/menus/filtering-and-sorting/SortingMenu";
-import FilteringMenu from "../components/general/menus/filtering-and-sorting/FilteringMenu";
 import { dehydrate, QueryClient, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getUserSettings } from "../utils/db/queryFunctions/settings";
 import { prismaGetAllTasks, getAllTasks, addNewTask, updateTask } from "../utils/db/queryFunctions/tasks";
@@ -31,21 +28,14 @@ export async function getServerSideProps({req, res}) {
     await queryClient.prefetchQuery(['categories'], prismaGetAllCategories(session.user.email));
     await queryClient.prefetchQuery(['settings'], prismaGetAllCategories(session.user.email));
   
-    const user = await prisma.user.findUnique({
-        where: {
-            email: session.user.email,
-        },
-    });
-
     return {
         props: {
             dehydratedState: dehydrate(queryClient),
-            user: JSON.parse(JSON.stringify(user)),
         },
     }
 }
 
-export default function TaskList({user}) {
+export default function TaskList() {
     const { colorScheme } = useMantineColorScheme();
     const queryClient = useQueryClient();
 
@@ -108,6 +98,7 @@ export default function TaskList({user}) {
             <Navbar /> 
             <div className="h-full p-5">       
                 <TitleBar 
+                    width={'w-4/5'}
                     displaySortingMenu={true}
                 />
                 <List 

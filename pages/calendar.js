@@ -1,15 +1,11 @@
-import FilteringMenu from "../components/general/menus/filtering-and-sorting/FilteringMenu";
 import TaskEditorDialogue from "../components/task-editor-dialogue/TaskEditorDialogue";
-import SortingMenu from "../components/general/menus/filtering-and-sorting/SortingMenu";
 import EventCalendar from "../components/calendar/EventCalendar"
 import Navbar from '../components/general/navbar/Navbar';
 import { getSession } from 'next-auth/react';
 import { useState } from "react";
 import { dehydrate, QueryClient, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-// import { getUserSettings } from "../utils/db/queryFunctions/settings";
 import { prismaGetAllTasks, getAllTasks, addNewTask, updateTask } from "../utils/db/queryFunctions/tasks";
 import { getAllCategories, prismaGetAllCategories } from "../utils/db/queryFunctions/categories";
-import prisma from "../utils/prisma";
 import TitleBar from "../components/general/layout/TitleBar";
 
 export async function getServerSideProps({req, res}) {
@@ -30,25 +26,17 @@ export async function getServerSideProps({req, res}) {
     await queryClient.prefetchQuery(['categories'], prismaGetAllCategories(session.user.email));
     await queryClient.prefetchQuery(['settings'], prismaGetAllCategories(session.user.email));
 
-    const user = await prisma.user.findUnique({
-        where: {
-            email: session.user.email,
-        },
-    });
-
     return {
         props: {
             dehydratedState: dehydrate(queryClient),
-            user: JSON.parse(JSON.stringify(user)),
         },
     }
 }
 
-export default function Calendar({user}) {
+export default function Calendar() {
 
     const queryClient = useQueryClient();
 
-    // const {data: userSettings, isFetching: isFetchingUserSettings} = useQuery(['settings'], getUserSettings);
     const {data: tasks, isFetching: isFetchingTasks} = useQuery(['tasks'], getAllTasks);
     const {data: categories, isFetching: isFetchingCategories} = useQuery(['categories'], getAllCategories);
 
@@ -110,6 +98,7 @@ export default function Calendar({user}) {
             <Navbar />
             <div className="h-screen p-5">
                 <TitleBar 
+                    width={'w-full'}
                     displaySortingMenu={false}
                 />
 
