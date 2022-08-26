@@ -35,7 +35,11 @@ export const languageDef = {
       [/\\p5/g, "p5"],
       [/\\today/g, "today"],
       [/\\tomorrow/g, "tomorrow"],
-      [/\\t\s/g, "t"],
+      [/\\t\s/g, "\\t"],
+      [/t\\\s/g, "t\\"],
+      [/\\s\s/g, "\\s"],
+      [/s\\\s/g, "s\\"],
+      [/\\Uncategorized/g, "uncategorized"],
     ],
     whitespace: [
       // [comment, "comment"],
@@ -67,6 +71,6 @@ export const configuration = {
     lineComment: "#",
   },
   brackets: [
-    ["{", "}"], ["[", "]"], ["(", ")"], ["\\t", "\\t "]
+    ["{", "}"], ["[", "]"], ["(", ")"], ["\\t ", "t\\ "], ["\\s ", "s\\ "]
   ],
 }

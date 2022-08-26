@@ -10,6 +10,7 @@ import { prismaGetAllTasks, getAllTasks, addNewTask, updateTask } from "../utils
 import { getAllCategories, prismaGetAllCategories } from "../utils/db/queryFunctions/categories";
 import { useMantineColorScheme } from '@mantine/core';
 import TitleBar from "../components/general/layout/TitleBar";
+import StickyNavbar from "../components/general/navbar/StickyNavbar";
 
 export async function getServerSideProps({req, res}) {
     const session = await getSession({ req });
@@ -95,6 +96,7 @@ export default function TaskList() {
     return (
         <div className={`relative w-screen h-screen flex flex-col flex-1 scroll overflow-scroll `}>
             <Navbar /> 
+            <StickyNavbar />
             <div className="h-full p-5">       
                 <TitleBar 
                     width={'w-4/5'}

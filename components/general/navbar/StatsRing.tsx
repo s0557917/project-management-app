@@ -1,5 +1,4 @@
-import { RingProgress, Text } from '@mantine/core';
-import { ArrowUp, ArrowDown } from 'phosphor-react';
+import { RingProgress } from '@mantine/core';
 import getThemeColor from "../../../utils/color/getThemeColor";
 
 
@@ -13,14 +12,7 @@ interface StatsRingProps {
   };
 }
 
-const icons = {
-  up: ArrowUp,
-  down: ArrowDown,
-};
-
 export function StatsRing({ data }: StatsRingProps) {
-  console.log("data", data);
-  const Icon = icons[data.icon];
   return (
         <div className='flex items-center'>
           <RingProgress
