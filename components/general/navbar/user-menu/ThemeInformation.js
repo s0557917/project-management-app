@@ -13,7 +13,7 @@ export default function ThemeInformation() {
     const { toggleColorScheme } = useMantineColorScheme();
 
     useEffect(() => {
-        toggleColorScheme(theme);
+        if(theme !== undefined) toggleColorScheme(theme);
     }, [isFetchingTheme])
 
     const updateThemeMutation = useMutation(

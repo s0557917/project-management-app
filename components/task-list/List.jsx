@@ -13,37 +13,33 @@ export default function List({ tasks, categories, modalStateSetter, selectedTask
   const {data: filters, isFetching: isFetchingFilters} = useQuery(['filters'], getFilters);
 
   function generateListContent(){
-    if(sortingLogic && !isFetchingSorting) {
-      switch(sortingLogic){
-        case 'category':
-          return <CategorySortingView 
-              tasks={tasks}
-              categories={categories}
-              filters={filters}
-              onTaskClicked={onTaskClicked}
-              onCompletionStateChanged={onCompletionStateChanged}
-            />
-        case 'date':
-          return <DateSortingView 
+    switch(sortingLogic){
+      case 'category':
+        return <CategorySortingView 
             tasks={tasks}
             categories={categories}
+            filters={filters}
             onTaskClicked={onTaskClicked}
             onCompletionStateChanged={onCompletionStateChanged}
-            filters={filters}
-          />;
-        case 'priority':
-          return <PrioritySortingView 
-            tasks={tasks}
-            categories={categories}
-            onTaskClicked={onTaskClicked}
-            onCompletionStateChanged={onCompletionStateChanged}
-            filters={filters}
-          />;
-        default:
-          return <></>;
-      }
-    } else {
-      return <ListSkeleton />;
+          />
+      case 'date':
+        return <DateSortingView 
+          tasks={tasks}
+          categories={categories}
+          onTaskClicked={onTaskClicked}
+          onCompletionStateChanged={onCompletionStateChanged}
+          filters={filters}
+        />;
+      case 'priority':
+        return <PrioritySortingView 
+          tasks={tasks}
+          categories={categories}
+          onTaskClicked={onTaskClicked}
+          onCompletionStateChanged={onCompletionStateChanged}
+          filters={filters}
+        />;
+      default:
+        return <ListSkeleton />;
     }
   }
 

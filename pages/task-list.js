@@ -11,6 +11,7 @@ import { getAllCategories, prismaGetAllCategories } from "../utils/db/queryFunct
 import { useMantineColorScheme } from '@mantine/core';
 import TitleBar from "../components/general/layout/TitleBar";
 import StickyNavbar from "../components/general/navbar/StickyNavbar";
+import LoadingIcon from "../components/general/loading/LoadingIcon";
 
 export async function getServerSideProps({req, res}) {
     const session = await getSession({ req });
@@ -96,7 +97,7 @@ export default function TaskList() {
     return (
         <div className={`relative w-screen h-screen flex flex-col flex-1 scroll overflow-scroll `}>
             <Navbar /> 
-            <StickyNavbar />
+            {/* <StickyNavbar /> */}
             <div className="h-full p-5">       
                 <TitleBar 
                     width={'w-4/5'}
@@ -123,6 +124,7 @@ export default function TaskList() {
                     onModalClosed={onModalClosed}
                 />
                 <AddTaskButton modalStateSetter={setOpenedTaskEditor}/>
+                {/* <LoadingIcon /> */}
             </div>
         </div>
     )
