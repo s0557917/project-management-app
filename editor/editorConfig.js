@@ -42,11 +42,11 @@ export const languageDef = {
       [/\\Uncategorized/g, "uncategorized"],
     ],
     whitespace: [
-      // [comment, "comment"],
-      // [/\s+/, "white"],
+      [comment, "comment"],
+      [/\s+/, "white"],
     ],
     numbers: [
-      // [/@number/, "number"],
+      [/@number/, "number"],
     ],
     strings: [
       // [/[=|][ @number]*$/, "string.escape"],
@@ -71,6 +71,6 @@ export const configuration = {
     lineComment: "#",
   },
   brackets: [
-    ["{", "}"], ["[", "]"], ["(", ")"], ["\\t ", "t\\ "], ["\\s ", "s\\ "]
+    ["{", "}"], ["[", "]"], ["(", ")"], ["\\t", "t\\"], ["\\s", "s\\"]
   ],
 }

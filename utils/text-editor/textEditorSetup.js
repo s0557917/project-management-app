@@ -1,4 +1,5 @@
 import { languageDef, configuration } from '../../editor/editorConfig';
+import { capitalizeFirstLetter } from '../text/textFormatting';
 
 export default function textEditorSetup(monaco, categories) {
     if (monaco && !monaco.languages.getLanguages().some(({ id }) => id === 'sampleLanguage')) {
@@ -88,7 +89,7 @@ function setCategoryTokens(categories) {
     ]
 
     categories?.forEach(category => {
-      categoryTokens.push({token: category.name, foreground: category.color});
+      categoryTokens.push({token: capitalizeFirstLetter(category.name).replace(' ', ''), foreground: category.color});
     });
 
     return categoryTokens;

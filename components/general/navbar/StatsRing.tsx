@@ -21,9 +21,11 @@ export function StatsRing({ data }: StatsRingProps) {
             thickness={4}
             sections={[{ value: data.progress, color: data.color }]}
             label={
-              <p className={`text-center text-lg font-bold ${getThemeColor('text-gray-900', 'text-white')}`}>
+              data 
+              ? <p className={`text-center text-lg font-bold ${getThemeColor('text-gray-900', 'text-white')}`}>
                 {data.stats}
               </p>
+              : <p>...</p>
             }
           />
 

@@ -10,7 +10,7 @@ export default function UserMenu () {
             <Menu shadow="md" width={250}>
                 <Menu.Target>
                     <button className="mx-3 hover:scale-105 transition-all active:scale-95">
-                        <UserCircle size={50} color="#16a34a" weight="fill" />
+                        <UserCircle size={50} color="#15803d" weight="fill" />
                     </button>
                 </Menu.Target>
 

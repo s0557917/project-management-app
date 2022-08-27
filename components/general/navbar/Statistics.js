@@ -20,7 +20,7 @@ export default function Statistics() {
                 && dayjs(task.dueDate).isBefore(new Date()));
             const uniqueDates = getUniqueDates(filteredTasks);
 
-            return uniqueDates.size;
+            return uniqueDates.size ;
         }
     }
 
