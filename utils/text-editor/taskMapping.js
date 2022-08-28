@@ -1,25 +1,24 @@
 const titlePadding = 30;
-const categoryPadding = 15;
+const categoryPadding = 18;
 const datePadding = 16;
 
 export function mapTasksToEditor(tasks, categories) {
     return tasks?.map(task => 
-      `\\t ${task.id.substring(0,4)} ${task.title.padEnd(titlePadding)} ${mapCategory(categories, task.categoryId)} \\p${task.priority} ${mapDate(task)} t\\ `
+      mapSingleTask(task, categories)
     ).join('\n');
 }
 
 export function mapSingleTask(task, categories) {
-    return `\\t ${task.id.substring(0,4)} ${task.title.padEnd(titlePadding)} ${mapCategory(categories, task.categoryId)} \\p${task.priority} ${mapDate(task)} t\\ `
+    return `${task.id.substring(0,4)} ${String('t('+ task.title + ')').padEnd(titlePadding)} ${task.details !== '' ? String('d('+ task.details + ')').padEnd(titlePadding) : String('').padEnd(titlePadding)} ${mapCategory(categories, task.categoryId)} p(${task.priority}) ${mapDate(task)}`
 }
 
 function mapCategory(categories, categoryId) {
     if(categoryId !== null && categoryId !== undefined && categoryId !== '') {
         return String(
-            `\\${categories?.find(category => category.id === categoryId)?.name}`
-        ).replace(' ', '')
-        .padEnd(categoryPadding);
+            `c(${categories?.find(category => category.id === categoryId)?.name})`
+        ).padEnd(categoryPadding);
     } else {
-        return String('\\Uncategorized').padEnd(categoryPadding);
+        return String('c(Uncategorized)').padEnd(categoryPadding);
     }
 }
 
@@ -29,7 +28,7 @@ function mapDate(task) {
     } else {
         const date = new Date(task.dueDate);  
         const mappedDate = String(
-            `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth()).padStart(2, '0')}-${date.getFullYear()} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`
+            `dt(${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth()).padStart(2, '0')}-${date.getFullYear()} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")})`
         );
         return mappedDate.padEnd(datePadding);
     }

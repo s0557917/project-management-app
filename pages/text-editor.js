@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { options } from '../editor/editorConfig';
 import useDebounce from '../utils/hooks/useDebounce';
 import { dehydrate, QueryClient, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { prismaGetAllTasks, getAllTasks } from '../utils/db/queryFunctions/tasks';
+import { prismaGetAllTasks, getAllTasks, deleteTask, updateTask } from '../utils/db/queryFunctions/tasks';
 import { prismaGetAllCategories, getAllCategories } from '../utils/db/queryFunctions/categories';
 import { getSession } from 'next-auth/react';
 import TextEditorSkeleton from '../components/general/loading/TextEditorSkeleton';
@@ -15,8 +15,11 @@ import getThemeColor from '../utils/color/getThemeColor';
 import { mapTasksToEditor, mapSingleTask } from '../utils/text-editor/taskMapping';
 import { useState } from 'react';
 import UpdateButton from '../components/text-editor/buttons/UpdateButton';
-import { runSyntaxCheck, getChanges, splitContentIntoLines, getFoundTasksPositionAndId, guaranteeCorrectTagSpacing, guaranteeCorrectLineFormat, getTaskComponents } from '../utils/text-editor/textProcessing';
+import { runSyntaxCheck, getChanges, splitContentIntoLines, getFoundTasksPositionAndId, guaranteeCorrectTagSpacing, guaranteeCorrectLineFormat, getTaskComponents, getLineMovemenet, structureEditorContent, mapLineToTask } from '../utils/text-editor/textProcessing';
 import { Modal } from '@mantine/core';
+import { addNewTask } from "../utils/db/queryFunctions/tasks";
+import { capitalizeFirstLetter } from '../utils/text/textFormatting';
+
 
 export async function getServerSideProps({req, res}) {
 
@@ -57,8 +60,8 @@ export default function TextEditor() {
   const {data: tasks, isFetching: isFetchingTasks} = useQuery(['tasks'], getAllTasks);
   const {data: categories, isFetching: isFetchingCategories} = useQuery(['categories'], getAllCategories);
 
-  const [taskStructure, setTaskStructure] = useState([]);
-  const [foundTasksWithPosition, setFoundTasksWithPosition] = useState([]);
+  const [editorContentStructure, setEditorContentStructure] = useState([]);
+  const [modifiedContentStructure, setModifiedContentStructure] = useState([]);
   
   const [unManagedContent, setUnManagedContent] = useState('');
   const [editorContent, setEditorContent] = useState(() => handleInitialContentSetup());
@@ -68,16 +71,18 @@ export default function TextEditor() {
   const debouncedEditorContent = useDebounce(unManagedContent, 500);
   
   const monaco = useMonaco();
-  
   const editorRef = useRef(null);
+
   function handleEditorDidMount(editor, monaco) {
-    editor.focus();
+    editor.onDidChangeCursorPosition(e => handleCursorPosition(e.position, editor)); 
     editorRef.current = editor; 
   }
 
   useEffect(() => {
-    textEditorSetup(monaco, categories);
-  }, [monaco, categories, isFetchingCategories]);
+    if(categories !== undefined && categories !== null && categories.length > 0) {
+      textEditorSetup(monaco, categories);
+    }
+  }, [monaco, categories, tasks, isFetchingTasks, isFetchingCategories]);
 
   useEffect(() => {
     setEditorContent(handleInitialContentSetup());
@@ -88,28 +93,84 @@ export default function TextEditor() {
       const correctSyntax = runSyntaxCheck(unManagedContent);
       setCanUpdate(correctSyntax);
 
-      const foundTasks = unManagedContent.match(/\\t(.*?)t\\/g);
-      const editorContentLines = guaranteeCorrectTagSpacing(splitContentIntoLines(debouncedEditorContent));
+      const editorLines = splitContentIntoLines(debouncedEditorContent);
       
-      setFoundTasksWithPosition(getFoundTasksPositionAndId(foundTasks, editorContentLines, tasks));
+      setModifiedContentStructure(structureEditorContent(editorLines, tasks));
     }
   }, [debouncedEditorContent]);
 
-  function findDifferences() {
-    console.log("foundTasksWithPosition", foundTasksWithPosition);
-    
-    //0. Format lines -> 
-    const tasksWithComponents = getTaskComponents(foundTasksWithPosition);
-    console.log( "tasksWithComponents", tasksWithComponents);
-    //1. Check newTasks for task without ID -> NEW 
-    const newTasks = tasksWithComponents.filter(task => task.id === undefined);
-    
-    //2. Compare oldStructure with new Structure. IDs present in current but missing in old -> DELETED
-    const deletedTasks = taskStructure.filter(task => tasksWithComponents.find(oldTask => oldTask.id === task.id) === undefined);
+  const newTaskMutation = useMutation(
+    (newTask) => addNewTask(newTask),
+    {
+        onMutate: async (newTask) => {
+            // console.log("newTask", newTask.id);
+        },
+        onSuccess: async () => {
+            queryClient.invalidateQueries('tasks');
+        },
+        onSettled: async (data, error, variables, context) => {
+            console.log("settled", data.id, error, variables, context);
+        }
+    }
+  );
 
-    //3. Compare content of all IDs present in current and in old -> UPDATED
-    const changedTasks = getChanges(taskStructure, tasksWithComponents);
-    
+  const updateTaskMutation = useMutation(
+    (updatedTask) => updateTask(updatedTask),
+    {onSuccess: async () => {
+        queryClient.invalidateQueries('tasks');
+    }}
+)
+
+  const deleteTaskMutation = useMutation(
+    (taskId) => deleteTask(taskId),
+    {
+        onMutate: async (newTask) => {
+            // console.log("newTask", newTask.id);
+        },
+        onSuccess: async () => {
+          queryClient.invalidateQueries('tasks');
+        },
+        onSettled: async (data, error, variables, context) => {
+            console.log("settled", data.id, error, variables, context);
+        }
+    }
+  );
+
+  function handleInitialContentSetup() {
+    let linePosition = 1;
+    const structuredContent = tasks?.map(task => {
+
+      const content = mapSingleTask(task, categories);
+
+      let mappedTasks = {
+        type: 'task',
+        id: task.id,
+        startPos: {l: linePosition, c: 0},
+        endPos: {l: linePosition, c: content.length},
+        content: content,
+        components: getTaskComponents(content)
+      }
+
+      linePosition += 1;
+      return mappedTasks;      
+    });
+   
+    setEditorContentStructure(structuredContent);
+    return mapTasksToEditor( tasks, categories);
+  }
+
+  function onUpdateButtonClicked() {
+    findDifferences();
+  }
+
+  function findDifferences() {   
+    //1. Check newTasks for task without ID -> NEW 
+    const newTasks = modifiedContentStructure.filter(line => line.type === 'task' && line.id === undefined);
+    //2. Compare oldStructure with new Structure. IDs present in current but missing in old -> DELETED
+    const deletedTasks = editorContentStructure.filter(line => line.type === 'task' && !modifiedContentStructure.find(modifiedLine => modifiedLine.id === line.id));
+    // //3. Compare content of all IDs present in current and in old -> UPDATED
+    const changedTasks = getChanges(editorContentStructure, modifiedContentStructure);
+
     setChanges({
       newTasks: newTasks,
       deletedTasks: deletedTasks,
@@ -124,37 +185,18 @@ export default function TextEditor() {
 
   }
 
-  function handleInitialContentSetup() {
-    let linePosition = 1;
-    const mappedTasksWithoutStructure = tasks?.map(task => {
-
-      const content = mapSingleTask(task, categories).match(/(?<=\\t)(.*)(?=t\\)/g)[0].trim();
-
-      let mappedTasks = {
-        type: 'task',
-        id: task.id,
-        startPos: {l: linePosition + 1, c: 0},
-        endPos: {l: linePosition, c: content.length},
-        content: content,
-      }
-
-      linePosition += 1;
-      return mappedTasks;      
-    });
-   
-    const structure = getTaskComponents(mappedTasksWithoutStructure);
-    setTaskStructure(structure);
-    return mapTasksToEditor( tasks, categories);
-  }
-
-  function onUpdateButtonClicked() {
-    findDifferences();
+  function handleCursorPosition(position, editor) {
+    // if(position.column < 6) {
+    //   editor.setPosition({
+    //     lineNumber: position.lineNumber,
+    //     column: 6
+    //   })
+    // }
   }
 
   return (  
     <div>
         <Navbar />
-        <h1>Text Editor</h1>
         <UpdateButton 
           canUpdate={canUpdate} 
           onUpdate={onUpdateButtonClicked}
@@ -202,7 +244,7 @@ export default function TextEditor() {
               </ul>
             </div>
           }
-          
+
           {changes.changedTasks?.length > 0
             && 
             <div>
@@ -212,6 +254,28 @@ export default function TextEditor() {
               </ul>
             </div>
           }
+
+          <button
+            onClick={() => {
+
+              changes.changedTasks.forEach(task => {
+                const updatedTask = mapLineToTask(task, categories);
+                updateTaskMutation.mutate(updatedTask);
+              });
+              changes.newTasks.forEach(task => {
+                if(task.components.title !== undefined) {
+                  const newTask = mapLineToTask(task, categories);
+                  newTaskMutation.mutate(newTask);
+                }
+              });
+              changes.deletedTasks.forEach(task => deleteTaskMutation.mutate(task.id));
+
+              setIsModalOpen(false);
+              setChanges({});
+            }}
+          >
+            Do it!
+          </button>
         </Modal>
     </div>
   )

@@ -1,10 +1,8 @@
 export function runSyntaxCheck(text) {
-    const openingTagsCount = text.match(/\\t /g).length;
-    const closingTagsCount = text.match(/t\\/g).length;
-    const openingSubtaskTagsCount = text.match(/\\s /g)?.length || 0;
-    const closingSubtaskTagsCount = text.match(/( s\\|s\\ )/g)?.length || 0;
+    const openingTagsCount = text.match(/\(/g).length;
+    const closingTagsCount = text.match(/\)/g).length;
 
-    return closingTagsCount === openingTagsCount && closingSubtaskTagsCount === openingSubtaskTagsCount;
+    return closingTagsCount === openingTagsCount;
 }
 
 export function guaranteeCorrectTagSpacing(lines) {
@@ -14,73 +12,6 @@ export function guaranteeCorrectTagSpacing(lines) {
             .replace(/(?<=[^\s])t\\/g, ' t\\ ');
         return modifiedLine;
     });
-}
-
-//TODO FIX GETTING TITLE WHEN NO ID PRESENT
-export function getTaskComponents(lines) {
-    if(!lines) return [];
-    // const fullTaskTitleRegex = /(?<!\\)\s([A-Z|a-z].*?)(?=\\ ?|t\\)/;
-    const prioRegex = /\\p[0-5]/;
-    const dateTimeRegex = /\d{2}[-]\d{2}[-]\d{4} \d{2}[:]\d{2}|\d{2}[-]\d{2}[-]\d{4}/;
-    const categoryRegex = /\\[A-Z].*?(?=\s|\\)/;
-    const titleRegex = /([A-Z|a-z|0-9].*?)(?=\\ ?|t\\)/;
-
-    return lines.map(line => {
-        const priorityMatches = line.content.match(prioRegex);
-        const dateTimeMatches = line.content.match(dateTimeRegex);
-        const titleMatches = line.content.substring(5).match(titleRegex);
-        const categoryMatches = line.content.match(categoryRegex);
-
-        return {
-            ...line,
-            components: {
-                taskId: line.id,
-                title: titleMatches !== null ? titleMatches[0].trim() : undefined,
-                category: categoryMatches !== null ? categoryMatches[0] : undefined,   
-                priority: priorityMatches !== null ? priorityMatches[0] : '\\p1',
-                dateTime: dateTimeMatches !== null ? dateTimeMatches[0] : undefined,
-            }
-        }
-    });
-}
-
-export function getChanges(previous, current) {
-    return current.filter(task => {
-        const previousTask = previous.find(previousTask => previousTask.id === task.id);
-
-        if(previousTask !== undefined) {
-            if(previousTask.components.title !== task.components.title) {
-                console.log("Title changed", task);
-                return true;
-            }
-            if(previousTask.components.category !== task.components.category) {
-                console.log("Category changed", task);
-                return true;
-            }
-            if(previousTask.components.priority !== task.components.priority) {
-                console.log("Priority changed", task);
-                return true;
-            }
-            if(previousTask.components.dateTime !== task.components.dateTime) {
-                console.log("DateTime changed", task);
-                return true;
-            }
-        }
-
-        return false;
-    })
-}
-
-export function getTasks(unManagedContent) {
-    const foundTasks = unManagedContent.match(/\\t(.*?)t\\/g);
-    console.log("foundTasks", foundTasks);
-    const foundTasksWithPosition = (foundTasks) => {
-        // foundTasks.forEach(task => {
-        //     const regex = new RegExp(`\\t ${task.id.sub}`, 'g');
-        //     unManagedContent.match(/\\t task/g)
-        // })
-    }
-
 }
 
 export function splitContentIntoLines(debouncedEditorContent) {
@@ -94,27 +25,111 @@ export function splitContentIntoLines(debouncedEditorContent) {
         currentLine.push(debouncedEditorContent.charAt(i));
       }
     }
-
     return editorContentLines;
 }
 
-export function getFoundTasksPositionAndId(foundTasks, editorContentLines, tasks) {
-    return foundTasks
-      .map(foundTask => {
-        const shortTaskId = foundTask.split(' ')[1];
-        const taskPosition = editorContentLines.findIndex(line => line.split(' ')[1] === shortTaskId);
-        const fullTaskId = tasks.find(task => task.id.substring(0,4) === shortTaskId)
-        const content = foundTask.match(/(?<=\\t)(.*)(?=t\\)/g)[0].trim();
+export function structureEditorContent(editorLines, tasks) {
+    return editorLines
+        .map((editorLine, i) => {
+            const components = getTaskComponents(editorLine);
+            if(components.title !== undefined) {
+                const shortTaskId = editorLine.match(/.*?(?=t\()/);
 
-        if(taskPosition !== -1) {
-          return {
-            type: 'task',
-            id: fullTaskId !== undefined ? fullTaskId.id : undefined,
-            startPos: {l: taskPosition + 1, c: 0},
-            endPos: {l: taskPosition + 1, c: foundTask.length},
-            content: content,
-          }
+                const fullTaskId = shortTaskId !== null 
+                    ? tasks.find(task => {
+                        // console.log("COMP", task.id.substring(0,4).trim(), " - ", shortTaskId[0].trim(), " == ", task.id.substring(0,4).trim() === shortTaskId[0].trim())
+                        return task.id.substring(0,4).trim() === shortTaskId[0].trim()
+                    })?.id 
+                    : undefined;
+                return {
+                    type: 'task',
+                    id: fullTaskId,
+                    startPos: {l: i + 1, c: 0},
+                    endPos: {l: i + 1, c: editorLine.length},
+                    content: editorLine,
+                    components: components
+                }
+            } else if (editorLine !== '' || editorLine !== '\n') {
+                return {
+                    type: 'note',
+                    startPos: {l: i + 1, c: 0},
+                    endPos: {l: i + 1, c: editorLine.length},
+                    content: editorLine,
+                }
+            }
+        })
+        .filter(line => line !== undefined);
+}
+
+export function getTaskComponents(line) {
+    if(!line) return undefined;
+
+    const titleRegex = /(?<=(?<!d)t\().*?(?=\))/;
+    const detailsRegex = /(?<=d\().*?(?=\))/;
+    const categoryRegex = /((?<=c\(|category\()[A-Z].*?(?=\)))/;
+    const prioRegex = /(?<=p\()[0-5](?=\))/;
+    const dateTimeRegex = /(?<=dt\(|datetime\()\d{2}[-]\d{2}[-]\d{4} \d{2}[:]\d{2}|\d{2}[-]\d{2}[-]\d{4}(?=\))/;
+
+    const titleMatches = line.match(titleRegex);
+    const detailsMatches = line.match(detailsRegex);
+    const priorityMatches = line.match(prioRegex);
+    const dateTimeMatches = line.match(dateTimeRegex);
+    const categoryMatches = line.match(categoryRegex);
+
+    return {
+        taskId: line.id,
+        title: titleMatches !== null ? titleMatches[0].trim() : undefined,
+        details: detailsMatches !== null ? detailsMatches[0].trim() : undefined,
+        category: categoryMatches !== null ? categoryMatches[0].trim() : undefined,   
+        priority: priorityMatches !== null ? parseInt(priorityMatches[0].trim()) : 1,
+        dueDate: dateTimeMatches !== null ? dateTimeMatches[0].trim() : undefined,
+    }
+}
+
+export function getChanges(previous, current) {
+    return current.filter(task => {
+        const previousTask = previous.find(previousTask => previousTask.id === task.id);
+
+        if(previousTask !== undefined) {
+            if(previousTask.components.title !== task.components.title) {
+                console.log("Title changed", task);
+                return true;
+            }
+            if(previousTask.components.details !== task.components.details) {
+                console.log("Details changed", task);
+                return true;
+            }
+            if(previousTask.components.category !== task.components.category) {
+                console.log("Category changed", task);
+                return true;
+            }
+            if(previousTask.components.priority !== task.components.priority) {
+                console.log("Priority changed", task);
+                return true;
+            }
+            //TODO FIX DATE COMPARISON
+            if(previousTask.components.dateTime !== task.components.dateTime) {
+                console.log("DateTime changed", task);
+                return true;
+            }
         }
-      })
-      .filter(task => task !== undefined)
+
+        return false;
+    })
+}
+
+export function mapLineToTask(task, categories) {
+    return {
+        id: task.id || undefined,
+        title: task.components.title,
+        details: task.components.details || '',
+        completed: false,
+        dueDate: new Date(task.components.dueDate) || null,
+        priority: task.components.priority,
+        categoryId: categories?.find(category => category.name === task.components.category)?.id || '',
+        start: null,
+        end: null,
+        reminders: null,
+        subtasks: null,
+    }
 }

@@ -22,7 +22,9 @@ export const addNewTask = async (taskData) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(taskData),
     });
-    return res.json();
+    const resp = res.json();
+
+    return resp;
 }
 
 export const updateTask = async ( modifiedTask ) => {
@@ -30,6 +32,14 @@ export const updateTask = async ( modifiedTask ) => {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(modifiedTask),
+    });
+    return res.json();
+}
+
+export const deleteTask = async ( taskId ) => {
+    const res = await fetch(`/api/tasks/${taskId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
     });
     return res.json();
 }
