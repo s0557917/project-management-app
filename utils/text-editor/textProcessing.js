@@ -5,6 +5,19 @@ const categoryRegex = /((?<=c\(|category\()[A-Z|a-z|0-9].*?(?=\)))/;
 const prioRegex = /(?<=p\()[0-5](?=\))/;
 const dateTimeRegex = /(?<=dt\(|datetime\()\d{2}[-]\d{2}[-]\d{4} \d{2}[:]\d{2}|\d{2}[-]\d{2}[-]\d{4}(?=\))/;
 
+function formatDateTimeToObject(date) {
+    const splitDateAndTime = date[0].split(' ');
+    const splitDate = splitDateAndTime[0].split('-');
+    
+    if(splitDateAndTime.length === 2 && splitDate.length === 3) {
+        return new Date(`${splitDate[2]}-${splitDate[1]}-${splitDate[0]}T${splitDateAndTime[1].padEnd(8, ':00')}`);
+    } else if (splitDateAndTime.length === 1 && splitDate.length === 3) {
+        return new Date(`${splitDate[2]}-${splitDate[1]}-${splitDate[0]}T00:00:00`);
+    } else {
+        return undefined;
+    }
+}
+
 export function runSyntaxCheck(text, categories) {  
     const openingTagsCount = text.match(/\(/g).length;
     const closingTagsCount = text.match(/\)/g).length;
@@ -26,14 +39,13 @@ export function runSyntaxCheck(text, categories) {
         dateTimesCorrectness = datesWithBrackets.map(date => {
             const dateMatch = date.match(dateTimeRegex);
             if(dateMatch !== null) {
-                const splitDateAndTime = dateMatch[0].split(' ');
-                const splitDate = splitDateAndTime[0].split('-');
-                const reformattedDateTime = new Date(`${splitDate[2]}-${splitDate[1]}-${splitDate[0]}T${splitDateAndTime[1].padEnd(8, ':00')}`);
-
-                if(isNaN(reformattedDateTime)) {
+                const dateObject = formatDateTimeToObject(dateMatch);
+                if(!dateObject || isNaN(dateObject)) {
+                    console.log("DATE BRACKET ISSUE")
                     return false;
                 }
             } else {
+                console.log("DATE BRACKET ISSUE")
                 return false;
             }
             
@@ -50,6 +62,7 @@ export function runSyntaxCheck(text, categories) {
                     || line.match(dateTimeRegex) !== null
                 )
             ) {
+                console.log("TASK STRUCTURE ISSUE")
                 return false;
             }
         });
@@ -61,8 +74,6 @@ export function runSyntaxCheck(text, categories) {
                 return categories.find(cat => cat.name === category[0]) !== undefined;
             }
         });
-        console.log("CATEGORY EXISTS", categoryExists);
-
     }
 
     return closingTagsCount === openingTagsCount 
@@ -147,9 +158,10 @@ export function getTaskComponents(line) {
 }
 
 export function getChanges(previous, current) {
+    console.log("PREVIOUS", previous, "CURRENT", current);
     return current.filter(task => {
         const previousTask = previous.find(previousTask => previousTask.id === task.id);
-
+        
         if(previousTask !== undefined) {
             if(previousTask.components.title !== task.components.title) {
                 console.log("Title changed", task);
@@ -168,10 +180,12 @@ export function getChanges(previous, current) {
                 return true;
             }
             //TODO FIX DATE COMPARISON
-            // if(previousTask.components.dateTime !== task.components.dateTime) {
-            //     console.log("DateTime changed", task);
-            //     return true;
-            // }
+            console.log("TASK ", task)
+            console.log("Date changed", previousTask.components.dueDate, " -- ", task.components.dueDate);
+            if(previousTask.components.dueDate !== task.components.dueDate) {
+                console.log("DateTime changed", previousTask.components.dueDate, " -- ", task.components.dueDate);
+                return true;
+            }
         }
 
         return false;

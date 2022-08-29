@@ -1,4 +1,3 @@
-import Head from 'next/head'
 import Navbar from "../components/general/navbar/Navbar"
 import { useEffect, useRef } from 'react';
 import { useMonaco } from "@monaco-editor/react";
@@ -11,14 +10,12 @@ import { prismaGetAllCategories, getAllCategories } from '../utils/db/queryFunct
 import { getSession } from 'next-auth/react';
 import TextEditorSkeleton from '../components/general/loading/TextEditorSkeleton';
 import textEditorSetup from '../utils/text-editor/textEditorSetup';
-import getThemeColor from '../utils/color/getThemeColor';
 import { mapTasksToEditor, mapSingleTask } from '../utils/text-editor/taskMapping';
 import { useState } from 'react';
 import UpdateButton from '../components/text-editor/buttons/UpdateButton';
 import { runSyntaxCheck, getChanges, splitContentIntoLines, getFoundTasksPositionAndId, guaranteeCorrectTagSpacing, guaranteeCorrectLineFormat, getTaskComponents, getLineMovemenet, structureEditorContent, mapLineToTask } from '../utils/text-editor/textProcessing';
 import { Modal } from '@mantine/core';
 import { addNewTask } from "../utils/db/queryFunctions/tasks";
-import { capitalizeFirstLetter } from '../utils/text/textFormatting';
 
 
 export async function getServerSideProps({req, res}) {
@@ -70,6 +67,7 @@ export default function TextEditor() {
   const [changes, setChanges] = useState([]);
   const debouncedEditorContent = useDebounce(unManagedContent, 500);
   
+  let cursorPosition = {};
   const monaco = useMonaco();
   const editorRef = useRef(null);
 
@@ -92,16 +90,71 @@ export default function TextEditor() {
     
       // A precondition for this action.
       precondition: null,
-    
-      // A rule to evaluate on top of the precondition in order to dispatch the keybindings.
-      keybindingContext: null,
-    
-      contextMenuGroupId: 'navigation',
-    
-      contextMenuOrder: 1.5,
-
-      run: () => onUpdateButtonClicked,
+      run: () => findDifferences(),
     });
+    editor.addAction({
+      // An unique identifier of the contributed action.
+      id: 'enterAction',
+    
+      // A label of the action that will be presented to the user.
+      label: 'My Label!!!',
+    
+      // An optional array of keybindings for the action.
+      keybindings: [
+        monaco.KeyMod.chord(
+          monaco.KeyCode.Enter,
+        )
+      ],
+    
+      // A precondition for this action.
+      precondition: null,
+      run: () => {
+        const lineContent = editor.getModel().getLineContent(cursorPosition.lineNumber);
+        const lineHasTask = lineContent.match(/(?<=(?<!d)t\().*?(?=\))/);
+        const editorLineCount = editor.getModel().getLineCount();
+        const linesToModify = editorLineCount - cursorPosition.lineNumber;
+
+        const range = {};
+        let newContent = '';
+
+        if(lineHasTask !== null && lineContent.substring(0, cursorPosition.column - 1).match(/(?<=(?<!d)t\().*?(?=\))/) === null ) {
+          range.startLine = cursorPosition.lineNumber;
+          range.startColumn = 1;
+          range.endLine = editorLineCount;
+          range.endColumn = editor.getModel().getLineContent(editorLineCount).length;
+
+          for(let i=0; i<linesToModify; i++) {
+            if(i === 0)newContent += '\n';
+            newContent += editor.getModel().getLineContent(cursorPosition.lineNumber + i) + '\n';
+          }
+        } else {
+          range.startLine = cursorPosition.lineNumber;
+          range.startColumn = cursorPosition.column;
+          range.endLine = cursorPosition.lineNumber;
+          range.endColumn = cursorPosition.column;
+
+          newContent += '\n';
+        }
+        
+        editor.executeEdits(
+          "$model1", 
+          [
+            { 
+              identifier: "my-ident", 
+              range: new monaco.Range (
+                range.startLine, 
+                range.startColumn, 
+                range.endLine, 
+                range.endColumn
+              ), 
+              text: newContent 
+            }
+          ]
+        );
+      },
+    });
+
+    
     editorRef.current = editor; 
   }
 
@@ -121,8 +174,8 @@ export default function TextEditor() {
       setCanUpdate(correctSyntax);
 
       const editorLines = splitContentIntoLines(debouncedEditorContent);
-      
-      setModifiedContentStructure(structureEditorContent(editorLines, tasks));
+      const temp = structureEditorContent(editorLines, tasks);
+      setModifiedContentStructure(temp);
     }
   }, [debouncedEditorContent]);
 
@@ -179,28 +232,33 @@ export default function TextEditor() {
   }
 
   function findDifferences() {   
+    console.log("FD: FIND INDEX CALLED", modifiedContentStructure);
     const newTasks = modifiedContentStructure.filter(line => line.type === 'task' && line.id === undefined);
-    const deletedTasks = editorContentStructure.filter(line => line.type === 'task' && !modifiedContentStructure.find(modifiedLine => modifiedLine.id === line.id));
     const changedTasks = getChanges(editorContentStructure, modifiedContentStructure);
+    const deletedTasks = modifiedContentStructure.length > 0
+      ? editorContentStructure.filter(line => line.type === 'task' && !modifiedContentStructure.find(modifiedLine => modifiedLine.id === line.id)) 
+      : [];
 
     setChanges({
       newTasks: newTasks,
       deletedTasks: deletedTasks,
       changedTasks: changedTasks,
     })
-
+    console.log("CHANGES", changes);
     if(newTasks.length > 0 || deletedTasks.length > 0 || changedTasks.length > 0) {
       setIsModalOpen(true);
     }
   }
 
   function handleCursorPosition(position, editor) {
-    // if(position.column < 6) {
-    //   editor.setPosition({
-    //     lineNumber: position.lineNumber,
-    //     column: 6
-    //   })
-    // }
+    console.log("POSITION", position);
+    cursorPosition = position;
+    if(position.column < 6) {
+      editor.setPosition({
+        lineNumber: position.lineNumber,
+        column: 6
+      })
+    }
   }
 
   function performUpdate() {
