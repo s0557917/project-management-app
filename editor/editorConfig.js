@@ -41,7 +41,7 @@ export const languageDef = {
       [/datetime\(.*?\)/g, "datetime()"],
       [/\\today/g, "today"],
       [/\\tomorrow/g, "tomorrow"],
-      [/c\(Uncategorized\)/g, "c(Uncategorized)"]
+      [/c\(Uncategorized\)/g, "c(Uncategorized)"],
     ],
     whitespace: [],
     numbers: [],

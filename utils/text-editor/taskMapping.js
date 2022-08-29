@@ -5,7 +5,9 @@ const datePadding = 16;
 export function mapTasksToEditor(tasks, categories) {
     return tasks?.map(task => 
       mapSingleTask(task, categories)
-    ).join('\n');
+    )
+    .join('\n')
+    .concat('\n');
 }
 
 export function mapSingleTask(task, categories) {
@@ -28,8 +30,9 @@ function mapDate(task) {
     } else {
         const date = new Date(task.dueDate);  
         const mappedDate = String(
-            `dt(${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth()).padStart(2, '0')}-${date.getFullYear()} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")})`
+            `dt(${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")})`
         );
+
         return mappedDate.padEnd(datePadding);
     }
         

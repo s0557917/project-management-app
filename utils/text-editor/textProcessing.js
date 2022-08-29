@@ -1,8 +1,75 @@
-export function runSyntaxCheck(text) {
+const titleRegex = /(?<=(?<!d)t\().*?(?=\))/;
+const titleWithBracketsRegex = /(?<!d)t\(.*?\)/g;
+const detailsRegex = /(?<=d\().*?(?=\))/;
+const categoryRegex = /((?<=c\(|category\()[A-Z|a-z|0-9].*?(?=\)))/;
+const prioRegex = /(?<=p\()[0-5](?=\))/;
+const dateTimeRegex = /(?<=dt\(|datetime\()\d{2}[-]\d{2}[-]\d{4} \d{2}[:]\d{2}|\d{2}[-]\d{2}[-]\d{4}(?=\))/;
+
+export function runSyntaxCheck(text, categories) {  
     const openingTagsCount = text.match(/\(/g).length;
     const closingTagsCount = text.match(/\)/g).length;
+    const tagsWithContent = text.match(/\(.*?\)/g);
+    const datesWithBrackets = text.match(/dt\(.*?\)|datetime\(.*?\)/g); 
+   
+    const lineMatches = text.match(/.*?\n/g);
 
-    return closingTagsCount === openingTagsCount;
+    let tagsCorrectness = [];
+    let dateTimesCorrectness = [];
+    let taskStructureCorrectness = [];
+    let categoryExists = [];
+
+    if(tagsWithContent !== null) {
+        tagsCorrectness = tagsWithContent.map(match => match.match(/(?<=\().*?(?=\))/g)[0] !== ''); 
+    }
+
+    if(datesWithBrackets !== null) {
+        dateTimesCorrectness = datesWithBrackets.map(date => {
+            const dateMatch = date.match(dateTimeRegex);
+            if(dateMatch !== null) {
+                const splitDateAndTime = dateMatch[0].split(' ');
+                const splitDate = splitDateAndTime[0].split('-');
+                const reformattedDateTime = new Date(`${splitDate[2]}-${splitDate[1]}-${splitDate[0]}T${splitDateAndTime[1].padEnd(8, ':00')}`);
+
+                if(isNaN(reformattedDateTime)) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+            
+        });
+    }
+
+    if(lineMatches !== null) {
+        taskStructureCorrectness = lineMatches.map(line => {
+            if(line.match(titleWithBracketsRegex) === null 
+                && (
+                    line.match(detailsRegex) !== null
+                    || line.match(categoryRegex) !== null
+                    || line.match(prioRegex) !== null
+                    || line.match(dateTimeRegex) !== null
+                )
+            ) {
+                return false;
+            }
+        });
+
+        categoryExists = lineMatches.map(line => {
+            const category = line.match(categoryRegex);
+            
+            if(category !== null && category[0] !== 'Uncategorized') {
+                return categories.find(cat => cat.name === category[0]) !== undefined;
+            }
+        });
+        console.log("CATEGORY EXISTS", categoryExists);
+
+    }
+
+    return closingTagsCount === openingTagsCount 
+        && !tagsCorrectness?.includes(false)
+        && !dateTimesCorrectness?.includes(false)
+        && !taskStructureCorrectness?.includes(false)
+        && !categoryExists?.includes(false);
 }
 
 export function guaranteeCorrectTagSpacing(lines) {
@@ -37,7 +104,6 @@ export function structureEditorContent(editorLines, tasks) {
 
                 const fullTaskId = shortTaskId !== null 
                     ? tasks.find(task => {
-                        // console.log("COMP", task.id.substring(0,4).trim(), " - ", shortTaskId[0].trim(), " == ", task.id.substring(0,4).trim() === shortTaskId[0].trim())
                         return task.id.substring(0,4).trim() === shortTaskId[0].trim()
                     })?.id 
                     : undefined;
@@ -63,12 +129,6 @@ export function structureEditorContent(editorLines, tasks) {
 
 export function getTaskComponents(line) {
     if(!line) return undefined;
-
-    const titleRegex = /(?<=(?<!d)t\().*?(?=\))/;
-    const detailsRegex = /(?<=d\().*?(?=\))/;
-    const categoryRegex = /((?<=c\(|category\()[A-Z].*?(?=\)))/;
-    const prioRegex = /(?<=p\()[0-5](?=\))/;
-    const dateTimeRegex = /(?<=dt\(|datetime\()\d{2}[-]\d{2}[-]\d{4} \d{2}[:]\d{2}|\d{2}[-]\d{2}[-]\d{4}(?=\))/;
 
     const titleMatches = line.match(titleRegex);
     const detailsMatches = line.match(detailsRegex);
@@ -108,10 +168,10 @@ export function getChanges(previous, current) {
                 return true;
             }
             //TODO FIX DATE COMPARISON
-            if(previousTask.components.dateTime !== task.components.dateTime) {
-                console.log("DateTime changed", task);
-                return true;
-            }
+            // if(previousTask.components.dateTime !== task.components.dateTime) {
+            //     console.log("DateTime changed", task);
+            //     return true;
+            // }
         }
 
         return false;

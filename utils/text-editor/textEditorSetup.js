@@ -1,5 +1,4 @@
 import { languageDef, configuration } from '../../editor/editorConfig';
-import { capitalizeFirstLetter } from '../text/textFormatting';
 
 export default function textEditorSetup(monaco, categories) {
     if (monaco && !monaco.languages.getLanguages().some(({ id }) => id === 'sampleLanguage')) {
@@ -20,11 +19,7 @@ export default function textEditorSetup(monaco, categories) {
           scrollBar: {horizontal: 'auto'}
         });
         monaco.editor.setTheme('sampleTheme');
-      } 
-      // else if(monaco && monaco.languages.getLanguages().some(({ id }) => id === 'sampleLanguage')){
-      //   monaco.languages.setMonarchTokensProvider('sampleLanguage', setLanguageTokens(categories));
-      //   monaco.languages.setLanguageConfiguration('sampleLanguage', configuration);
-      // }
+      }
 }
 
 // function createTagDependencyProposals(range, monaco) {
@@ -43,15 +38,12 @@ function setLanguageTokens(categories) {
   const expandedLanguageDef = {...languageDef};
   categories?.forEach(category => {
     expandedLanguageDef.tokenizer.root.push(
-      [new RegExp(`c\(${category.name}\)`, 'g'), category.name],
-      [new RegExp(`category\(${category.name}\)`, 'g'), category.name]
+      [new RegExp(`c\\(${category.name}\\)`, 'g'), `c(${category.name})`],
+      [new RegExp(`category\\(${category.name}\\)`, 'g'), `category(${category.name})`]
     );
   });
     
-  console.log("EXPANDED, ", categories, expandedLanguageDef);
-  // console.log("EXPANDED, ", expandedLanguageDef);
-  // return expandedLanguageDef;
-  return languageDef;
+  return expandedLanguageDef;
 }
 
 function setCategoryTokens(categories) {

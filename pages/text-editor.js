@@ -75,6 +75,33 @@ export default function TextEditor() {
 
   function handleEditorDidMount(editor, monaco) {
     editor.onDidChangeCursorPosition(e => handleCursorPosition(e.position, editor)); 
+    editor.onDidChangeModelContent(e => setUnManagedContent(editor.getValue()));
+    editor.addAction({
+      // An unique identifier of the contributed action.
+      id: 'my-unique-id',
+    
+      // A label of the action that will be presented to the user.
+      label: 'My Label!!!',
+    
+      // An optional array of keybindings for the action.
+      keybindings: [
+        monaco.KeyMod.chord(
+          monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
+        )
+      ],
+    
+      // A precondition for this action.
+      precondition: null,
+    
+      // A rule to evaluate on top of the precondition in order to dispatch the keybindings.
+      keybindingContext: null,
+    
+      contextMenuGroupId: 'navigation',
+    
+      contextMenuOrder: 1.5,
+
+      run: () => onUpdateButtonClicked,
+    });
     editorRef.current = editor; 
   }
 
@@ -90,7 +117,7 @@ export default function TextEditor() {
 
   useEffect(() => {
     if(debouncedEditorContent) {
-      const correctSyntax = runSyntaxCheck(unManagedContent);
+      const correctSyntax = runSyntaxCheck(unManagedContent, categories);
       setCanUpdate(correctSyntax);
 
       const editorLines = splitContentIntoLines(debouncedEditorContent);
@@ -102,15 +129,9 @@ export default function TextEditor() {
   const newTaskMutation = useMutation(
     (newTask) => addNewTask(newTask),
     {
-        onMutate: async (newTask) => {
-            // console.log("newTask", newTask.id);
-        },
-        onSuccess: async () => {
-            queryClient.invalidateQueries('tasks');
-        },
-        onSettled: async (data, error, variables, context) => {
-            console.log("settled", data.id, error, variables, context);
-        }
+      onSuccess: async () => {
+          queryClient.invalidateQueries('tasks');
+      }
     }
   );
 
@@ -124,15 +145,9 @@ export default function TextEditor() {
   const deleteTaskMutation = useMutation(
     (taskId) => deleteTask(taskId),
     {
-        onMutate: async (newTask) => {
-            // console.log("newTask", newTask.id);
-        },
-        onSuccess: async () => {
-          queryClient.invalidateQueries('tasks');
-        },
-        onSettled: async (data, error, variables, context) => {
-            console.log("settled", data.id, error, variables, context);
-        }
+      onSuccess: async () => {
+        queryClient.invalidateQueries('tasks');
+      },
     }
   );
 
@@ -164,11 +179,8 @@ export default function TextEditor() {
   }
 
   function findDifferences() {   
-    //1. Check newTasks for task without ID -> NEW 
     const newTasks = modifiedContentStructure.filter(line => line.type === 'task' && line.id === undefined);
-    //2. Compare oldStructure with new Structure. IDs present in current but missing in old -> DELETED
     const deletedTasks = editorContentStructure.filter(line => line.type === 'task' && !modifiedContentStructure.find(modifiedLine => modifiedLine.id === line.id));
-    // //3. Compare content of all IDs present in current and in old -> UPDATED
     const changedTasks = getChanges(editorContentStructure, modifiedContentStructure);
 
     setChanges({
@@ -180,9 +192,6 @@ export default function TextEditor() {
     if(newTasks.length > 0 || deletedTasks.length > 0 || changedTasks.length > 0) {
       setIsModalOpen(true);
     }
-
-    //UPDATE TaskSTructure
-
   }
 
   function handleCursorPosition(position, editor) {
@@ -192,6 +201,23 @@ export default function TextEditor() {
     //     column: 6
     //   })
     // }
+  }
+
+  function performUpdate() {
+    changes.changedTasks.forEach(task => {
+      const updatedTask = mapLineToTask(task, categories);
+      updateTaskMutation.mutate(updatedTask);
+    });
+    changes.newTasks.forEach(task => {
+      if(task.components.title !== undefined) {
+        const newTask = mapLineToTask(task, categories);
+        newTaskMutation.mutate(newTask);
+      }
+    });
+    changes.deletedTasks.forEach(task => deleteTaskMutation.mutate(task.id));
+
+    setIsModalOpen(false);
+    setChanges({});
   }
 
   return (  
@@ -210,7 +236,6 @@ export default function TextEditor() {
             options={options}
             theme="sampleTheme"
             value={editorContent}
-            onChange={newText => setUnManagedContent(newText)}
             onMount={handleEditorDidMount}
           />}
         </div>
@@ -228,9 +253,9 @@ export default function TextEditor() {
           {changes.newTasks?.length > 0 
             && 
             <div>
-              <h2>Additions</h2>
-              <ul>
-                {changes.newTasks?.map(task => <li key={task.id}>{task.content}</li>)}
+              <h2 className='text-lg font-bold'>Additions</h2>
+              <ul className='rounded-md my-2 p-2 bg-slate-400'>
+                {changes.newTasks?.map(task => <li className='py-1' key={task.id}>-{task.content}</li>)}
               </ul>
             </div>
           }
@@ -238,9 +263,9 @@ export default function TextEditor() {
           {changes.deletedTasks?.length > 0
             &&
             <div>
-              <h2>Deletions</h2> 
-              <ul>
-                {changes.deletedTasks?.map(task => <li key={task.id}>{task.content}</li>)}
+              <h2 className='text-lg font-bold'>Deletions</h2> 
+              <ul className='rounded-md my-2 p-2 bg-slate-400'>
+                {changes.deletedTasks?.map(task => <li className='py-1' key={task.id}>-{task.content}</li>)}
               </ul>
             </div>
           }
@@ -248,31 +273,16 @@ export default function TextEditor() {
           {changes.changedTasks?.length > 0
             && 
             <div>
-              <h2>Changes</h2>
-              <ul>
-                {changes.changedTasks?.map(task => <li key={task.id}>{task.content}</li>)}
+              <h2 className='text-lg font-bold'>Changes</h2>
+              <ul className='rounded-md my-2 p-2 bg-slate-400'>
+                {changes.changedTasks?.map(task => <li className='py-1' key={task.id}>-{task.content}</li>)}
               </ul>
             </div>
           }
 
-          <button
-            onClick={() => {
-
-              changes.changedTasks.forEach(task => {
-                const updatedTask = mapLineToTask(task, categories);
-                updateTaskMutation.mutate(updatedTask);
-              });
-              changes.newTasks.forEach(task => {
-                if(task.components.title !== undefined) {
-                  const newTask = mapLineToTask(task, categories);
-                  newTaskMutation.mutate(newTask);
-                }
-              });
-              changes.deletedTasks.forEach(task => deleteTaskMutation.mutate(task.id));
-
-              setIsModalOpen(false);
-              setChanges({});
-            }}
+          <button 
+            className='bg-green-600 p-2 rounded-md text-white'
+            onClick={() => performUpdate} 
           >
             Do it!
           </button>
