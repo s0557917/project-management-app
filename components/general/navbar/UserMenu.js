@@ -3,6 +3,7 @@ import { UserCircle } from "phosphor-react";
 import UserInformation from "./user-menu/UserInformation";
 import ThemeInformation from "./user-menu/ThemeInformation";
 import DefaultViewInformation from "./user-menu/DefaultViewInformation";
+import SignOutButton from "./user-menu/SignOutButton";
 
 export default function UserMenu () {
     return (
@@ -18,6 +19,8 @@ export default function UserMenu () {
                     <UserInformation />
                     <ThemeInformation />
                     <DefaultViewInformation />     
+                    <Menu.Divider />
+                    <SignOutButton />
                 </Menu.Dropdown>
             </Menu>
         </div>

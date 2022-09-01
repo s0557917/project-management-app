@@ -1,5 +1,5 @@
 import { Menu } from '@mantine/core'
-import { FunnelSimple, Calendar, Tag } from 'phosphor-react'
+import { FunnelSimple, Calendar, Tag, GitFork } from 'phosphor-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { updateSorting } from '../../../../utils/db/queryFunctions/settings'
 
@@ -17,7 +17,7 @@ export default function SortingMenu () {
             <Menu shadow="md" width={200}>
                 <Menu.Target>
                     <button className='hover:scale-110 active:scale-90 transition-all'>
-                        <FunnelSimple size={32} color="#16a34a" weight="fill" /> 
+                        <FunnelSimple size={28} color="#16a34a" /> 
                     </button>
                 </Menu.Target>
 
@@ -40,6 +40,12 @@ export default function SortingMenu () {
                         onClick={() => updateSortingMutation.mutate('priority')} 
                     >
                         Priority
+                    </Menu.Item>
+                    <Menu.Item 
+                        icon={<GitFork size={18} weight="fill" className='rotate-180'/>}
+                        onClick={() => updateSortingMutation.mutate('subtasks')} 
+                    >
+                        Subtasks
                     </Menu.Item>
 
                 </Menu.Dropdown>

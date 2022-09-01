@@ -33,14 +33,15 @@ export default function ThemeSwitcher({ theme, updateThemeMutation }) {
     return (
         <Group position="center">
             <div className={classes.root}>
-            <Sun className={cx(classes.icon, classes.iconLight)} size={18} />
-            <Moon className={cx(classes.icon, classes.iconDark)} size={18} />
-            <Switch 
-              checked={theme === 'dark'} 
-              onChange={(e) => {
-                updateThemeMutation.mutate(e.target.checked ? 'dark' : 'light')
-              }} 
-              size="md" />
+              <Sun className={cx(classes.icon, classes.iconLight)} size={18} />
+              <Moon className={cx(classes.icon, classes.iconDark)} size={18} />
+              <Switch 
+                checked={theme === 'dark'} 
+                onChange={(e) => {
+                  updateThemeMutation.mutate(e.target.checked ? 'dark' : 'light')
+                }} 
+                size="md" 
+              />
             </div>
         </Group>
     )

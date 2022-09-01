@@ -10,8 +10,40 @@ export function mapTasksToEditor(tasks, categories) {
     .concat('\n');
 }
 
+export function mapTaskStructureToEditor(taskStructure, tasks, categories) {
+    if(!taskStructure || !tasks || !categories) return [];
+
+    return taskStructure
+    ?.sort((a, b) => a.startPos.l < b.startPos.l ? -1 : 1)
+    ?.map(line => {
+        if(line.type === 'task') {
+            const task = tasks.find(task => task.id === line.id);
+            return mapSingleTask(task, categories);
+            // return mapSingleTaskFromComponents(
+            //     line.id, 
+            //     line.components.title, 
+            //     line.components.details,
+            //     line.components.category,
+            //     line.components.priority,
+            //     line.components.dueDate,
+            // );
+        } else if(line.type === 'note') {
+            return line.content;
+        }
+    })
+    ?.join('');
+}
+
+export function mapSingleTaskFromComponents(id, title, details, category, priority, duedate) {
+    return `${id.substring(0,4)} ${String('t('+ title + ')').padEnd(titlePadding)} ${details && details !== '' ? String('d('+ details + ')').padEnd(titlePadding) : String('').padEnd(titlePadding)} ${String(`c(${category})`).padEnd(categoryPadding)} p(${priority}) ${duedate ? String(`dt(${duedate})`) : ''}\n`;
+}
+
 export function mapSingleTask(task, categories) {
-    return `${task.id.substring(0,4)} ${String('t('+ task.title + ')').padEnd(titlePadding)} ${task.details !== '' ? String('d('+ task.details + ')').padEnd(titlePadding) : String('').padEnd(titlePadding)} ${mapCategory(categories, task.categoryId)} p(${task.priority}) ${mapDate(task)}`
+    if(task && categories) {
+        return `${task.id.substring(0,4)} ${String('t('+ task.title + ')').padEnd(titlePadding)} ${task.details !== '' ? String('d('+ task.details + ')').padEnd(titlePadding) : String('').padEnd(titlePadding)} ${mapCategory(categories, task.categoryId)} p(${task.priority}) ${mapDate(task)}\n`
+    } else {
+        return '';
+    }
 }
 
 function mapCategory(categories, categoryId) {

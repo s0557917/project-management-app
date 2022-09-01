@@ -2,11 +2,14 @@ import TaskEditorDialogue from "../components/task-editor-dialogue/TaskEditorDia
 import EventCalendar from "../components/calendar/EventCalendar"
 import Navbar from '../components/general/navbar/Navbar';
 import { getSession } from 'next-auth/react';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { dehydrate, QueryClient, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { prismaGetAllTasks, getAllTasks, addNewTask, updateTask } from "../utils/db/queryFunctions/tasks";
 import { getAllCategories, prismaGetAllCategories } from "../utils/db/queryFunctions/categories";
 import TitleBar from "../components/general/layout/TitleBar";
+import { useMantineColorScheme } from "@mantine/core";
+import { prismaGetTheme, getTheme } from "../utils/db/queryFunctions/settings";
+import { useNotifications } from "@mantine/notifications";
 
 export async function getServerSideProps({req, res}) {
     const session = await getSession({ req });
@@ -25,6 +28,7 @@ export async function getServerSideProps({req, res}) {
     await queryClient.prefetchQuery(['tasks'], prismaGetAllTasks(session.user.email));
     await queryClient.prefetchQuery(['categories'], prismaGetAllCategories(session.user.email));
     await queryClient.prefetchQuery(['settings'], prismaGetAllCategories(session.user.email));
+    await queryClient.prefetchQuery(['theme'], prismaGetTheme(session.user.email));
 
     return {
         props: {
@@ -39,6 +43,13 @@ export default function Calendar() {
 
     const {data: tasks, isFetching: isFetchingTasks} = useQuery(['tasks'], getAllTasks);
     const {data: categories, isFetching: isFetchingCategories} = useQuery(['categories'], getAllCategories);
+    const { data: prefetchedTheme, isFetching: isFetchingTheme } = useQuery(['theme'], getTheme); 
+
+    const { toggleColorScheme } = useMantineColorScheme();
+    
+    useEffect(() => {
+        toggleColorScheme(prefetchedTheme);
+    }, [isFetchingTheme]);
 
     const [selectedTask, setSelectedTask] = useState({});
     const [openedTaskEditor, setOpenedTaskEditor] = useState(false);
@@ -49,6 +60,12 @@ export default function Calendar() {
         {
             onSuccess: async () => {
                 queryClient.invalidateQueries('tasks');
+                showNotification({
+                    autoClose: 3000,
+                    type: 'success',
+                    color: 'green',
+                    title: 'New task saved successfully!',
+                });
             }
         }
     );
@@ -57,6 +74,12 @@ export default function Calendar() {
         (updatedTask) => updateTask(updatedTask),
         {onSuccess: async () => {
             queryClient.invalidateQueries('tasks');
+            showNotification({
+                autoClose: 3000,
+                type: 'success',
+                color: 'green',
+                title: 'Task updated successfully!',
+            });
         }}
     )
 

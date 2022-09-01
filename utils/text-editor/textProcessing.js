@@ -31,8 +31,11 @@ export function runSyntaxCheck(text, categories) {
     let taskStructureCorrectness = [];
     let categoryExists = [];
 
+    const errors = new Set();
+
     if(tagsWithContent !== null) {
-        tagsCorrectness = tagsWithContent.map(match => match.match(/(?<=\().*?(?=\))/g)[0] !== ''); 
+        tagsCorrectness = tagsWithContent.map(match => match.match(/(?<=\().*?(?=\))/g)[0] !== '');
+        if(tagsCorrectness?.includes(false)) errors.add("Check that all your tags have content!"); 
     }
 
     if(datesWithBrackets !== null) {
@@ -41,11 +44,11 @@ export function runSyntaxCheck(text, categories) {
             if(dateMatch !== null) {
                 const dateObject = formatDateTimeToObject(dateMatch);
                 if(!dateObject || isNaN(dateObject)) {
-                    console.log("DATE BRACKET ISSUE")
+                    errors.add("A set date and/or time does not exist!");
                     return false;
                 }
             } else {
-                console.log("DATE BRACKET ISSUE")
+                errors.add('A date and/or time is missing!');
                 return false;
             }
             
@@ -62,7 +65,7 @@ export function runSyntaxCheck(text, categories) {
                     || line.match(dateTimeRegex) !== null
                 )
             ) {
-                console.log("TASK STRUCTURE ISSUE")
+                errors.add("A task has to have and begin with a title!");
                 return false;
             }
         });
@@ -74,13 +77,19 @@ export function runSyntaxCheck(text, categories) {
                 return categories.find(cat => cat.name === category[0]) !== undefined;
             }
         });
+        if(categoryExists?.includes(false)) errors.add('One of the used categories does not exist!');
     }
 
-    return closingTagsCount === openingTagsCount 
-        && !tagsCorrectness?.includes(false)
-        && !dateTimesCorrectness?.includes(false)
-        && !taskStructureCorrectness?.includes(false)
-        && !categoryExists?.includes(false);
+    if(openingTagsCount !== closingTagsCount) errors.add('There is at least one missing tag!');
+
+    return {
+        isSyntaxValid: closingTagsCount === openingTagsCount 
+            && !tagsCorrectness?.includes(false)
+            && !dateTimesCorrectness?.includes(false)
+            && !taskStructureCorrectness?.includes(false)
+            && !categoryExists?.includes(false),
+        errors: Array.from(errors)
+    }
 }
 
 export function guaranteeCorrectTagSpacing(lines) {
@@ -124,7 +133,6 @@ export function structureEditorContent(editorLines, tasks) {
                     startPos: {l: i + 1, c: 0},
                     endPos: {l: i + 1, c: editorLine.length},
                     content: editorLine,
-                    components: components
                 }
             } else if (editorLine !== '' || editorLine !== '\n') {
                 return {
@@ -158,32 +166,32 @@ export function getTaskComponents(line) {
 }
 
 export function getChanges(previous, current) {
-    console.log("PREVIOUS", previous, "CURRENT", current);
     return current.filter(task => {
         const previousTask = previous.find(previousTask => previousTask.id === task.id);
         
-        if(previousTask !== undefined) {
-            if(previousTask.components.title !== task.components.title) {
+        if(previousTask !== undefined && task.type !== 'note') {
+            const prevComponents = getTaskComponents(previousTask.content);
+            const currComponents = getTaskComponents(task.content);
+
+            if(prevComponents.title !== currComponents.title) {
                 console.log("Title changed", task);
                 return true;
             }
-            if(previousTask.components.details !== task.components.details) {
+            if(prevComponents.details !== currComponents.details) {
                 console.log("Details changed", task);
                 return true;
             }
-            if(previousTask.components.category !== task.components.category) {
+            if(prevComponents.category !== currComponents.category) {
                 console.log("Category changed", task);
                 return true;
             }
-            if(previousTask.components.priority !== task.components.priority) {
+            if(prevComponents.priority !== currComponents.priority) {
                 console.log("Priority changed", task);
                 return true;
             }
             //TODO FIX DATE COMPARISON
-            console.log("TASK ", task)
-            console.log("Date changed", previousTask.components.dueDate, " -- ", task.components.dueDate);
-            if(previousTask.components.dueDate !== task.components.dueDate) {
-                console.log("DateTime changed", previousTask.components.dueDate, " -- ", task.components.dueDate);
+            if(prevComponents.dueDate !== currComponents.dueDate) {
+                console.log("DateTime changed", prevComponents.dueDate, " -- ", currComponents.dueDate);
                 return true;
             }
         }
@@ -193,17 +201,24 @@ export function getChanges(previous, current) {
 }
 
 export function mapLineToTask(task, categories) {
+    const taskComponents = getTaskComponents(task.content);
     return {
         id: task.id || undefined,
-        title: task.components.title,
-        details: task.components.details || '',
+        title: taskComponents.title,
+        details: taskComponents.details || '',
         completed: false,
-        dueDate: new Date(task.components.dueDate) || null,
-        priority: task.components.priority,
-        categoryId: categories?.find(category => category.name === task.components.category)?.id || '',
+        dueDate: new Date(taskComponents.dueDate) || null,
+        priority: taskComponents.priority,
+        categoryId: categories?.find(category => category.name === taskComponents.category)?.id || '',
         start: null,
         end: null,
         reminders: null,
         subtasks: null,
     }
+}
+
+export function ensureCorrectLineStartSpacing(editorContent) {
+    return splitContentIntoLines(editorContent).map(line => {
+        if(line === '\n') return '     ' + line; 
+    });
 }

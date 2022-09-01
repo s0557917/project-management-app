@@ -3,7 +3,7 @@ import { ArrowRight, Circle } from 'phosphor-react';
 import Subtask from '../subtasks/Subtask';
 import { useState } from 'react';
 
-export default function SubtaskDialogue({ tasks, categories, onSubtaskClicked, onSubtaskAdded }) {
+export default function SubtaskDialogue({ subtasks, categories, onSubtaskClicked, onSubtaskAdded }) {
     
     const [newTaskTitle, setNewTaskTitle] = useState('');
     const [opened, setOpened] = useState(false);
@@ -23,9 +23,9 @@ export default function SubtaskDialogue({ tasks, categories, onSubtaskClicked, o
                 <Menu.Label>Subtasks</Menu.Label>
                 <ScrollArea style={{ height:100 }} offsetScrollbars>
                     <ul>
-                        {tasks
-                            ?.map((task) => 
-                                <Subtask 
+                        {subtasks
+                            ?.map((task) => {
+                                return <Subtask 
                                     key={task.id} 
                                     task={task} 
                                     categories={categories} 
@@ -33,7 +33,7 @@ export default function SubtaskDialogue({ tasks, categories, onSubtaskClicked, o
                                     textSize={'text-xs'}
                                     circleSize={16}
                                 />
-                            )
+                            })
                         }
                     </ul>
                 </ScrollArea>

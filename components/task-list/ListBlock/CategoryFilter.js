@@ -9,6 +9,7 @@ export default function CategoryFilter ({category, circleSize, onCategoryStatusC
 
     return (
         <li 
+            key={`category-${category}`}
             className={`flex items-center justify-between p-2 m-1 rounded-sm ${textSize} ${getThemeColor('bg-gray-200', 'bg-zinc-800')}`}
         >
             <div

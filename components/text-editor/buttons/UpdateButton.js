@@ -2,10 +2,10 @@ import { Prohibit } from "phosphor-react";
 
 export default function UpdateButton({canUpdate, onUpdate}) {
     return (
-        <div className="flex items-center justify-end w-full mt-3">
+        <div className="mt-3 mr-3">
             <button 
                 disabled={!canUpdate}
-                className={`${canUpdate ? 'bg-green-700 hover:bg-green-800 hover:scale-105 active:scale-95 cursor-pointer' : 'bg-green-200 cursor-not-allowed'} transition-all text-white font-bold mr-5 py-2 px-2 rounded`}
+                className={`my-auto ${canUpdate ? 'bg-green-700 hover:bg-green-800 hover:scale-105 active:scale-95 cursor-pointer' : 'bg-green-200 cursor-not-allowed'} transition-all text-white font-bold p-2 rounded`}
                 onClick={onUpdate}
             >
                 {canUpdate 

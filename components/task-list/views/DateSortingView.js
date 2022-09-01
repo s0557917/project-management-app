@@ -1,4 +1,4 @@
-import Category from "../ListBlock/ListBlock";
+import ListBlock from "../ListBlock/ListBlock";
 import { filterTasksToUserPreferences } from "../../../utils/task-filtering/taskFiltering";
 import { getUniqueDates } from "../../../utils/dates/getUniqueDates";
 
@@ -18,7 +18,7 @@ export default function DateSortingView({ tasks, categories, onTaskClicked, onCo
 
         const mappedTasks = [...dates].map(date => {
             const tasksInDate = sortedTasks.filter(task => new Date(task.dueDate).toLocaleDateString('en-GB') === date);    
-            return <Category
+            return <ListBlock
                 key={date}
                 tasks={tasksInDate}
                 categories={categories}

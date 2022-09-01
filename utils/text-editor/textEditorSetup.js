@@ -5,9 +5,6 @@ export default function textEditorSetup(monaco, categories) {
         monaco.languages.register({ id: 'sampleLanguage' });
         monaco.languages.setMonarchTokensProvider('sampleLanguage', setLanguageTokens(categories));
         monaco.languages.setLanguageConfiguration('sampleLanguage', configuration);
-        // monaco.languages.registerCompletionItemProvider('sampleLanguage', {
-        //   triggerCharacters: ['.', ' ', '\\'],
-        // });
         monaco.editor.defineTheme("sampleTheme", {
           base: 'vs-dark',
           inherit: false,
@@ -21,18 +18,6 @@ export default function textEditorSetup(monaco, categories) {
         monaco.editor.setTheme('sampleTheme');
       }
 }
-
-// function createTagDependencyProposals(range, monaco) {
-//     return [
-//           {
-//               label: '\\"lodash"',
-//               kind: monaco.languages.CompletionItemKind.Function,
-//               documentation: 'The Lodash library exported as Node.js modules.',
-//               insertText: '"lodash": "*"',
-//               range: range
-//           },
-//     ]
-// }
 
 function setLanguageTokens(categories) {
   const expandedLanguageDef = {...languageDef};
@@ -79,4 +64,16 @@ function setCategoryTokens(categories) {
   });
 
   return categoryTokens;
+}
+
+function createDependencyProposals(range, categories) {
+  return categories?.map(category => {
+    return {
+			label: `"${category.name}"`,
+			kind: monaco.languages.CompletionItemKind.Function,
+			documentation: 'The Lodash library exported as Node.js modules.',
+			insertText: '"${category.name}"',
+			range: range
+		}
+  });
 }

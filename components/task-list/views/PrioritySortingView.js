@@ -1,4 +1,4 @@
-import Category from "../ListBlock/ListBlock";
+import ListBlock from "../ListBlock/ListBlock";
 import { filterTasksToUserPreferences } from "../../../utils/task-filtering/taskFiltering";
 
 export default function PrioritySortingView({tasks, categories, onTaskClicked, onCompletionStateChanged, filters, theme}) {
@@ -7,7 +7,7 @@ export default function PrioritySortingView({tasks, categories, onTaskClicked, o
             ?.filter(task => filterTasksToUserPreferences(task, categories, filters))
             ?.sort((a, b) => b.priority - a.priority);
 
-        return <Category
+        return <ListBlock
             key={'priority-sorted'}
             tasks={filteredAndSortedTasks}
             categories={categories}

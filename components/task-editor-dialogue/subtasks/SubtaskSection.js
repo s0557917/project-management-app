@@ -1,41 +1,40 @@
 import { Title } from "@mantine/core"
 import SubtaskDialogue from "../sub-menus/SubtaskDialogue"
 import Sublist from "./Sublist"
-import { useState } from "react";
 import getThemeColor from "../../../utils/color/getThemeColor";
+import { v4 as uuidv4 } from 'uuid';
 
-export default function SubtaskSection({ tasks, categories, selectedTask, subtasksState }) {
+export default function SubtaskSection({ tasks, categories, selectedTask, subtasksState, newSubtasksState }) {
 
     const [subtasks, setSubtasks] = subtasksState;
-    const [newTasks, setNewTasks] = useState([]);
+    const [newSubtasks, setNewSubtasks] = newSubtasksState;
+
+    const bgColor = getThemeColor('bg-gray-200', 'bg-zinc-800');
 
     function onSubtaskClicked(subtaskId){
-         
+         console.log("  ", subtaskId);
     }
 
     function onSubtaskRemoved(subtaskId){
-        const filteredSubtasks = subtasks.filter(subtask => subtask !== subtaskId);
-        setSubtasks(filteredSubtasks);
+        const filteredNew = newSubtasks?.filter(subtask => subtask.id !== subtaskId);
+        setSubtasks(subtasks?.filter(subtask => subtask !== subtaskId));
+        setNewSubtasks(filteredNew);
     }
 
     async function onDialogueSubtaskClicked(subtask){
-        if(subtasks !== undefined) {
-            setSubtasks([...subtasks, subtask]);
-        } else {
-            setSubtasks([subtask]);
-        }
+        setSubtasks([...subtasks, subtask]);
     }
 
-    function onDialogueSubtaskAdded(title){
-        setNewTasks([...newTasks, title]);
+    function onDialogueSubtaskAdded(title){      
+        setNewSubtasks([...newSubtasks, {id: uuidv4(), title: title, categoryId: null }]);
     }
 
     return (
-        <div className={`rounded-lg p-3 my-3 ${getThemeColor('bg-gray-200', 'bg-zinc-800')}`}>
+        <div className={`rounded-lg p-3 my-3 ${bgColor}`}>
             <div className='flex items-center justify-between mb-2'>
                 <Title order={4}>Subtasks</Title>
                 <SubtaskDialogue 
-                    tasks={tasks?.filter((task) => task.id !== selectedTask?.id && !subtasks?.includes(task.id))} 
+                    subtasks={tasks?.filter((task) => task.id !== selectedTask?.id && !subtasks?.includes(task.id))} 
                     categories={categories} 
                     selectedTask={selectedTask}
                     onSubtaskClicked={onDialogueSubtaskClicked}
@@ -43,7 +42,8 @@ export default function SubtaskSection({ tasks, categories, selectedTask, subtas
                 />
             </div>
                 <Sublist 
-                    tasks={tasks?.filter((task) => subtasks?.includes(task.id))}
+                    subtasks={tasks?.filter((task) => subtasks?.includes(task.id))}
+                    newSubtasks={newSubtasks}
                     categories={categories}
                     onSubtaskClicked={onSubtaskClicked}
                     onSubtaskRemoved={onSubtaskRemoved}

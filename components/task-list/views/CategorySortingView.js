@@ -1,4 +1,4 @@
-import Category from "../ListBlock/ListBlock";
+import ListBlock from "../ListBlock/ListBlock";
 
 export default function CategorySortingView ({tasks, categories, filters, onTaskClicked, onCompletionStateChanged}) {
     
@@ -11,7 +11,7 @@ export default function CategorySortingView ({tasks, categories, filters, onTask
         ?.sort((a, b) => a.title.localeCompare(b.title))
         ?.filter(task => task.categoryId === category.id && !task.completed);  
 
-        return <Category
+        return <ListBlock
           key={category.id}
           tasks={tasksInCategory}
           categories={categories}
@@ -20,6 +20,7 @@ export default function CategorySortingView ({tasks, categories, filters, onTask
           category={category}
           title={category.name}
           active={category.active}
+          displayIcons={true}
         />
     });
   }
@@ -28,7 +29,7 @@ export default function CategorySortingView ({tasks, categories, filters, onTask
         const active = filters?.find(setting => setting.name === 'Completed').value;
         let completedTasks = tasks?.filter(task => task.completed);     
 
-        return <Category
+        return <ListBlock
           key={'completed'}
           tasks={completedTasks}
           categories={categories}
@@ -37,6 +38,7 @@ export default function CategorySortingView ({tasks, categories, filters, onTask
           active={active}
           category={''}
           title={'Completed'}
+          displayIcons={false}
         />
     }
 
@@ -44,7 +46,7 @@ export default function CategorySortingView ({tasks, categories, filters, onTask
         const active = filters?.find(setting => setting.name === 'Uncategorized').value;
     
         let uncategorizedTasks = tasks?.filter(task => (task.categoryId === null || task.category === '') && !task.completed);     
-        return <Category
+        return <ListBlock
           key={'uncategorized'}
           tasks={uncategorizedTasks}
           categories={categories}
@@ -53,6 +55,7 @@ export default function CategorySortingView ({tasks, categories, filters, onTask
           category={''}
           title={'Uncategorized'}
           active={active}
+          displayIcons={false}
         />
     }
 

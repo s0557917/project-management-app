@@ -10,6 +10,7 @@ import getThemeColor from '../../../../utils/color/getThemeColor';
 import { useQuery } from '@tanstack/react-query';
 import { getFilters, updateFilters } from '../../../../utils/db/queryFunctions/settings';
 import { getAllCategories } from '../../../../utils/db/queryFunctions/categories';
+import ColorButton from './ColorButton';
 
 export default function FilteringMenu () {
     
@@ -18,9 +19,12 @@ export default function FilteringMenu () {
 
     const queryClient = useQueryClient();
     
-    const [opened, setOpened] = useState(false);
+    const [isFilteringMenuOpened, setIsFilteringMenuOpened] = useState(false);
+    const [isColorMenuOpened, setIsColorMenuOpened] = useState(false);
     const [newCategoryTitle, setNewCategoryTitle] = useState('');
     const [selectedNewColor, setSelectedNewColor] = useState('');
+
+    const colors = ["#de1b1b","#de6c1b","#ded41b","#80de1b","#0f8717","#0ffcfc","#0fb1fc","#0f1ffc","#791bde","#c71bde","#de1b76","#000000"];
 
     const modifiedFiltersMutation = useMutation(
         (updatedFilters) => updateFilters(updatedFilters),
@@ -83,17 +87,22 @@ export default function FilteringMenu () {
 
     return (
         <Menu 
+            opened={isFilteringMenuOpened}
             shadow="md" 
             width={300} 
             classNames={{dropdown: classes.dropdown, label: classes.label}}
-            onClose={() => {setSelectedNewColor('#d4d4d4'); setNewCategoryTitle('');}}
+            onClose={() => {
+                setIsFilteringMenuOpened(false);
+                setSelectedNewColor('#d4d4d4'); 
+                setNewCategoryTitle('');
+            } }
         >
             <Menu.Target>
                 <button 
                     className='hover:scale-110 active:scale-90 transition-all' 
-                    onClick={() => console.log("TEST")}
+                    onClick={() => setIsFilteringMenuOpened(true)}
                 >
-                    <Tag size={32} color="#16a34a" weight="fill" />
+                    <Tag size={28} color="#16a34a" />
                 </button>
             </Menu.Target>
 
@@ -135,26 +144,27 @@ export default function FilteringMenu () {
                 
                 <p className={`text-xs ${getThemeColor('text-gray-900', 'text-white')}`}>Create a new category</p>
                 <div className='flex items-end px-2'>
-                    <Menu>
+                    <Menu
+                        opened={isColorMenuOpened}
+                        onClose={() => setIsColorMenuOpened(false)}
+                    >
                         <Menu.Target>
-                            <button className='hover:scale-105 active:scale-95 transition-all'>
+                            <button
+                                onClick={() => setIsColorMenuOpened(true)} 
+                                className='hover:scale-105 active:scale-95 transition-all'
+                            >
                                 <Square size={40} color={selectedNewColor || '#d4d4d4'} weight="fill" />
                             </button>
                         </Menu.Target>
                         <Menu.Dropdown>
                             <div className='grid grid-cols-3'>
-                                <button onClick={() => setSelectedNewColor("#de1b1b")}><Square size={36} color="#de1b1b" weight="fill" /></button>
-                                <button onClick={() => setSelectedNewColor("#de6c1b")}><Square size={36} color="#de6c1b" weight="fill" /></button>
-                                <button onClick={() => setSelectedNewColor("#ded41b")}><Square size={36} color="#ded41b" weight="fill" /></button>
-                                <button onClick={() => setSelectedNewColor("#80de1b")}><Square size={36} color="#80de1b" weight="fill" /></button>
-                                <button onClick={() => setSelectedNewColor("#0f8717")}><Square size={36} color="#0f8717" weight="fill" /></button>
-                                <button onClick={() => setSelectedNewColor("#0ffcfc")}><Square size={36} color="#0ffcfc" weight="fill" /></button>
-                                <button onClick={() => setSelectedNewColor("#0fb1fc")}><Square size={36} color="#0fb1fc" weight="fill" /></button>
-                                <button onClick={() => setSelectedNewColor("#0f1ffc")}><Square size={36} color="#0f1ffc" weight="fill" /></button>
-                                <button onClick={() => setSelectedNewColor("#791bde")}><Square size={36} color="#791bde" weight="fill" /></button>
-                                <button onClick={() => setSelectedNewColor("#c71bde")}><Square size={36} color="#c71bde" weight="fill" /></button>
-                                <button onClick={() => setSelectedNewColor("#de1b76")}><Square size={36} color="#de1b76" weight="fill" /></button>
-                                <button onClick={() => setSelectedNewColor("#000000")}><Square size={36} color="#000000" weight="fill" /></button>
+                                {colors.map(color =>                                 
+                                    <ColorButton 
+                                        color={color}
+                                        setSelectedNewColor={setSelectedNewColor} 
+                                        setColorMenuOpened={setIsColorMenuOpened}
+                                    />)
+                                }
                             </div>
                         </Menu.Dropdown>
                     </Menu>
@@ -169,7 +179,7 @@ export default function FilteringMenu () {
                                 className='bg-cyan-500 hover:bg-cyan-700 p-1 rounded-full' 
                                 onClick={() => {
                                     onCategoryAdded(newCategoryTitle);
-                                    setOpened(false);
+                                    setIsFilteringMenuOpened(false);
                                 }}
                             >
                                 <ArrowRight size={18} weight="bold"/>

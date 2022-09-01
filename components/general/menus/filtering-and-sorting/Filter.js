@@ -6,7 +6,8 @@ export default function Filter({filterName, textSize, onFilterStatusChanged, act
     const [checked, setChecked] = useState(active);
 
     return (
-        <li className={`flex items-center justify-between p-2 m-1 rounded-sm cursor-pointer ${textSize} ${getThemeColor('bg-gray-200', 'bg-zinc-800')}`}>
+        // <li key={`filter-${filterName}`} className={`flex items-center justify-between p-2 m-1 rounded-sm cursor-pointer ${textSize} ${getThemeColor('bg-gray-200', 'bg-zinc-800')}`}>
+        <li key={`filter-${filterName}`} className={`flex items-center justify-between p-2 m-1 rounded-sm cursor-pointer ${textSize} bg-zinc-800`}>
             <div
                 className="flex items-center grow"
             >

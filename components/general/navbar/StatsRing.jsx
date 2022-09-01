@@ -1,20 +1,12 @@
 import { RingProgress } from '@mantine/core';
 import getThemeColor from "../../../utils/color/getThemeColor";
 
-
-interface StatsRingProps {
-  data: {
-    label: string;
-    stats: string;
-    progress: number;
-    color: string;
-    icon: 'up' | 'down';
-  };
-}
-
-export function StatsRing({ data }: StatsRingProps) {
+export function StatsRing({ data, isPopoverOpen, setIsPopoverOpen }) {
   return (
-        <div className='flex items-center'>
+        <button 
+          className='flex items-center hover:scale-105 active:scale-95 cursor-pointer'
+          onClick={() => setIsPopoverOpen(!isPopoverOpen)}
+        >
           <RingProgress
             size={50}
             roundCaps
@@ -23,12 +15,12 @@ export function StatsRing({ data }: StatsRingProps) {
             label={
               data 
               ? <p className={`text-center text-lg font-bold ${getThemeColor('text-gray-900', 'text-white')}`}>
-                {data.stats}
+                {data && data.stats ? data.stats : ''}
               </p>
               : <p>...</p>
             }
           />
 
-        </div>
+        </button>
   );
 }

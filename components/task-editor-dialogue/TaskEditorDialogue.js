@@ -8,9 +8,11 @@ import Dialogue from '../general/dialogues/Dialogue';
 import RemindersDialogue from './sub-menus/RemindersDialogue';
 import CategoryDialogue from './sub-menus/CategoryDialogue';
 import IconButton from '../general/icons/IconButton';
+import { useMutation } from '@tanstack/react-query';
+import { addNewTask } from '../../utils/db/queryFunctions/tasks';
+import dayjs from 'dayjs';
 
-export default function TaskEditorDialogue({ tasks, categories, modalState, selectedTask, selectedTaskSetter, saveEditedTaskCallback, saveNewTaskCallback, onModalClosed, date }) {
-
+export default function TaskEditorDialogue({ tasks, categories, category, modalState, selectedTask, saveEditedTaskCallback, saveNewTaskCallback, onModalClosed, date }) {
     const [opened, setOpened] = modalState;
     const [taskTitle, setTaskTitle] = useState(selectedTask?.title || '');
     const [taskDetails, setTaskDetails] = useState(selectedTask?.details || '');
@@ -29,18 +31,52 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
             return null;
         }
     });
-    const [startPoint, setStartPoint] = useState(new Date(selectedTask?.start) || null);
-    const [endPoint, setEndPoint] = useState(selectedTask?.end || null);
+
+    const [startPoint, setStartPoint] = useState(() => {
+        if(selectedTask?.start && !isNaN(new Date(selectedTask?.start))){
+            return new Date(selectedTask?.start);
+        } else if(date && !isNaN(new Date(date))){
+            return new Date(date);
+        } else {
+            return null;
+        }
+    });
+    const [endPoint, setEndPoint] = useState(() => {
+        if(selectedTask?.end && !isNaN(new Date(selectedTask?.end))){
+            return new Date(selectedTask?.end);
+        } else if(date && !isNaN(new Date(date))){
+            return dayjs(new Date(date)).add(1, 'hour').toDate();
+        } else {
+            return null;
+        }
+    });
     const [pickedPriority, setPickedPriority] = useState(selectedTask?.priority || 1);
     const [pickedReminders, setPickedReminders] = useState(selectedTask?.reminders || []);
-    const [pickedCategory, setPickedCategory] = useState(selectedTask?.categoryId || '');
+    const [pickedCategory, setPickedCategory] = useState(() => {
+        if(selectedTask?.categoryId) {
+            return selectedTask?.categoryId;
+        } else if(category) {
+            return category.id;
+        } else {
+            return '';
+        }
+    });
     const [userTimezone, setUserTimezone] = useState(selectedTask?.timeZone || null);
     const [subtasks, setSubtasks] = useState(selectedTask?.subtasks || []);
+    const [newSubtasks, setNewSubtasks] = useState([]);
 
     useEffect(() => {
         setTaskTitle(selectedTask?.title || '');
         setTaskDetails(selectedTask?.details || '');
-        setPickedCategory(selectedTask?.categoryId || '');
+        setPickedCategory(() => {
+            if(selectedTask?.categoryId) {
+                return selectedTask?.categoryId;
+            } else if(category) {
+                return category.id;
+            } else {
+                return '';
+            }
+        });
         setDueDate(() => {
             if(selectedTask?.dueDate && !isNaN(new Date(selectedTask?.dueDate))){
                 return new Date(selectedTask?.dueDate);
@@ -50,13 +86,69 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
                 return null;
             }
         });
-        setStartPoint(selectedTask?.start || null);
-        setEndPoint(selectedTask?.end || null);
+        setStartPoint(() => {
+            if(selectedTask?.start && !isNaN(new Date(selectedTask?.start))){
+                return new Date(selectedTask?.start);
+            } else if(date && !isNaN(new Date(date))){
+                return new Date(date);
+            } else {
+                return null;
+            }
+        });
+        setEndPoint(() => {
+            if(selectedTask?.end && !isNaN(new Date(selectedTask?.end))){
+                return new Date(selectedTask?.end);
+            } else if(date && !isNaN(new Date(date))){
+                return dayjs(new Date(date)).add(1, 'hour').toDate();
+            } else {
+                return null;
+            }
+        });
         setPickedPriority(selectedTask?.priority || 1);
         setPickedReminders(selectedTask?.reminders || {"time": 3, "unit": "Days"});
         setUserTimezone(selectedTask?.timeZone || null);
         setSubtasks(selectedTask?.subtasks);
+        setNewSubtasks([]);
     }, [selectedTask, date]);
+
+    const newTaskMutation = useMutation(
+        (newTask) => addNewTask(newTask),
+        {
+            onSuccess: async (data) => {
+
+                const taskSubtasks = () => {
+                    if(subtasks && subtasks.length > 0 && newSubtasks && newSubtasks.length > 0){
+                        return [...subtasks, ...newSubtasks.map(subtask => subtask.id)];
+                    } else if(subtasks && subtasks.length > 0){
+                        return subtasks;
+                    } else if(newSubtasks && newSubtasks.length > 0){
+                        return newSubtasks.map(subtask => subtask.id);
+                    } else {
+                        return [];
+                    }
+                }
+                
+                const taskData = {
+                    title: taskTitle,
+                    details: taskDetails,
+                    completed: selectedTask?.completed || false,
+                    dueDate: dueDate,
+                    start: startPoint,
+                    end: endPoint,
+                    categoryId: pickedCategory,
+                    reminders: pickedReminders,
+                    priority: pickedPriority,
+                    subtasks: taskSubtasks(),
+                }
+                if(selectedTask.id){
+                    saveEditedTaskCallback(taskData, selectedTask.id);
+                } else {
+                    saveNewTaskCallback(taskData);
+                }
+                queryClient.invalidateQueries('tasks');
+            },
+        }
+    );
 
     function dateTimePickerCallback(dueDate, start, end, userTimezone) {
         setDueDate(dueDate);
@@ -69,23 +161,30 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
     }
 
     function onSaveButtonClicked(){
-        const taskData = {
-            title: taskTitle,
-            details: taskDetails,
-            completed: selectedTask.completed || false,
-            dueDate: dueDate,
-            start: startPoint,
-            end: endPoint,
-            categoryId: pickedCategory,
-            reminders: pickedReminders,
-            priority: pickedPriority,
-            subtasks: subtasks || [],
-        }
-        if(selectedTask.id){
-            saveEditedTaskCallback(taskData, selectedTask.id);
+
+        if(newSubtasks.length > 0){
+            newTaskMutation.mutate(newSubtasks);
         } else {
-            saveNewTaskCallback(taskData);
+            const taskData = {
+                title: taskTitle,
+                details: taskDetails,
+                completed: selectedTask?.completed || false,
+                dueDate: dueDate,
+                start: startPoint,
+                end: endPoint,
+                categoryId: pickedCategory,
+                reminders: pickedReminders,
+                priority: pickedPriority,
+                subtasks: subtasks || [],
+            }
+            if(selectedTask?.id){
+                saveEditedTaskCallback(taskData, selectedTask.id);
+            } else {
+                saveNewTaskCallback(taskData);
+            }
         }
+
+
     }
 
     return (
@@ -93,7 +192,7 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
             opened={opened}
             onClose={() => {
                 setOpened(false);
-                onModalClosed();
+                onModalClosed ? onModalClosed() : null;
             }}
             title="Add or edit your task"
             saveButtonCallback={() => onSaveButtonClicked()}
@@ -141,11 +240,11 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
                         <Tag size={28} className="m-1"/>
                     </IconButton>
 
-                    <IconButton
+                    {/* <IconButton
                         buttonCallback={() => setRemindersDialogueOpened(true)}
                     >
                         <BellRinging size={28} className="m-1"/>
-                    </IconButton>
+                    </IconButton> */}
                     <br/>
                 </div>
 
@@ -175,11 +274,11 @@ export default function TaskEditorDialogue({ tasks, categories, modalState, sele
                 />
 
                 <SubtaskSection 
-                    tasks={tasks} 
-                    categories={categories} 
+                    tasks={tasks}
+                    categories={categories}
                     selectedTask={selectedTask} 
-                    selectedTaskSetter={selectedTaskSetter}
                     subtasksState={[subtasks, setSubtasks]}
+                    newSubtasksState={[newSubtasks, setNewSubtasks]}
                 />
             </>
         </Dialogue>

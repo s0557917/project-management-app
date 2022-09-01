@@ -65,9 +65,8 @@ export default function EventCalendar({tasks, categories, dateClickCallback, tas
 
   return (
     <>
-      {isFetchingTasks || isFetchingCategories || isFetchingFilters 
-        ? <CalendarSkeleton />
-        :<Calendar 
+      <Calendar
+          // contentHeight="auto" 
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]} 
           headerToolbar={{
             left:'today prev,next',
@@ -75,7 +74,10 @@ export default function EventCalendar({tasks, categories, dateClickCallback, tas
             right:'dayGridMonth,timeGridWeek,timeGridDay'
           }}
           eventClick={(arg) => taskClickCallback(tasks.find((event) => event.id === arg.event.id))}
-          dateClick={(arg) => dateClickCallback(arg.date)}
+          dateClick={(arg) => {
+            console.log("dateClick", arg);
+            dateClickCallback(arg.date)
+          }}
           initialView="dayGridMonth" 
           events={eventSource}
           eventTimeFormat={
@@ -98,8 +100,9 @@ export default function EventCalendar({tasks, categories, dateClickCallback, tas
           locale={'en-gb'}
           nowIndicator={true}
           height={'85%'}
+          dayCellClassNames={'hover:bg-green-500 hover:text-white hover:font-bold hover:text-md cursor-pointer'}
+          slotLaneClassNames={'hover:bg-green-500 hover:text-white hover:font-bold cursor-pointer'}
         />
-      }
     </>
   )
 }

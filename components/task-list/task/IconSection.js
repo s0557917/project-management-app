@@ -21,14 +21,14 @@ export default function IconSection({ taskData, category, textColor }) {
     return (
         <div className="flex items-center m-1 h-auto">
             <IconInformation width={'w-24'}>
-                <Calendar size={24} className="m-1"/>
+                <Calendar size={24} className="m-1 drop-shadow-md shadow-black contrast-124"/>
                 {formatData()}
             </IconInformation>
 
             <IconInformation width={'w-14'}>
                 <Flag 
                     size={24} 
-                    className="m-1"
+                    className="m-1 drop-shadow-md shadow-black contrast-125"
                     weight={'fill'} 
                     color={getPriorityColor(taskData.priority)} 
                 />
@@ -40,14 +40,13 @@ export default function IconSection({ taskData, category, textColor }) {
                     size={24} 
                     weight={category ? 'fill' : 'regular'} 
                     color={category ? category.color : getCategoryColor('#1f2937','#ffffff')} 
-                    className="m-1"
+                    className="m-1 drop-shadow-md shadow-black contrast-125"
                 />
                 <p className="text-xs">{category?.name}</p>
             </IconInformation>
-
-            <IconInformation>
-                <BellRinging size={24} className="m-1"/>
-            </IconInformation>
+            {/* <IconInformation>
+                <BellRinging size={24} className="m-1 drop-shadow-md shadow-black"/>
+            </IconInformation> */}
             <br/>
         </div>
     )

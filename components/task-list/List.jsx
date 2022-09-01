@@ -6,6 +6,7 @@ import { getSorting } from "../../utils/db/queryFunctions/settings";
 import { getFilters } from "../../utils/db/queryFunctions/settings";
 import LoadingScreen from "../general/loading/LoadingScreen";
 import ListSkeleton from "../general/loading/ListSkeleton";
+import SubtaskSortingView from "./views/SubtaskSortingView";
 
 export default function List({ tasks, categories, modalStateSetter, selectedTaskSetter, onCompletionStateChanged, userSettings }) {
   
@@ -38,6 +39,13 @@ export default function List({ tasks, categories, modalStateSetter, selectedTask
           onCompletionStateChanged={onCompletionStateChanged}
           filters={filters}
         />;
+      case 'subtasks':
+        return <SubtaskSortingView
+          tasks={tasks} 
+          categories={categories}
+          onTaskClicked={onTaskClicked}
+          onCompletionStateChanged={onCompletionStateChanged}
+        />
       default:
         return <ListSkeleton />;
     }

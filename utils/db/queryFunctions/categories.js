@@ -34,3 +34,12 @@ export const updateCategory = async (modifiedCategory) => {
 
     return res.json(); 
 }
+
+export const deleteCategory = async (categoryId) => {
+    const res = await fetch(`/api/categories/${categoryId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+    });
+
+    return res.json();  
+}

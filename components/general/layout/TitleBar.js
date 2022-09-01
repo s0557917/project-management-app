@@ -9,11 +9,11 @@ export default function TitleBar({ title, width, displaySortingMenu }) {
             <div className="flex items-center">
                 {
                     displaySortingMenu 
-                    && <div className="px-2">
+                    && <div>
                         <SortingMenu />
                     </div>
                 }
-                <div className="px-2">
+                <div className="px-1">
                     <FilteringMenu />
                 </div>
             </div>

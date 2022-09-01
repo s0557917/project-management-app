@@ -3,15 +3,14 @@ import AddTaskButton from "../components/general/buttons/AddTaskButton";
 import Navbar from "../components/general/navbar/Navbar";
 import List from "../components/task-list/List";
 import { getSession } from 'next-auth/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { dehydrate, QueryClient, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getUserSettings } from "../utils/db/queryFunctions/settings";
+import { getUserSettings, prismaGetTheme, getTheme } from "../utils/db/queryFunctions/settings";
 import { prismaGetAllTasks, getAllTasks, addNewTask, updateTask } from "../utils/db/queryFunctions/tasks";
 import { getAllCategories, prismaGetAllCategories } from "../utils/db/queryFunctions/categories";
-import { useMantineColorScheme } from '@mantine/core';
 import TitleBar from "../components/general/layout/TitleBar";
-import StickyNavbar from "../components/general/navbar/StickyNavbar";
-import LoadingIcon from "../components/general/loading/LoadingIcon";
+import { useMantineColorScheme } from "@mantine/core";
+import { showNotification } from '@mantine/notifications';
 
 export async function getServerSideProps({req, res}) {
     const session = await getSession({ req });
@@ -29,6 +28,7 @@ export async function getServerSideProps({req, res}) {
     await queryClient.prefetchQuery(['tasks'], prismaGetAllTasks(session.user.email));
     await queryClient.prefetchQuery(['categories'], prismaGetAllCategories(session.user.email));
     await queryClient.prefetchQuery(['settings'], prismaGetAllCategories(session.user.email));
+    await queryClient.prefetchQuery(['theme'], prismaGetTheme(session.user.email));
   
     return {
         props: {
@@ -38,12 +38,18 @@ export async function getServerSideProps({req, res}) {
 }
 
 export default function TaskList() {
-    const { colorScheme } = useMantineColorScheme();
     const queryClient = useQueryClient();
 
     const {data: userSettings, isFetching: isFetchingUserSettings} = useQuery(['settings'], getUserSettings);
     const {data: tasks, isFetching: isFetchingTasks} = useQuery(['tasks'], getAllTasks);
     const {data: categories, isFetching: isFetchingCategories} = useQuery(['categories'], getAllCategories);
+    const { data: prefetchedTheme, isFetching: isFetchingTheme } = useQuery(['theme'], getTheme); 
+
+    const { toggleColorScheme } = useMantineColorScheme();
+    
+    useEffect(() => {
+        toggleColorScheme(prefetchedTheme);
+    }, [isFetchingTheme]);
 
     const newTaskMutation = useMutation(
         (newTask) => addNewTask(newTask),
@@ -53,6 +59,12 @@ export default function TaskList() {
             },
             onSuccess: async () => {
                 queryClient.invalidateQueries('tasks');
+                showNotification({
+                    autoClose: 3000,
+                    type: 'success',
+                    color: 'green',
+                    title: 'New task saved successfully!',
+                });
             },
             onSettled: async (data, error, variables, context) => {
                 console.log("settled", data, error, variables, context);
@@ -64,6 +76,12 @@ export default function TaskList() {
         (updatedTask) => updateTask(updatedTask),
         {onSuccess: async () => {
             queryClient.invalidateQueries('tasks');
+            showNotification({
+                autoClose: 3000,
+                type: 'success',
+                color: 'green',
+                title: 'Task updated successfully!',
+            });
         }}
     )
 
@@ -71,18 +89,37 @@ export default function TaskList() {
     const [selectedTask, setSelectedTask] = useState({});
 
     async function onNewTaskSaved(taskData) {
-        newTaskMutation.mutate(taskData);
-
-        setOpenedTaskEditor(false);
-        setSelectedTask({});
+        if(taskData.title != '') {
+            newTaskMutation.mutate(taskData);
+            setOpenedTaskEditor(false);
+            setSelectedTask({});
+        } else {
+            showNotification({
+                autoClose: 3000,
+                type: 'error',
+                color: 'red',
+                title: 'Error saving your task!',
+                message: 'Please ensure that your task has a title!'
+            });
+        }
     }
 
     async function onEditedTaskSaved(taskData, taskId){
-        const modifiedTask = {...taskData, id: taskId};
-        updateTaskMutation.mutate(modifiedTask);
-            
-        setOpenedTaskEditor(false);
-        setSelectedTask({});
+        if(taskData.title != '') {
+            const modifiedTask = {...taskData, id: taskId};
+            updateTaskMutation.mutate(modifiedTask);
+                
+            setOpenedTaskEditor(false);
+            setSelectedTask({});
+        } else {
+            showNotification({
+                autoClose: 3000,
+                type: 'error',
+                color: 'red',
+                title: 'Error saving your task!',
+                message: 'Please ensure that your task has a title!'
+            });
+        }
     }
 
     async function onCompletionStateChanged(taskId, isCompleted) {    
@@ -97,7 +134,6 @@ export default function TaskList() {
     return (
         <div className={`relative w-screen h-screen flex flex-col flex-1 scroll overflow-scroll `}>
             <Navbar /> 
-            {/* <StickyNavbar /> */}
             <div className="h-full p-5">       
                 <TitleBar 
                     width={'w-4/5'}
@@ -124,7 +160,6 @@ export default function TaskList() {
                     onModalClosed={onModalClosed}
                 />
                 <AddTaskButton modalStateSetter={setOpenedTaskEditor}/>
-                {/* <LoadingIcon /> */}
             </div>
         </div>
     )
