@@ -1,8 +1,8 @@
 import getThemeColor from "../../../utils/color/getThemeColor";
 import Statistics from "./Statistics";
-import SearchBar from "./Searchbar";
 import UserMenu from "./UserMenu";
 import Tabbing from "./Tabbing";
+import SearchBar from "./SearchBar";
 
 export default function Navbar(){
 
