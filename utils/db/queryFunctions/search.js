@@ -1,6 +1,6 @@
 export const getSearchResults = async (searchTerm) => {
   if(searchTerm.length > 0) {
-    const res = await fetch(`http://localhost:3000/api/search/${searchTerm}`, {
+    const res = await fetch(`${process.env.SEARCH_URL}/${searchTerm}`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });

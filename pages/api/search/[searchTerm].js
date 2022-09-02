@@ -3,7 +3,7 @@ import prisma from '../../../utils/prisma';
 
 export default async function handler(req, res) {
     const session = await getSession({ req });
-     if(req.method === 'GET' && session && req.query.searchTerm !== undefined && req.query.searchTerm.lentgth > 0){){ 
+     if(req.method === 'GET' && session && req.query.searchTerm !== undefined && req.query.searchTerm.lentgth > 0){ 
         try {
             const tasks = await prisma.task.findMany({
                 where: {

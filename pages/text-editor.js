@@ -80,7 +80,7 @@ export default function TextEditor() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [changes, setChanges] = useState([]);
   const [syntaxErrors, setSyntaxErrors] = useState([]);
-  const debouncedEditorContent = useDebounce(unManagedContent, 500);
+  const debouncedEditorContent = useDebounce(unManagedContent, 250);
   
   let cursorPosition = {};
   const monaco = useMonaco();
@@ -88,9 +88,7 @@ export default function TextEditor() {
 
   function handleEditorDidMount(editor, monaco) {
     editor.onDidChangeCursorPosition(e => {
-      console.log("COLUMN: ", e.position.column);
       if(e.position.column < 6) {
-        console.log("POS: ", e.position.column)
         editor.setPosition({
           lineNumber: e.position.lineNumber,
           column: 6
@@ -269,7 +267,8 @@ export default function TextEditor() {
       }
 
       ensureCorrectLineStartSpacing(debouncedEditorContent);
-      const {isSyntaxValid, errors} = runSyntaxCheck(unManagedContent, categories);
+      // const {isSyntaxValid, errors} = runSyntaxCheck(unManagedContent, categories);
+      const {isSyntaxValid, errors} = {isSyntaxValid: true, errors: []};
       setSyntaxErrors(errors);
       setCanUpdate(isSyntaxValid);
       const editorLines = splitContentIntoLines(debouncedEditorContent);

@@ -9,6 +9,7 @@ import TaskEditorDialogue from '../../task-editor-dialogue/TaskEditorDialogue';
 import getThemeColor from '../../../utils/color/getThemeColor';
 import useOutsideAlerter from '../../../utils/hooks/useOutsideAlerter';
 import { updateTask } from '../../../utils/db/queryFunctions/tasks';
+import { showNotification } from '@mantine/notifications';
 
 export default function SearchBar() {
 
@@ -47,23 +48,40 @@ export default function SearchBar() {
     const updateTaskMutation = useMutation(
         (updatedTask) => updateTask(updatedTask),
         {onSuccess: async () => {
+            queryClient.invalidateQueries('tasks');
             showNotification({
                 autoClose: 3000,
                 type: 'success',
                 color: 'green',
                 title: 'Task updated successfully!',
             });
-
-            setSearchValue('');
-            setSearchResults([]);
-            setDropdownOpened(false);
-            setOpenedTaskEditor(false);
-            setSelectedTask(null);
-            
-
-            queryClient.invalidateQueries('tasks');
         }}
     )
+
+    // const updateTaskMutation = useMutation(
+    //     (updatedTask) => updateTask(updatedTask),
+    //     {onMutate: async (updatedTask) => {
+    //         console.log("newTask", updatedTask);
+    //     }},
+    //     {onSuccess: async () => {
+    //         queryClient.invalidateQueries('tasks');
+    //         console.log("updatedTask ------- ");
+    //         showNotification({
+    //             autoClose: 3000,
+    //             type: 'success',
+    //             color: 'green',
+    //             title: 'Task updated successfully!',
+    //         });
+
+    //         setSearchValue('');
+    //         setSearchResults([]);
+    //         setDropdownOpened(false);
+    //         setOpenedTaskEditor(false);
+    //         setSelectedTask(null);
+            
+
+    //     }}
+    // )
 
     function onEditedTaskSaved(task, taskId) {
         if(task.title !== '') {

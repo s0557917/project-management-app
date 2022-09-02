@@ -19,6 +19,7 @@ function formatDateTimeToObject(date) {
 }
 
 export function runSyntaxCheck(text, categories) {  
+    console.log("CHECKING SYNTAX");
     const openingTagsCount = text.match(/\(/g).length;
     const closingTagsCount = text.match(/\)/g).length;
     const tagsWithContent = text.match(/\(.*?\)/g);
