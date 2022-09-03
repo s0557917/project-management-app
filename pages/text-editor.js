@@ -95,7 +95,7 @@ export default function TextEditor() {
         })
       }
     });
-    editor.onDidChangeCursorSelection(e => console.log("selection", e.selection));
+    // editor.onDidChangeCursorSelection(e => console.log("selection", e.selection));
     editor.onDidChangeModelContent(e => setUnManagedContent(editor.getValue()));
     editor.addAction({
       // An unique identifier of the contributed action.
@@ -119,7 +119,6 @@ export default function TextEditor() {
     editor.addCommand(
       monaco.KeyCode.Enter, 
       () => { 
-        console.log("PRESSED ENTER")
         const lineContent = editor.getModel().getLineContent(cursorPosition.lineNumber);
         const lineHasTask = lineContent.match(/(?<=(?<!d)t\().*?(?=\))/);
         const editorLineCount = editor.getModel().getLineCount();
@@ -259,7 +258,6 @@ export default function TextEditor() {
   useEffect(() => {
     if(debouncedEditorContent) {
       if(cursorPosition.column < 6) {
-        console.log("CURSOR IS SMALLER THAN SIX")
         editorRef.setPosition({
           lineNumber: position.lineNumber,
           column: 6
@@ -371,12 +369,10 @@ export default function TextEditor() {
 
   function performUpdate() {
     changes.changedTasks.forEach(task => {
-      console.log("MAPPING", task);
       const updatedTask = mapLineToTask(task, categories);
       updateTaskMutation.mutate(updatedTask);
     });
     changes.newTasks.forEach(task => {
-      console.log("COMP", task);
       const taskComponents = getTaskComponents(task.content);
       if(taskComponents.title !== undefined) {
         const newTask = mapLineToTask(task, categories);

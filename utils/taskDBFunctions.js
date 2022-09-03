@@ -1,4 +1,4 @@
-import prisma from "../utils/prisma";
+import {prisma} from "../utils/prisma";
 
 export async function onNewTaskSaved(taskData, setOpened, setSelectedTask) {
     await fetch('/api/tasks', {

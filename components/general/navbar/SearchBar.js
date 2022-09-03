@@ -58,31 +58,6 @@ export default function SearchBar() {
         }}
     )
 
-    // const updateTaskMutation = useMutation(
-    //     (updatedTask) => updateTask(updatedTask),
-    //     {onMutate: async (updatedTask) => {
-    //         console.log("newTask", updatedTask);
-    //     }},
-    //     {onSuccess: async () => {
-    //         queryClient.invalidateQueries('tasks');
-    //         console.log("updatedTask ------- ");
-    //         showNotification({
-    //             autoClose: 3000,
-    //             type: 'success',
-    //             color: 'green',
-    //             title: 'Task updated successfully!',
-    //         });
-
-    //         setSearchValue('');
-    //         setSearchResults([]);
-    //         setDropdownOpened(false);
-    //         setOpenedTaskEditor(false);
-    //         setSelectedTask(null);
-            
-
-    //     }}
-    // )
-
     function onEditedTaskSaved(task, taskId) {
         if(task.title !== '') {
             updateTaskMutation.mutate({...task, id: taskId});

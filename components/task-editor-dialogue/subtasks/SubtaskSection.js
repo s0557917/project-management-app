@@ -12,7 +12,6 @@ export default function SubtaskSection({ tasks, categories, selectedTask, subtas
     const bgColor = getThemeColor('bg-gray-200', 'bg-zinc-800');
 
     function onSubtaskClicked(subtaskId){
-         console.log("  ", subtaskId);
     }
 
     function onSubtaskRemoved(subtaskId){

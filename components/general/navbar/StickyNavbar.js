@@ -13,10 +13,8 @@ export default function StickyNavbar(){
         if (typeof window !== 'undefined') { 
             if (window.scrollY > lastScrollY) { 
                 setShow(false); 
-                console.log("scrolling down");
             } else { 
                 setShow(true);  
-                console.log("scrolling up");
             }
 
             setLastScrollY(window.scrollY); 
@@ -25,14 +23,11 @@ export default function StickyNavbar(){
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            console.log("useEffect");
             globalThis.addEventListener('scroll', controlNavbar);
     
             return () => {
                 globalThis.removeEventListener('scroll', controlNavbar);
             };
-        } else {
-            console.log("window not defined");
         }
     }, [lastScrollY]);
 

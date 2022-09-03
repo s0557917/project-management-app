@@ -1,9 +1,8 @@
 import { getSession } from 'next-auth/react';
-import prisma from '../../../utils/prisma';
+import {prisma} from '../../../utils/prisma';
 
 export default async function handler(req, res) {
     const session = await getSession({ req });
-    console.log("UPDATE TASK API", req.body);
     if(req.method === 'PUT' && session){
         try{
             const taskData = {
@@ -28,12 +27,10 @@ export default async function handler(req, res) {
 
             res.status(201).json(task);
         } catch (e) {
-            console.log("PUT ERROR", e);
             res.status(500).json({error: e});
         }
     } else if(req.method === 'DELETE' && session) {
         try {
-            console.log("DELETE TASK API", req.query.id);
             const tasks = await prisma.task.delete({
                 where: {
                     id: req.query.id

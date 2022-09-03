@@ -11,7 +11,7 @@ export default function MenuWithInput({ openedState, inputState, title, label, p
             <Menu.Target>
                 <button 
                     className='text-xl hover:bg-blue-700 bg-cyan-500 text-white rounded-full w-8 h-8' 
-                    onClick={() => console.log("CLICKED ADD NEW TASK")}
+                    // onClick={() => }
                 >
                     {icon}
                 </button>

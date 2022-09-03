@@ -1,8 +1,6 @@
 export const prismaGetTheme = async (userEmail) => {
     const res = await prisma.user.findUnique({
-        where: {
-            owner: { email: userEmail },
-        },
+        where: { email: userEmail },
     });
 
     return res.theme;
@@ -68,12 +66,10 @@ export const getSorting = async () => {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
     });
-    console.log("SORTING GET");
     return res.json();
 }
 
 export const updateSorting = async (updatedSorting) => {
-    console.log("SORTING UPDATE", updatedSorting);
     if(updatedSorting && updatedSorting != '') {
         const res = await fetch('/api/sorting', {
             method: 'PUT',

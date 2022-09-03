@@ -75,7 +75,6 @@ export default function EventCalendar({tasks, categories, dateClickCallback, tas
           }}
           eventClick={(arg) => taskClickCallback(tasks.find((event) => event.id === arg.event.id))}
           dateClick={(arg) => {
-            console.log("dateClick", arg);
             dateClickCallback(arg.date)
           }}
           initialView="dayGridMonth" 

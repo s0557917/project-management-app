@@ -1,5 +1,5 @@
 import { getSession } from 'next-auth/react';
-import prisma from '../../../utils/prisma';
+import {prisma} from '../../../utils/prisma';
 
 export default async function handler(req, res) {
     const session = await getSession({ req });
@@ -11,7 +11,6 @@ export default async function handler(req, res) {
                     title: { contains: req?.query?.searchTerm },
                 },
             });
-            console.log("TASKS", tasks);
             res.status(200).json(tasks);
         } catch (e) {
             res.status(500).json({error: e});
