@@ -5,6 +5,7 @@ import { Trash, PencilSimple } from "phosphor-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteTask } from "../../../utils/db/queryFunctions/tasks";
 import { Modal } from "@mantine/core";
+import { updateTextEditorStructure } from "../../../utils/db/queryFunctions/textEditorStructure";
 
 export default function Task({ taskData, onTaskClicked, onCompletionStateChanged, category, indent }) {
     
@@ -14,11 +15,21 @@ export default function Task({ taskData, onTaskClicked, onCompletionStateChanged
     const textColor = getThemeColor('text-gray-900', 'text-white');
     const queryClient = useQueryClient();
 
+    const updateTextEditorStructureMutation = useMutation(
+        (taskId) => updateTextEditorStructure({taskId, action: 'delete'}),
+        {
+            onSuccess: () => {
+                queryClient.invalidateQueries('textEditorStructure');
+            }
+        }
+    )
+
     const deleteTaskMutation = useMutation(
         (taskId) => deleteTask(taskId),
         {
-            onSuccess: () => {
+            onSuccess: (data) => {
                 queryClient.invalidateQueries('tasks');
+                updateTextEditorStructureMutation.mutate(data.taskId);
             }
         }
     )

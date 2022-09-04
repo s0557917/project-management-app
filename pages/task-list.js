@@ -11,6 +11,7 @@ import { getAllCategories, prismaGetAllCategories } from "../utils/db/queryFunct
 import TitleBar from "../components/general/layout/TitleBar";
 import { useMantineColorScheme } from "@mantine/core";
 import { showNotification } from '@mantine/notifications';
+import { updateTextEditorStructure } from "../utils/db/queryFunctions/textEditorStructure";
 
 export async function getServerSideProps({req, res}) {
     const session = await getSession({ req });
@@ -54,7 +55,7 @@ export default function TaskList() {
     const newTaskMutation = useMutation(
         (newTask) => addNewTask(newTask),
         {
-            onSuccess: async () => {
+            onSuccess: async (data) => {
                 queryClient.invalidateQueries('tasks');
                 showNotification({
                     autoClose: 3000,
@@ -62,6 +63,8 @@ export default function TaskList() {
                     color: 'green',
                     title: 'New task saved successfully!',
                 });
+
+                updateTextEditorStructureMutation.mutate(data.id);
             },
         }
     );
@@ -77,6 +80,15 @@ export default function TaskList() {
                 title: 'Task updated successfully!',
             });
         }}
+    )
+
+    const updateTextEditorStructureMutation = useMutation(
+        (taskId) => updateTextEditorStructure({taskId, action: 'add'}),
+        {
+            onSuccess: () => {
+                queryClient.invalidateQueries('textEditorStructure');
+            }
+        }
     )
 
     const [openedTaskEditor, setOpenedTaskEditor] = useState(false);

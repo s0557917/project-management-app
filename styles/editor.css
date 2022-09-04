@@ -1,0 +1,6 @@
+.completedTaskTextEditor {
+	color: red !important;
+	text-decoration: line-through;
+	font-weight: bold;
+	font-style: oblique;
+}

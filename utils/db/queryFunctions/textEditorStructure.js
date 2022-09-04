@@ -14,11 +14,11 @@ export const getTextEditorStructure = async () => {
     return res.json();
 }
 
-export const updateTextEditorStructure = async (modifiedCategory) => {
+export const updateTextEditorStructure = async (textEditorStructureUpdate) => {
     const res = await fetch(`/api/textEditorStructure`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(modifiedCategory),
+        body: JSON.stringify(textEditorStructureUpdate),
     });
 
     return res.json(); 

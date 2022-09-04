@@ -1,9 +1,11 @@
-const titleRegex = /(?<=(?<!d)t\().*?(?=\))/;
-const titleWithBracketsRegex = /(?<!d)t\(.*?\)/g;
-const detailsRegex = /(?<=d\().*?(?=\))/;
-const categoryRegex = /((?<=c\(|category\()[A-Z|a-z|0-9].*?(?=\)))/;
-const prioRegex = /(?<=p\()[0-5](?=\))/;
-const dateTimeRegex = /(?<=dt\(|datetime\()\d{2}[-]\d{2}[-]\d{4} \d{2}[:]\d{2}|\d{2}[-]\d{2}[-]\d{4}(?=\))/;
+const titleRegex = /(?<!d)(?<=t\\).*?(?=[t|c|d|dt|p][t|c|d|dt|p]?\\)|(?<!d)(?<=t\\).*(?=$)|(?<!d)(?<=t\\).*(?=\n)/;
+const titleWithBracketsRegex = /(?<!d)t\\.*?(?=[t|c|d|dt|p][t|c|d|dt|p]?\\)|(?<!d)t\\.*(?=$)|(?<!d)t\\.*(?=\n)/g;
+const detailsRegex = /(?<=d\\).*?(?=[t|c|d|dt|p][t|c|d|dt|p]?\\)|(?<=d\\).*(?=$)|(?<=d\\).*(?=\n)/;
+const categoryRegex = /(?<=c\\).*?(?=\s*?[a-z|A-Z][a-z|A-Z]?\\)|(?<=c\\)\w*?(?=\s*?$)|(?<=c\\)\w*?(?=\s*?\n)/;
+const prioRegex = /(?<=p\\)[1-5](?=\s*)|(?<=p\\)[1-5](?=\s*$)|(?<=p\\)[1-5](?=\s*\n)/;
+const dateTimeRegex = /(?<=dt\\|)\d{2}[-]\d{2}[-]\d{4} \d{2}[:]\d{2}|\d{2}[-]\d{2}[-]\d{4}(?=\\)/;
+
+const emptyTagRegex = /[t|c|dt|d|p]\\\s*(?=[t|c|dt|d|p][t|c|dt|d|p]?\\|$|\n)/g;
 
 function formatDateTimeToObject(date) {
     const splitDateAndTime = date[0].split(' ');
@@ -19,12 +21,21 @@ function formatDateTimeToObject(date) {
 }
 
 export function runSyntaxCheck(text, categories) {  
-    const openingTagsCount = text.match(/\(/g).length;
-    const closingTagsCount = text.match(/\)/g).length;
+    //
+    const lineMatches = text.match(/.*?\n/g);
+
+    // Check for empty components
+
+    // Check that title is present
+
+    // Check that components are also present once
+
+    // Check that category is valid
+
+    //
     const tagsWithContent = text.match(/\(.*?\)/g);
     const datesWithBrackets = text.match(/dt\(.*?\)|datetime\(.*?\)/g); 
    
-    const lineMatches = text.match(/.*?\n/g);
 
     let tagsCorrectness = [];
     let dateTimesCorrectness = [];
@@ -34,7 +45,7 @@ export function runSyntaxCheck(text, categories) {
     const errors = new Set();
 
     if(tagsWithContent !== null) {
-        tagsCorrectness = tagsWithContent.map(match => match.match(/(?<=\().*?(?=\))/g)[0] !== '');
+        tagsCorrectness = tagsWithContent.map(match => match.match(emptyTagRegex) !== null);
         if(tagsCorrectness?.includes(false)) errors.add("Check that all your tags have content!"); 
     }
 
@@ -80,11 +91,8 @@ export function runSyntaxCheck(text, categories) {
         if(categoryExists?.includes(false)) errors.add('One of the used categories does not exist!');
     }
 
-    if(openingTagsCount !== closingTagsCount) errors.add('There is at least one missing tag!');
-
     return {
-        isSyntaxValid: closingTagsCount === openingTagsCount 
-            && !tagsCorrectness?.includes(false)
+        isSyntaxValid: !tagsCorrectness?.includes(false)
             && !dateTimesCorrectness?.includes(false)
             && !taskStructureCorrectness?.includes(false)
             && !categoryExists?.includes(false),
@@ -102,6 +110,7 @@ export function guaranteeCorrectTagSpacing(lines) {
 }
 
 export function splitContentIntoLines(debouncedEditorContent) {
+    console.log("TEXT EDITOR", debouncedEditorContent);
     let editorContentLines = [];
     let currentLine = [];
     for(let i = 0; i <= debouncedEditorContent.length; i++) {
@@ -116,11 +125,11 @@ export function splitContentIntoLines(debouncedEditorContent) {
 }
 
 export function structureEditorContent(editorLines, tasks) {
-    return editorLines
+    const content = editorLines
         .map((editorLine, i) => {
             const components = getTaskComponents(editorLine);
             if(components.title !== undefined) {
-                const shortTaskId = editorLine.match(/.*?(?=t\()/);
+                const shortTaskId = editorLine.match(/^\w{4}/);
 
                 const fullTaskId = shortTaskId !== null 
                     ? tasks.find(task => {
@@ -144,6 +153,8 @@ export function structureEditorContent(editorLines, tasks) {
             }
         })
         .filter(line => line !== undefined);
+
+    return content;
 }
 
 export function getTaskComponents(line) {
@@ -221,4 +232,29 @@ export function ensureCorrectLineStartSpacing(editorContent) {
     return splitContentIntoLines(editorContent).map(line => {
         if(line === '\n') return '     ' + line; 
     });
+}
+
+export function displayCompletedTasks(editorLines, oldDecorations, editorRef) {
+    const completedRegex = /x\\.*|.*x\\/g;
+
+    const completedLines = editorLines
+    ?.map((line, index) => {
+        if(line.match(completedRegex) !== null) {
+            return {
+                range: new monaco.Range(index + 1, 1, index + 1, 1),
+                options: {
+                  isWholeLine: true,
+                  inlineClassName: 'completedTaskTextEditor',
+                },
+              };
+        } else { 
+            return undefined;
+        }
+    })
+    ?.filter(line => line !== undefined);
+
+    return editorRef.current.deltaDecorations(
+      oldDecorations, 
+      completedLines
+    );
 }

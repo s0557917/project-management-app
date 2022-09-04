@@ -2,13 +2,13 @@ import '../styles/globals.css'
 import '@fullcalendar/common/main.css'
 import '@fullcalendar/daygrid/main.css'
 import '@fullcalendar/timegrid/main.css'
+import '../styles/editor.css'
 import { MantineProvider, ColorSchemeProvider } from '@mantine/core';
 import { NotificationsProvider } from '@mantine/notifications';
 import { SessionProvider as AuthProvider } from 'next-auth/react';
 import { Hydrate, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState } from 'react';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import '../utils/wdyr/wdyr'
 
 function MyApp({ Component, pageProps }) {
 
