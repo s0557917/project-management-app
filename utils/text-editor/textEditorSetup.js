@@ -1,8 +1,7 @@
 import { languageDef, configuration } from '../../editor/editorConfig';
 
 export default function textEditorSetup(monaco, categories) {
-  if (monaco) {
-      console.log("PASO SETUP");
+    if (monaco ) {
         monaco.languages.register({ id: 'taskLanguage' });
         monaco.languages.setMonarchTokensProvider('taskLanguage', setLanguageTokens(categories));
         monaco.languages.setLanguageConfiguration('taskLanguage', configuration);
@@ -112,7 +111,6 @@ function setLanguageTokens(categories) {
 }
 
 function setCategoryTokens(categories) {
-  console.log("SETTING TOKENS");
   const categoryTokens = [
     { token: "t", foreground: "#0000ff"},
     { token: "d", foreground: "#00ffff"},

@@ -21,36 +21,56 @@ function formatDateTimeToObject(date) {
 }
 
 export function runSyntaxCheck(text, categories) {  
-    //
+    const errors = new Set();
     const lineMatches = text.match(/.*?\n/g);
 
-    // Check for empty components
-
-    // Check that title is present
-
-    // Check that components are also present once
-
-    // Check that category is valid
-
-    //
-    const tagsWithContent = text.match(/\(.*?\)/g);
-    const datesWithBrackets = text.match(/dt\(.*?\)|datetime\(.*?\)/g); 
-   
-
-    let tagsCorrectness = [];
-    let dateTimesCorrectness = [];
-    let taskStructureCorrectness = [];
+    let emptyTagsExist = false;
+    let wrongPrioritiesExist = false;
+    let linesWithoutTitleExist = false;
     let categoryExists = [];
-
-    const errors = new Set();
-
-    if(tagsWithContent !== null) {
-        tagsCorrectness = tagsWithContent.map(match => match.match(emptyTagRegex) !== null);
-        if(tagsCorrectness?.includes(false)) errors.add("Check that all your tags have content!"); 
+    let dateTimesCorrectness = [];
+    
+    //
+    // Check for empty components
+    const emptyTagsMatches = text.match(/[t|c|d|p|dt]\\\s*([t|x|c|d|p|dt]\\|$|\n)/g)
+    if(emptyTagsMatches !== null) {
+        emptyTagsExist = true;
+        errors.add('Check that all your tags have content!');
+    }
+    //Check that priorities are correct
+    const wrongPrioritiesMatches = text.match(/p\\[6-9]/g);
+    if(wrongPrioritiesMatches !== null) {
+        wrongPrioritiesExist = true;
+        errors.add('A task can only have a priority from 1 to 5!');
     }
 
-    if(datesWithBrackets !== null) {
-        dateTimesCorrectness = datesWithBrackets.map(date => {
+    // Check that components are also present once
+    
+    if(lineMatches !== null) {
+        // Check that category is valid
+        categoryExists = lineMatches.map(line => {
+            const category = line.match(categoryRegex);
+            
+            if(category !== null && category[0] !== 'Uncategorized') {
+                return categories.find(cat => cat.name === category[0]) !== undefined;
+            }
+        });
+        if(categoryExists?.includes(false)) errors.add('One of the used categories does not exist!');
+
+        // Check that title is present
+        const lineHasTitle = text.match(/(?<!d)t\\*?(?=[t|c|d|dt|p][t|c|d|dt|p]?\\)|(?<!d)t\\.*?(?=$)|(?<!d)t\\.*?(?=\n)/g);
+        lineMatches.forEach((line, index) => {
+            if (line !== '' && line !== '\n' && !line.includes('t\\')) {
+                linesWithoutTitleExist = true;
+                errors.add(`Line ${index + 1} does not have a title!`);
+            } 
+        });
+    }
+    
+    //Check that date is valid
+    const fullDates = text.match(/dt\\.*?(?=[a-z|A-Z][a-z|A-Z]?\\)|dt\\.*(?=$)|dt\\.*(?=\n)/g);
+    if(fullDates !== null) {
+        dateTimesCorrectness = fullDates.map(date => {
             const dateMatch = date.match(dateTimeRegex);
             if(dateMatch !== null) {
                 const dateObject = formatDateTimeToObject(dateMatch);
@@ -66,35 +86,11 @@ export function runSyntaxCheck(text, categories) {
         });
     }
 
-    if(lineMatches !== null) {
-        taskStructureCorrectness = lineMatches.map(line => {
-            if(line.match(titleWithBracketsRegex) === null 
-                && (
-                    line.match(detailsRegex) !== null
-                    || line.match(categoryRegex) !== null
-                    || line.match(prioRegex) !== null
-                    || line.match(dateTimeRegex) !== null
-                )
-            ) {
-                errors.add("A task has to have and begin with a title!");
-                return false;
-            }
-        });
-
-        categoryExists = lineMatches.map(line => {
-            const category = line.match(categoryRegex);
-            
-            if(category !== null && category[0] !== 'Uncategorized') {
-                return categories.find(cat => cat.name === category[0]) !== undefined;
-            }
-        });
-        if(categoryExists?.includes(false)) errors.add('One of the used categories does not exist!');
-    }
-
     return {
-        isSyntaxValid: !tagsCorrectness?.includes(false)
+        isSyntaxValid: !linesWithoutTitleExist
+            && !wrongPrioritiesExist
+            && !emptyTagsExist
             && !dateTimesCorrectness?.includes(false)
-            && !taskStructureCorrectness?.includes(false)
             && !categoryExists?.includes(false),
         errors: Array.from(errors)
     }
@@ -110,7 +106,6 @@ export function guaranteeCorrectTagSpacing(lines) {
 }
 
 export function splitContentIntoLines(debouncedEditorContent) {
-    console.log("TEXT EDITOR", debouncedEditorContent);
     let editorContentLines = [];
     let currentLine = [];
     for(let i = 0; i <= debouncedEditorContent.length; i++) {

@@ -89,61 +89,6 @@ export default function TextEditor() {
   const monaco = useMonaco();
   const editorRef = useRef(null);
 
-  function handleEditorDidMount(editor, monaco) {
-    textEditorSetup(monaco, categories);
-    editor.onDidChangeCursorPosition(e => {
-      if(e.position.column < 6) {
-        editor.setPosition({
-          lineNumber: e.position.lineNumber,
-          column: 6
-        })
-      }
-    });
-
-    editor.onDidChangeModelContent(e => setUnManagedContent(editor.getValue()));
-    editorRef.current = editor; 
-  }
-
-  useEffect(() => {
-    if(categories !== undefined && categories !== null && categories.length > 0) {
-      textEditorSetup(monaco, categories);
-    }
-  }, [monaco, categories, tasks, isFetchingTasks, isFetchingCategories, isFetchingTheme, textEditorStructure]);
-
-  useEffect(() => {
-    setEditorContent(handleInitialContentSetup());
-  }, [isFetchingTasks, isFetchingCategories, textEditorStructure]);
-
-  //TODO: CHECK IF UNMANAGED AND DEBOUNCED
-  useEffect(() => {
-    const editorLines = splitContentIntoLines(debouncedEditorContent);
-
-    if(editorRef !== null && editorRef.current !== null) {
-      const decorations = displayCompletedTasks(editorLines, textDecorations, editorRef);
-      setTextDecorations(decorations);
-    }
-
-    if(debouncedEditorContent) {
-      if(cursorPosition.column < 6) {
-        editorRef.setPosition({
-          lineNumber: position.lineNumber,
-          column: 6
-        })
-      }
-
-      ensureCorrectLineStartSpacing(debouncedEditorContent);
-      // const {isSyntaxValid, errors} = runSyntaxCheck(unManagedContent, categories);
-      const {isSyntaxValid, errors} = {isSyntaxValid: true, errors: []};
-
-      setSyntaxErrors(errors);
-      setCanUpdate(isSyntaxValid);
-
-      const modif = structureEditorContent(editorLines, tasks); 
-
-      setModifiedContentStructure(modif);
-    }
-  }, [debouncedEditorContent]);
-
   const newTaskMutation = useMutation(
     (newTask) => addNewTask(newTask),
     {
@@ -169,6 +114,63 @@ export default function TextEditor() {
     }
   );
 
+  function handleEditorDidMount(editor, monaco) {
+    textEditorSetup(monaco, categories);
+    // editor.onDidChangeCursorPosition(e => {
+    //   if(e.position.column < 6) {
+    //     editor.setPosition({
+    //       lineNumber: e.position.lineNumber,
+    //       column: 6
+    //     })
+    //   }
+    // });
+
+    editor.onDidChangeModelContent(e => setUnManagedContent(editor.getValue()));
+    editorRef.current = editor; 
+  }
+
+  useEffect(() => {
+    if(categories !== undefined && categories !== null && categories.length > 0) {
+      textEditorSetup(monaco, categories);
+    }
+  }, [monaco, categories, tasks, isFetchingTasks, isFetchingCategories, isFetchingTheme, textEditorStructure]);
+
+  useEffect(() => {
+    setEditorContent(handleInitialContentSetup());
+  }, [isFetchingTasks, isFetchingCategories, textEditorStructure]);
+
+  //TODO: CHECK IF UNMANAGED AND DEBOUNCED
+  useEffect(() => {
+    const {isSyntaxValid, errors} = runSyntaxCheck(unManagedContent, categories);
+    setSyntaxErrors(errors);
+    setCanUpdate(isSyntaxValid);
+
+    if(isSyntaxValid) {
+      const editorLines = splitContentIntoLines(debouncedEditorContent);
+
+      if(editorRef !== null && editorRef.current !== null) {
+        const decorations = displayCompletedTasks(editorLines, textDecorations, editorRef);
+        setTextDecorations(decorations);
+      }
+      const modif = structureEditorContent(editorLines, tasks); 
+      setModifiedContentStructure(modif);
+    }
+
+    // if(debouncedEditorContent) {
+    //   if(cursorPosition.column < 6) {
+    //     editorRef.setPosition({
+    //       lineNumber: position.lineNumber,
+    //       column: 6
+    //     })
+    //   }
+
+    //   ensureCorrectLineStartSpacing(debouncedEditorContent);
+    //   const {isSyntaxValid, errors} = {isSyntaxValid: true, errors: []};
+
+
+    // }
+  }, [debouncedEditorContent]);
+
   const updateTextEditorStructureMutation = useMutation(
     (updatedTextEditorStructure) => updateTextEditorStructure(updatedTextEditorStructure),
     {
@@ -178,7 +180,6 @@ export default function TextEditor() {
     }
   )
 
-  //FIX INITAL SETUP
   function handleInitialContentSetup() {
 
     let mappedStructure = [];
