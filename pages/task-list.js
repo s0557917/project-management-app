@@ -56,6 +56,7 @@ export default function TaskList() {
         (newTask) => addNewTask(newTask),
         {
             onSuccess: async (data) => {
+                updateTextEditorStructureMutation.mutate(data.id);
                 queryClient.invalidateQueries('tasks');
                 showNotification({
                     autoClose: 3000,

@@ -9,7 +9,7 @@ export default function UpdateButton({canUpdate, onUpdate}) {
                 onClick={onUpdate}
             >
                 {canUpdate 
-                    ? <p1>Update</p1>
+                    ? <h1>Update</h1>
                     : <div className="flex items-center">
                         <Prohibit size={16} color="#d12929" weight="bold" />
                         <p className="pl-2">Update</p>

@@ -21,78 +21,85 @@ function formatDateTimeToObject(date) {
 }
 
 export function runSyntaxCheck(text, categories) {  
-    const errors = new Set();
-    const lineMatches = text.match(/.*?\n/g);
+    if(text && text !== null && text !== '' && categories) {
+        const errors = new Set();
+        const lineMatches = text.match(/.*?\n/g);
 
-    let emptyTagsExist = false;
-    let wrongPrioritiesExist = false;
-    let linesWithoutTitleExist = false;
-    let categoryExists = [];
-    let dateTimesCorrectness = [];
-    
-    //
-    // Check for empty components
-    const emptyTagsMatches = text.match(/[t|c|d|p|dt]\\\s*([t|x|c|d|p|dt]\\|$|\n)/g)
-    if(emptyTagsMatches !== null) {
-        emptyTagsExist = true;
-        errors.add('Check that all your tags have content!');
-    }
-    //Check that priorities are correct
-    const wrongPrioritiesMatches = text.match(/p\\[6-9]/g);
-    if(wrongPrioritiesMatches !== null) {
-        wrongPrioritiesExist = true;
-        errors.add('A task can only have a priority from 1 to 5!');
-    }
+        let emptyTagsExist = false;
+        let wrongPrioritiesExist = false;
+        let linesWithoutTitleExist = false;
+        let categoryExists = [];
+        let dateTimesCorrectness = [];
+        
+        //
+        // Check for empty components
+        const emptyTagsMatches = text.match(/[t|c|d|p|dt]\\\s*([t|x|c|d|p|dt]\\|$|\n)/g)
+        if(emptyTagsMatches !== null) {
+            emptyTagsExist = true;
+            errors.add('Check that all your tags have content!');
+        }
+        //Check that priorities are correct
+        const wrongPrioritiesMatches = text.match(/p\\[6-9]/g);
+        if(wrongPrioritiesMatches !== null) {
+            wrongPrioritiesExist = true;
+            errors.add('A task can only have a priority from 1 to 5!');
+        }
 
-    // Check that components are also present once
-    
-    if(lineMatches !== null) {
-        // Check that category is valid
-        categoryExists = lineMatches.map(line => {
-            const category = line.match(categoryRegex);
-            
-            if(category !== null && category[0] !== 'Uncategorized') {
-                return categories.find(cat => cat.name === category[0]) !== undefined;
-            }
-        });
-        if(categoryExists?.includes(false)) errors.add('One of the used categories does not exist!');
+        // Check that components are also present once
+        
+        if(lineMatches !== null) {
+            // Check that category is valid
+            categoryExists = lineMatches.map(line => {
+                const category = line.match(categoryRegex);
+                
+                if(category !== null && category[0] !== 'Uncategorized') {
+                    return categories.find(cat => cat.name === category[0]) !== undefined;
+                }
+            });
+            if(categoryExists?.includes(false)) errors.add('One of the used categories does not exist!');
 
-        // Check that title is present
-        const lineHasTitle = text.match(/(?<!d)t\\*?(?=[t|c|d|dt|p][t|c|d|dt|p]?\\)|(?<!d)t\\.*?(?=$)|(?<!d)t\\.*?(?=\n)/g);
-        lineMatches.forEach((line, index) => {
-            if (line !== '' && line !== '\n' && !line.includes('t\\')) {
-                linesWithoutTitleExist = true;
-                errors.add(`Line ${index + 1} does not have a title!`);
-            } 
-        });
-    }
-    
-    //Check that date is valid
-    const fullDates = text.match(/dt\\.*?(?=[a-z|A-Z][a-z|A-Z]?\\)|dt\\.*(?=$)|dt\\.*(?=\n)/g);
-    if(fullDates !== null) {
-        dateTimesCorrectness = fullDates.map(date => {
-            const dateMatch = date.match(dateTimeRegex);
-            if(dateMatch !== null) {
-                const dateObject = formatDateTimeToObject(dateMatch);
-                if(!dateObject || isNaN(dateObject)) {
-                    errors.add("A set date and/or time does not exist!");
+            // Check that title is present
+            const lineHasTitle = text.match(/(?<!d)t\\*?(?=[t|c|d|dt|p][t|c|d|dt|p]?\\)|(?<!d)t\\.*?(?=$)|(?<!d)t\\.*?(?=\n)/g);
+            lineMatches.forEach((line, index) => {
+                if (line !== '' && line !== '\n' && !line.includes('t\\')) {
+                    linesWithoutTitleExist = true;
+                    errors.add(`Line ${index + 1} does not have a title!`);
+                } 
+            });
+        }
+        
+        //Check that date is valid
+        const fullDates = text.match(/dt\\.*?(?=[a-z|A-Z][a-z|A-Z]?\\)|dt\\.*(?=$)|dt\\.*(?=\n)/g);
+        if(fullDates !== null) {
+            dateTimesCorrectness = fullDates.map(date => {
+                const dateMatch = date.match(dateTimeRegex);
+                if(dateMatch !== null) {
+                    const dateObject = formatDateTimeToObject(dateMatch);
+                    if(!dateObject || isNaN(dateObject)) {
+                        errors.add("A set date and/or time does not exist!");
+                        return false;
+                    }
+                } else {
+                    errors.add('A date and/or time is missing!');
                     return false;
                 }
-            } else {
-                errors.add('A date and/or time is missing!');
-                return false;
-            }
-            
-        });
-    }
+                
+            });
+        }
 
-    return {
-        isSyntaxValid: !linesWithoutTitleExist
-            && !wrongPrioritiesExist
-            && !emptyTagsExist
-            && !dateTimesCorrectness?.includes(false)
-            && !categoryExists?.includes(false),
-        errors: Array.from(errors)
+        return {
+            isSyntaxValid: !linesWithoutTitleExist
+                && !wrongPrioritiesExist
+                && !emptyTagsExist
+                && !dateTimesCorrectness?.includes(false)
+                && !categoryExists?.includes(false),
+            errors: Array.from(errors)
+        }
+    } else {
+        return {
+            isSyntaxValid: false,
+            errors: ['No text was provided!']
+        }
     }
 }
 
@@ -105,18 +112,20 @@ export function guaranteeCorrectTagSpacing(lines) {
     });
 }
 
-export function splitContentIntoLines(debouncedEditorContent) {
-    let editorContentLines = [];
-    let currentLine = [];
-    for(let i = 0; i <= debouncedEditorContent.length; i++) {
-      if(debouncedEditorContent.charAt(i) === '\n' || i === debouncedEditorContent.length) {
-        editorContentLines.push(`${currentLine.join('')}\n`);
-        currentLine = [];
-      } else {
-        currentLine.push(debouncedEditorContent.charAt(i));
-      }
+export function splitContentIntoLines(content) {
+    if(content && content !== null && content.length > 0) {
+        let editorContentLines = [];
+        let currentLine = [];
+        for(let i = 0; i <= content.length; i++) {
+          if(content.charAt(i) === '\n' || i === content.length) {
+            editorContentLines.push(`${currentLine.join('')}\n`);
+            currentLine = [];
+          } else {
+            currentLine.push(content.charAt(i));
+          }
+        }
+        return editorContentLines;
     }
-    return editorContentLines;
 }
 
 export function structureEditorContent(editorLines, tasks) {
@@ -171,7 +180,7 @@ export function getTaskComponents(line) {
     }
 }
 
-export function getChanges(previous, current) {
+export function compareTasks(previous, current) {
     return current.filter(task => {
         const previousTask = previous.find(previousTask => previousTask.id === task.id);
         
@@ -247,9 +256,9 @@ export function displayCompletedTasks(editorLines, oldDecorations, editorRef) {
         }
     })
     ?.filter(line => line !== undefined);
-
-    return editorRef.current.deltaDecorations(
-      oldDecorations, 
-      completedLines
+    const delta = editorRef.current.deltaDecorations(
+        oldDecorations, 
+        completedLines
     );
+    return delta;
 }

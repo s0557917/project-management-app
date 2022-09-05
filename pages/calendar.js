@@ -58,7 +58,8 @@ export default function Calendar() {
     const newTaskMutation = useMutation(
         (newTask) => addNewTask(newTask),
         {
-            onSuccess: async () => {
+            onSuccess: async (data) => {
+                updateTextEditorStructureMutation.mutate(data.id);
                 queryClient.invalidateQueries('tasks');
                 showNotification({
                     autoClose: 3000,

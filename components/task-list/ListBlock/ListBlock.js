@@ -37,7 +37,8 @@ export default function ListBlock({tasks, categories, onTaskClicked, onCompletio
     const newTaskMutation = useMutation(
         (newTask) => addNewTask(newTask),
         {
-            onSuccess: async () => {
+            onSuccess: async (data) => {
+                updateTextEditorStructureMutation.mutate(data.id);
                 queryClient.invalidateQueries('tasks');
                 setIsNewTaskModalOpen(false);
                 showNotification({

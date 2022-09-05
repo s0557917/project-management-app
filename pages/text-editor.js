@@ -10,14 +10,11 @@ import { prismaGetAllCategories, getAllCategories } from '../utils/db/queryFunct
 import { getSession } from 'next-auth/react';
 import TextEditorSkeleton from '../components/general/loading/TextEditorSkeleton';
 import textEditorSetup from '../utils/text-editor/textEditorSetup';
-import { mapTasksToEditor, mapSingleTask, mapTaskStructureToEditor } from '../utils/text-editor/taskMapping';
+import { mapSingleTask, mapTaskStructureToEditor } from '../utils/text-editor/taskMapping';
 import { useState } from 'react';
-import UpdateButton from '../components/text-editor/buttons/UpdateButton';
-import { runSyntaxCheck, getChanges, splitContentIntoLines, getFoundTasksPositionAndId, guaranteeCorrectTagSpacing, guaranteeCorrectLineFormat, getTaskComponents, getLineMovemenet, structureEditorContent, mapLineToTask, ensureCorrectLineStartSpacing, displayCompletedTasks } from '../utils/text-editor/textProcessing';
-import { Modal, Tooltip } from '@mantine/core';
+import { runSyntaxCheck, splitContentIntoLines, getTaskComponents, structureEditorContent, mapLineToTask, displayCompletedTasks, compareTasks } from '../utils/text-editor/textProcessing';
 import { addNewTask } from "../utils/db/queryFunctions/tasks";
 import { prismaGetTextEditorStructure, getTextEditorStructure, updateTextEditorStructure } from "../utils/db/queryFunctions/textEditorStructure";
-import CalendarSkeleton from '../components/general/loading/CalendarSkeleton';
 import ErrorInformation from "../components/text-editor/information/ErrorInformation";
 import UsageInformation from "../components/text-editor/information/UsageInformation";
 import { useMantineColorScheme } from "@mantine/core";
@@ -68,11 +65,6 @@ export default function TextEditor() {
 
   const { toggleColorScheme } = useMantineColorScheme();
   
-  useEffect(() => {
-    console.log("prefetchedTheme", prefetchedTheme);
-    toggleColorScheme(prefetchedTheme);
-  }, [isFetchingTheme]);
-
   const [editorContentStructure, setEditorContentStructure] = useState([]);
   const [modifiedContentStructure, setModifiedContentStructure] = useState([]);
   
@@ -92,8 +84,9 @@ export default function TextEditor() {
   const newTaskMutation = useMutation(
     (newTask) => addNewTask(newTask),
     {
-      onSuccess: async () => {
-          queryClient.invalidateQueries('tasks');
+      onSuccess: async (data) => {
+        updateTextEditorStructureMutation.mutate(data.id);
+        queryClient.invalidateQueries('tasks');
       }
     }
   );
@@ -108,26 +101,44 @@ export default function TextEditor() {
   const deleteTaskMutation = useMutation(
     (taskId) => deleteTask(taskId),
     {
-      onSuccess: async () => {
+      onSuccess: async (data) => {
+        updateTextEditorStructureMutation.mutate(data.id);
         queryClient.invalidateQueries('tasks');
       },
     }
   );
 
+  const updateTextEditorStructureMutation = useMutation(
+    (updatedTextEditorStructure) => updateTextEditorStructure(updatedTextEditorStructure),
+    {
+      onSuccess: async (data) => {
+        setEditorContent(mapTaskStructureToEditor(data.textEditorStructure, tasks, categories));
+        queryClient.invalidateQueries('textEditorStructure');
+      },
+    }
+  )
+
   function handleEditorDidMount(editor, monaco) {
     textEditorSetup(monaco, categories);
-    // editor.onDidChangeCursorPosition(e => {
-    //   if(e.position.column < 6) {
-    //     editor.setPosition({
-    //       lineNumber: e.position.lineNumber,
-    //       column: 6
-    //     })
-    //   }
-    // });
-
-    editor.onDidChangeModelContent(e => setUnManagedContent(editor.getValue()));
+    editor.onDidChangeModelContent(e => {
+      handleCursorPosition(editor.getPosition(), editor);
+      setUnManagedContent(editor.getValue())
+    });
+    editor.onDidChangeCursorSelection(e => {
+      handleCursorPosition(editor.getPosition(), editor);
+      setUnManagedContent(editor.getValue());
+    });
+    editor.onDidChangeCursorPosition(e => {
+      handleCursorPosition(editor.getPosition(), editor);
+      setUnManagedContent(editor.getValue());
+    });
+    setUnManagedContent(editor.getValue());
     editorRef.current = editor; 
   }
+
+  useEffect(() => {
+    toggleColorScheme(prefetchedTheme);
+  }, [isFetchingTheme]);
 
   useEffect(() => {
     if(categories !== undefined && categories !== null && categories.length > 0) {
@@ -136,7 +147,16 @@ export default function TextEditor() {
   }, [monaco, categories, tasks, isFetchingTasks, isFetchingCategories, isFetchingTheme, textEditorStructure]);
 
   useEffect(() => {
-    setEditorContent(handleInitialContentSetup());
+    const editorContent = handleInitialContentSetup();
+    // console.log("editorContent", editorContent);
+    setEditorContent(editorContent);
+
+    if(editorContent && editorContent !== '' && editorContent !== [] && editorContent.length > 0  ) {
+      const {isSyntaxValid, errors} = runSyntaxCheck(editorContent, categories);
+      setSyntaxErrors(errors);
+      setCanUpdate(isSyntaxValid); 
+    }
+
   }, [isFetchingTasks, isFetchingCategories, textEditorStructure]);
 
   //TODO: CHECK IF UNMANAGED AND DEBOUNCED
@@ -144,41 +164,22 @@ export default function TextEditor() {
     const {isSyntaxValid, errors} = runSyntaxCheck(unManagedContent, categories);
     setSyntaxErrors(errors);
     setCanUpdate(isSyntaxValid);
-
+    
+    const editorLines = splitContentIntoLines(debouncedEditorContent);
+    if(editorRef !== null && editorRef.current !== null) {
+      const decorations = displayCompletedTasks(editorLines, textDecorations, editorRef);
+      setTextDecorations(decorations);
+    }
     if(isSyntaxValid) {
-      const editorLines = splitContentIntoLines(debouncedEditorContent);
-
-      if(editorRef !== null && editorRef.current !== null) {
-        const decorations = displayCompletedTasks(editorLines, textDecorations, editorRef);
-        setTextDecorations(decorations);
-      }
       const modif = structureEditorContent(editorLines, tasks); 
       setModifiedContentStructure(modif);
+
+      findChanges();
+
     }
 
-    // if(debouncedEditorContent) {
-    //   if(cursorPosition.column < 6) {
-    //     editorRef.setPosition({
-    //       lineNumber: position.lineNumber,
-    //       column: 6
-    //     })
-    //   }
-
-    //   ensureCorrectLineStartSpacing(debouncedEditorContent);
-    //   const {isSyntaxValid, errors} = {isSyntaxValid: true, errors: []};
-
-
-    // }
   }, [debouncedEditorContent]);
 
-  const updateTextEditorStructureMutation = useMutation(
-    (updatedTextEditorStructure) => updateTextEditorStructure(updatedTextEditorStructure),
-    {
-      onSuccess: async () => {
-        queryClient.invalidateQueries('textEditorStructure');
-      },
-    }
-  )
 
   function handleInitialContentSetup() {
 
@@ -205,35 +206,31 @@ export default function TextEditor() {
       });
      
       mappedStructure = structuredContent;
-      setEditorContentStructure(structuredContent);
     }
+    setEditorContentStructure(mappedStructure);
     return mapTaskStructureToEditor(mappedStructure, tasks, categories);
   }
 
-  function onUpdateButtonClicked() {
-    findDifferences();
-  }
+  function findChanges() {   
+    // console.log("UNMANAGED", unManagedContent);
+    if(editorContentStructure && editorContentStructure !== null && editorContentStructure.length > 0) {     
+      const newTasks = modifiedContentStructure.filter(line => line.type === 'task' && line.id === undefined);
+      // console.log("newTasks", newTasks);
+      // const changedTasks = compareTasks(editorContentStructure, modifiedContentStructure);
 
-  function findDifferences() {   
-    const newTasks = modifiedContentStructure.filter(line => line.type === 'task' && line.id === undefined);
-    const changedTasks = getChanges(editorContentStructure, modifiedContentStructure);
-    const deletedTasks = modifiedContentStructure.length > 0
-      ? editorContentStructure.filter(line => line.type === 'task' && !modifiedContentStructure.find(modifiedLine => modifiedLine.id === line.id)) 
-      : [];
-
-    setChanges({
-      newTasks: newTasks,
-      deletedTasks: deletedTasks,
-      changedTasks: changedTasks,
-    })
-
-    if(editorContentStructure.length !== modifiedContentStructure || newTasks.length > 0 || deletedTasks.length > 0 || changedTasks.length > 0) {
-      setIsModalOpen(true);
+      const deletedTasks = modifiedContentStructure.length > 0 && editorContentStructure && editorContentStructure.length > 0
+        ? editorContentStructure.filter(line => line.type === 'task' && !modifiedContentStructure.find(modifiedLine => modifiedLine.id === line.id)) 
+        : [];
+      // console.log("deletedTasks", deletedTasks);
     }
   }
 
   function handleCursorPosition(position, editor) {
-
+    // console.log("CURSOR POSITION", position);
+    if (position.column < 6) {
+      console.log("SMALLER -- ", position)
+      editor.setPosition({lineNumber: position.lineNumber, column: 6});
+    }
   }
 
   function performUpdate() {
@@ -257,23 +254,15 @@ export default function TextEditor() {
   return (  
     <>
       {
-        !textEditorStructure && textEditorStructure !== null && textEditorStructure?.length > 0 
-        ? <CalendarSkeleton /> 
-        : <div>
+        <div>
             <Navbar />
             <div className="flex items-center w-full justify-end px-5">
-              {/* <div className="flex items-baseline"> */}
                 {!canUpdate && 
                   <ErrorInformation 
                   errors={syntaxErrors}
                   />
                 }
-                <UpdateButton 
-                  canUpdate={canUpdate} 
-                  onUpdate={onUpdateButtonClicked}
-                />
                 <UsageInformation />
-              {/* </div> */}
             </div>
             <div className='px-5 pt-2'>
               {isFetchingTasks || isFetchingCategories 
@@ -287,59 +276,6 @@ export default function TextEditor() {
                 onMount={handleEditorDidMount}
               />}
             </div>
-            <Modal
-              opened={isModalOpen}
-              onClose={() => {
-                setIsModalOpen(false);
-                setChanges({});
-              }}
-              title="Changes"
-              >
-              <h1>Caution!</h1>
-              <p>You are about to perform these changes:</p>
-
-              {changes.newTasks?.length > 0 
-                && 
-                <div>
-                  <h2 className='text-lg font-bold'>Additions</h2>
-                  <ul className='rounded-md my-2 p-2 bg-slate-400'>
-                    {changes.newTasks?.map(task => <li className='py-1' key={task.id}>-{task.content}</li>)}
-                  </ul>
-                </div>
-              }
-              
-              {changes.deletedTasks?.length > 0
-                &&
-                <div>
-                  <h2 className='text-lg font-bold'>Deletions</h2> 
-                  <ul className='rounded-md my-2 p-2 bg-slate-400'>
-                    {changes.deletedTasks?.map(task => <li className='py-1' key={task.id}>-{task.content}</li>)}
-                  </ul>
-                </div>
-              }
-
-              {changes.changedTasks?.length > 0
-                && 
-                <div>
-                  <h2 className='text-lg font-bold'>Changes</h2>
-                  <ul className='rounded-md my-2 p-2 bg-slate-400'>
-                    {changes.changedTasks?.map(task => <li className='py-1' key={task.id}>-{task.content}</li>)}
-                  </ul>
-                </div>
-              }
-
-              <button 
-                className='bg-green-600 p-2 rounded-md text-white'
-                onClick={() => {
-                  //ADD DIFERENTIATION BETWEEN CHANGES TO TASKS AND TO STRUCTURE
-                  performUpdate();
-                  updateTextEditorStructureMutation.mutate({action: 'update', structure: modifiedContentStructure});
-                  setEditorContent(mapTaskStructureToEditor(modifiedContentStructure, tasks, categories));
-                }} 
-              >
-                Do it!
-              </button>
-            </Modal>
         </div>
       }
     </>

@@ -12,8 +12,7 @@ export function mapTasksToEditor(tasks, categories) {
 
 export function mapTaskStructureToEditor(taskStructure, tasks, categories) {
     if(!taskStructure || !tasks || !categories) return [];
-
-    return taskStructure
+    const taskStr = taskStructure
     ?.sort((a, b) => a.startPos.l < b.startPos.l ? -1 : 1)
     ?.map(line => {
         if(line.type === 'task') {
@@ -24,6 +23,8 @@ export function mapTaskStructureToEditor(taskStructure, tasks, categories) {
         }
     })
     ?.join('');
+
+    return taskStr;
 }
 
 export function mapSingleTask(task, categories) {
