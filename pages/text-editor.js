@@ -12,7 +12,7 @@ import TextEditorSkeleton from '../components/general/loading/TextEditorSkeleton
 import textEditorSetup from '../utils/text-editor/textEditorSetup';
 import { mapSingleTask, mapTaskStructureToEditor } from '../utils/text-editor/taskMapping';
 import { useState } from 'react';
-import { runSyntaxCheck, splitContentIntoLines, getTaskComponents, structureEditorContent, mapLineToTask, displayCompletedTasks, compareTasks } from '../utils/text-editor/textProcessing';
+import { runSyntaxCheck, splitContentIntoLines, getTaskComponents, structureEditorContent, mapLineToTask, displayCompletedTasks, areLinesEqual, getLinesWithContent } from '../utils/text-editor/textProcessing';
 import { addNewTask } from "../utils/db/queryFunctions/tasks";
 import { prismaGetTextEditorStructure, getTextEditorStructure, updateTextEditorStructure } from "../utils/db/queryFunctions/textEditorStructure";
 import ErrorInformation from "../components/text-editor/information/ErrorInformation";
@@ -71,12 +71,12 @@ export default function TextEditor() {
   const [unManagedContent, setUnManagedContent] = useState('');
   const [editorContent, setEditorContent] = useState(() => handleInitialContentSetup());
   const [canUpdate, setCanUpdate] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [changes, setChanges] = useState([]);
   const [syntaxErrors, setSyntaxErrors] = useState([]);
   const [textDecorations, setTextDecorations] = useState([]);
   const debouncedEditorContent = useDebounce(unManagedContent, 200);
+  const [editorChanges, setEditorChanges] = useState([]);	
   
+  // let editorChanges = [];
   let cursorPosition = {};
   const monaco = useMonaco();
   const editorRef = useRef(null);
@@ -102,14 +102,14 @@ export default function TextEditor() {
     (taskId) => deleteTask(taskId),
     {
       onSuccess: async (data) => {
-        updateTextEditorStructureMutation.mutate(data.id);
+        newTaskTextEditorStructureMutation.mutate(data.id);
         queryClient.invalidateQueries('tasks');
       },
     }
   );
 
   const updateTextEditorStructureMutation = useMutation(
-    (updatedTextEditorStructure) => updateTextEditorStructure(updatedTextEditorStructure),
+    (updatedTextEditorStructure) => updateTextEditorStructure({structure: updatedTextEditorStructure, action: 'update'}),
     {
       onSuccess: async (data) => {
         setEditorContent(mapTaskStructureToEditor(data.textEditorStructure, tasks, categories));
@@ -118,11 +118,31 @@ export default function TextEditor() {
     }
   )
 
+  const newTaskTextEditorStructureMutation = useMutation(
+    (taskId) => updateTextEditorStructure({taskId, action: 'add'}),
+    {
+        onSuccess: () => {
+            queryClient.invalidateQueries('textEditorStructure');
+        }
+    }
+  )
+
+  const deleteTaskTextEditorStructureMutation = useMutation(
+    (taskId) => updateTextEditorStructure({taskId, action: 'delete'}),
+    {
+        onSuccess: () => {
+            queryClient.invalidateQueries('textEditorStructure');
+        }
+    }
+  )
+
   function handleEditorDidMount(editor, monaco) {
     textEditorSetup(monaco, categories);
     editor.onDidChangeModelContent(e => {
       handleCursorPosition(editor.getPosition(), editor);
-      setUnManagedContent(editor.getValue())
+      setUnManagedContent(editor.getValue());
+      const changeObject = {changes: e.changes, timestamp: Date.now()};
+      setEditorChanges(prevEditorChanges => [...prevEditorChanges, changeObject]);
     });
     editor.onDidChangeCursorSelection(e => {
       handleCursorPosition(editor.getPosition(), editor);
@@ -144,7 +164,8 @@ export default function TextEditor() {
     if(categories !== undefined && categories !== null && categories.length > 0) {
       textEditorSetup(monaco, categories);
     }
-  }, [monaco, categories, tasks, isFetchingTasks, isFetchingCategories, isFetchingTheme, textEditorStructure]);
+  }, []);
+  //monaco, categories, tasks, isFetchingTasks, isFetchingCategories, isFetchingTheme, textEditorStructure
 
   useEffect(() => {
     const editorContent = handleInitialContentSetup();
@@ -212,43 +233,75 @@ export default function TextEditor() {
   }
 
   function findChanges() {   
-    // console.log("UNMANAGED", unManagedContent);
-    if(editorContentStructure && editorContentStructure !== null && editorContentStructure.length > 0) {     
-      const newTasks = modifiedContentStructure.filter(line => line.type === 'task' && line.id === undefined);
-      // console.log("newTasks", newTasks);
-      // const changedTasks = compareTasks(editorContentStructure, modifiedContentStructure);
 
-      const deletedTasks = modifiedContentStructure.length > 0 && editorContentStructure && editorContentStructure.length > 0
-        ? editorContentStructure.filter(line => line.type === 'task' && !modifiedContentStructure.find(modifiedLine => modifiedLine.id === line.id)) 
-        : [];
-      // console.log("deletedTasks", deletedTasks);
+    const deletedTasks = [];
+    const newTasks = [];
+    const modifiedTask = [];
+
+    const modifiedEditorStructure = editorContentStructure; 
+    if(editorChanges && editorChanges.length > 0) {
+      const editorLines = splitContentIntoLines(unManagedContent);
+
+      console.log("TEXT EDITOR STRUCTURE", editorContentStructure);
+      
+      editorChanges.forEach(changeObject => {
+        if( changeObject.changes.length == 1 ) {
+          
+          changeObject.changes.forEach(change => {
+            console.log("CHANGE RANGE", change.range);
+            const modifiedTask = editorContentStructure.find(line => line.startPos.l === change.range.startLineNumber);
+            const editorLines = splitContentIntoLines(unManagedContent);
+
+            if(modifiedTask) {
+              if(editorContentStructure.filter((line => line.content !== '' && line.content !== '\n')).length  > getLinesWithContent(unManagedContent).length) {
+                if(change.range.startLineNumber === change.range.endLineNumber) {
+                  console.log("DELETED SINGLE TASK", modifiedTask.id); // console.log("NEW TASK");
+                } else {
+                  console.log("DELETED MULTIPLE TASKS FROM ", change.range.startLineNumber, " TO ", change.range.endLineNumber);
+                  console.log("DELETED TASKS", editorContentStructure.filter(line => line.startPos.l >= change.range.startLineNumber && line.startPos.l <= change.range.endLineNumber));
+                }
+              } else if(editorContentStructure.length < editorLines.length) {
+                //TODO FIGURE OUT A WAY TO TRACK NEW TASKS
+                console.log("NEW TASK");
+              } else {
+                const { areEqual, components } = areLinesEqual(modifiedTask.content, editorLines[change.range.startLineNumber - 1]);
+                console.log("MODIFIED TASK", modifiedTask.id, "areEqual", areEqual, "components", components);
+              }
+            } else {
+              console.log("NEW LINE MODIFIED");
+            }
+          })
+
+        } else if ( changeObject.changes.length === 2 ) {
+          const endLine = changeObject.changes[0].range.endLineNumber;
+          const startLine = changeObject.changes[1].range.startLineNumber === endLine 
+            ? changeObject.changes[0].range.startLineNumber
+            : changeObject.changes[1].range.startLineNumber; 
+
+          const firstTask = editorContentStructure.find(line => line.startPos.l === startLine);
+          const secondTask = editorContentStructure.find(line => line.startPos.l === endLine);
+
+          const tempLineHolder = secondTask.startPos.l;
+          secondTask.startPos.l = firstTask.startPos.l;
+          firstTask.startPos.l = tempLineHolder;  
+
+          modifiedEditorStructure[startLine - 1] = secondTask;
+          modifiedEditorStructure[endLine - 1] = firstTask;
+        } 
+      })
+  
+      setEditorContentStructure(modifiedEditorStructure);
+      setEditorChanges([]);
+      // updateTextEditorStructureMutation.mutate(modifiedEditorStructure);
     }
   }
 
   function handleCursorPosition(position, editor) {
     // console.log("CURSOR POSITION", position);
-    if (position.column < 6) {
-      console.log("SMALLER -- ", position)
-      editor.setPosition({lineNumber: position.lineNumber, column: 6});
-    }
-  }
-
-  function performUpdate() {
-    changes.changedTasks.forEach(task => {
-      const updatedTask = mapLineToTask(task, categories);
-      updateTaskMutation.mutate(updatedTask);
-    });
-    changes.newTasks.forEach(task => {
-      const taskComponents = getTaskComponents(task.content);
-      if(taskComponents.title !== undefined) {
-        const newTask = mapLineToTask(task, categories);
-        newTaskMutation.mutate(newTask);
-      }
-    });
-    changes.deletedTasks.forEach(task => deleteTaskMutation.mutate(task.id));
-
-    setIsModalOpen(false);
-    setChanges({});
+    // if (position.column < 6) {
+    //   console.log("SMALLER -- ", position)
+    //   editor.setPosition({lineNumber: position.lineNumber, column: 6});
+    // }
   }
 
   return (  

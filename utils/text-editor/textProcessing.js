@@ -161,6 +161,26 @@ export function structureEditorContent(editorLines, tasks) {
     return content;
 }
 
+export function areLinesEqual(firstLine, secondLine) {
+    const firstLineComponents = getTaskComponents(firstLine); 
+    const secondLineComponents = getTaskComponents(secondLine); 
+
+    return {
+        areEqual: 
+            firstLineComponents.title === secondLineComponents.title
+            && firstLineComponents.details === secondLineComponents.details
+            && firstLineComponents.category === secondLineComponents.category
+            && firstLineComponents.priority === secondLineComponents.priority
+            && firstLineComponents.dueDate === secondLineComponents.dueDate,
+        components: {...secondLineComponents}
+    }
+}
+
+export function getLinesWithContent(editorContent) {
+    return splitContentIntoLines(editorContent)
+        .filter(line => line !== '' && line !== '\n');
+}
+
 export function getTaskComponents(line) {
     if(!line) return undefined;
 

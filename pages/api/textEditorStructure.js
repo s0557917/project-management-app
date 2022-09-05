@@ -43,6 +43,7 @@ export default async function handler(req, res) {
                     content: ''
                 });
             } else if(req.body.action === 'update'){
+                console.log("UPDATE", req.body.structure);
                 updatedTextEditorStructure = req.body.structure;
             }
 
