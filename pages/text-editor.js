@@ -287,7 +287,7 @@ export default function TextEditor() {
             } else {
                 const { areEqual, components } = areLinesEqual(oldEditorLines[change.range.startLineNumber - 1], newEditorLines[change.range.startLineNumber - 1]);
                 if(modifiedTask.id && !areEqual) {
-                  console.log("MODIFIED TASK", modifiedTask);
+                  console.log("MODIFIED TASK", modifiedTask, components);
                   modifiedTasks.push({id: modifiedTask.id, components: components});
               }
             }
@@ -313,10 +313,6 @@ export default function TextEditor() {
         });
       }
 
-      console.log("DELETE", deletedTasks);
-      console.log("NEW", newTasks);
-      console.log("MODIFIED", modifiedTasks);
-
       newTaskMutation.mutate(newTasks.map(task => {
         return {
           id: task.taskId,
@@ -334,7 +330,6 @@ export default function TextEditor() {
       }))
 
       modifiedTasks.forEach(task => {
-        console.log("MODIFIED TASK", task);
         const updatedTask = {
           id: task.id,
           title: task.components.title,
@@ -344,36 +339,19 @@ export default function TextEditor() {
           })?.id || '',
           dueDate: null,
           priority: task.components.priority || 1,
-          completed: task.components.completed || false,
+          completed: task.components.isCompleted || false,
           start: null,
           end: null,
           reminders: null,
           subtasks: null,
         }
-        // new Date(task.components.dueDate) 
         console.log("UPDATED TASK", updatedTask);
+        // new Date(task.components.dueDate) 
         updateTaskMutation.mutate(updatedTask);
       });
-      // updateTaskMutation.mutate(modifiedTasks.map(task => {
-      //   return {
-      //     id: task.id,
-      //     title: task.components.title,
-      //     details: task.components.details || '',
-      //     category: categories?.find(category => category.name === task.components.category)?.id || '',
-      //     dueDate: new Date(task.components.dueDate) || null,
-      //     priority: task.components.priority || 1,
-      //     completed: task.components.completed || false,
-      //     start: null,
-      //     end: null,
-      //     reminders: null,
-      //     subtasks: null,
-      //   }
-      // }));
-
-      console.log("MODIFIED STRUCTURE", modifiedStructure);
+      
       setEditorContentStructure(modifiedStructure);
       setEditorChanges([]);
-      //ADD IDS before
       setEditorContent(unManagedContent);
       updateTextEditorStructureMutation.mutate(modifiedStructure);
     }
