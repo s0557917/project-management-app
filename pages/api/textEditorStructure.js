@@ -15,9 +15,7 @@ export default async function handler(req, res) {
             if(req.body.action === 'delete'){
                 const updatedTaskId = req.body.taskId;
                 updatedTextEditorStructure = updatedTextEditorStructure.filter(line => {
-                    if(line.type === 'task' && line.id !== updatedTaskId){
-                        return true;
-                    } else if(line.type === 'note'){
+                    if(line.id !== updatedTaskId){
                         return true;
                     } else {
                         return false;
@@ -25,12 +23,9 @@ export default async function handler(req, res) {
                 });
             } else if(req.body.action === 'add'){
                 const updatedTaskId = req.body.taskId;
-                const lastLine = updatedTextEditorStructure
-                    .filter(line => line.type === 'task')
-                    .sort((a, b) => b.endPos.l - a.endPos.l)[0].endPos.l;
+                const lastLine = updatedTextEditorStructure.sort((a, b) => b.endPos.l - a.endPos.l)[0].endPos.l;
 
                 updatedTextEditorStructure.push({
-                    type: 'task',
                     id: updatedTaskId,
                     startPos: {
                         l: lastLine + 1,
@@ -43,7 +38,6 @@ export default async function handler(req, res) {
                     content: ''
                 });
             } else if(req.body.action === 'update'){
-                console.log("UPDATE", req.body.structure);
                 updatedTextEditorStructure = req.body.structure;
             }
 

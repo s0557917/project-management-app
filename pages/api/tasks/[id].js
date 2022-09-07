@@ -5,27 +5,54 @@ export default async function handler(req, res) {
     const session = await getSession({ req });
     if(req.method === 'PUT' && session){
         try{
-            const taskData = {
-                title: req.body.title, 
-                details: req.body.details || "", 
-                completed: req.body.completed || false, 
-                dueDate: req.body.dueDate || undefined, 
-                start: req.body.start || undefined, 
-                end: req.body.end || undefined,
-                priority: req.body.priority || 1, 
-                category: req.body.categoryId !== '' && req.body.categoryId !== null 
-                    ? { connect: {id: req.body.categoryId } } 
-                    : undefined, 
-                reminders: req.body.reminders || [],
-                subtasks: req.body.subtasks || [],
-            }
-    
-            const task = await prisma.task.update({
-                where: { id: req.query.id },
-                data: taskData
-            });
+            if(Object.prototype.toString.call(req.body) === '[object Array]') {
+                const mappedTasks = req.body.map(task => {
+                    return {
+                        id: task.id || undefined,
+                        ownerId: user.id,
+                        title: task.title,
+                        details: task.details || undefined, 
+                        completed: task.completed || false,
+                        dueDate: task.dueDate || undefined, 
+                        start: undefined, 
+                        end: undefined,
+                        priority: task.priority || 1, 
+                        category: task.category || undefined, 
+                        reminders: undefined,
+                        subtasks: undefined,
+                    }
+                })
 
-            res.status(201).json(task);
+                const tasks = await prisma.task.updateMany({
+                    where: { id: { in: id } },
+                    data: mappedTasks,
+                });
+    
+                res.status(201).json(tasks);
+            } else {
+                console.log("BODY", req.body);
+                const taskData = {
+                    title: req.body.title, 
+                    details: req.body.details || "", 
+                    completed: req.body.completed || false, 
+                    dueDate: req.body.dueDate || undefined, 
+                    start: req.body.start || undefined, 
+                    end: req.body.end || undefined,
+                    priority: req.body.priority || 1, 
+                    category: req.body.categoryId !== '' && req.body.categoryId !== null 
+                        ? { connect: {id: req.body.categoryId } } 
+                        : undefined, 
+                    reminders: req.body.reminders || [],
+                    subtasks: req.body.subtasks || [],
+                }
+                console.log("taskData", taskData);
+                const task = await prisma.task.update({
+                    where: { id: req.query.id },
+                    data: taskData
+                });
+    
+                res.status(201).json(task);
+            }
         } catch (e) {
             res.status(500).json({error: e});
         }

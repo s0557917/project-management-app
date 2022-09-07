@@ -8,9 +8,8 @@ import { useEffect } from "react";
 export default function ThemeInformation() {
     
     const queryClient = useQueryClient();
-
     const { data: theme, isFetching: isFetchingTheme } = useQuery(['theme'], getTheme); 
-    const { toggleColorScheme } = useMantineColorScheme();
+    const { toggleColorScheme, colorScheme } = useMantineColorScheme();
 
     useEffect(() => {
         if(theme !== undefined) toggleColorScheme(theme);
@@ -18,9 +17,12 @@ export default function ThemeInformation() {
 
     const updateThemeMutation = useMutation(
         (updatedTheme) => updateTheme(updatedTheme),
-        {onSuccess: async () => {
-            queryClient.invalidateQueries('theme');
-        }}
+        {
+            onSuccess: async () => {
+                console.log("THEME UPDATED");
+                queryClient.invalidateQueries('theme');
+            },
+        }
     );
 
     return (

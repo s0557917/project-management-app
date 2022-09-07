@@ -14,16 +14,16 @@ export default async function handler(req, res) {
             if(Object.prototype.toString.call(req.body) === '[object Array]') {
                 const mappedTasks = req.body.map(task => {
                     return {
-                        id: task.id,
+                        id: task.id || undefined,
                         ownerId: user.id,
                         title: task.title,
-                        details: undefined, 
-                        completed: false,
-                        dueDate: undefined, 
+                        details: task.details || undefined, 
+                        completed: task.completed || false,
+                        dueDate: task.dueDate || undefined, 
                         start: undefined, 
                         end: undefined,
-                        priority: 1, 
-                        category: undefined, 
+                        priority: task.priority || 1, 
+                        category: task.category || undefined, 
                         reminders: undefined,
                         subtasks: undefined,
                     }

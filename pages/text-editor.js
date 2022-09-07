@@ -19,6 +19,7 @@ import ErrorInformation from "../components/text-editor/information/ErrorInforma
 import UsageInformation from "../components/text-editor/information/UsageInformation";
 import { useMantineColorScheme } from "@mantine/core";
 import { prismaGetTheme, getTheme } from "../utils/db/queryFunctions/settings";
+import { v4 as uuidv4 } from 'uuid';
 
 export async function getServerSideProps({req, res}) {
 
@@ -73,10 +74,9 @@ export default function TextEditor() {
   const [canUpdate, setCanUpdate] = useState(true);
   const [syntaxErrors, setSyntaxErrors] = useState([]);
   const [textDecorations, setTextDecorations] = useState([]);
-  const debouncedEditorContent = useDebounce(unManagedContent, 200);
+  const debouncedEditorContent = useDebounce(unManagedContent, 1000);
   const [editorChanges, setEditorChanges] = useState([]);	
   
-  // let editorChanges = [];
   let cursorPosition = {};
   const monaco = useMonaco();
   const editorRef = useRef(null);
@@ -84,16 +84,22 @@ export default function TextEditor() {
   const newTaskMutation = useMutation(
     (newTask) => addNewTask(newTask),
     {
-      onSuccess: async (data) => {
-        updateTextEditorStructureMutation.mutate(data.id);
-        queryClient.invalidateQueries('tasks');
-      }
+        onSuccess: async (data) => {
+            queryClient.invalidateQueries('tasks');
+            showNotification({
+                autoClose: 3000,
+                type: 'success',
+                color: 'green',
+                title: 'New task saved successfully!',
+            });
+        },
     }
-  );
+);
 
   const updateTaskMutation = useMutation(
     (updatedTask) => updateTask(updatedTask),
-    {onSuccess: async () => {
+    {onSuccess: async (data) => {
+      console.log('Task updated successfully!', data);
         queryClient.invalidateQueries('tasks');
     }}
 )
@@ -141,7 +147,7 @@ export default function TextEditor() {
     editor.onDidChangeModelContent(e => {
       handleCursorPosition(editor.getPosition(), editor);
       setUnManagedContent(editor.getValue());
-      const changeObject = {changes: e.changes, timestamp: Date.now()};
+      const changeObject = {changes: e.changes, timestamp: Date.now(), cursorPosition: editor.getPosition()};
       setEditorChanges(prevEditorChanges => [...prevEditorChanges, changeObject]);
     });
     editor.onDidChangeCursorSelection(e => {
@@ -182,6 +188,7 @@ export default function TextEditor() {
 
   //TODO: CHECK IF UNMANAGED AND DEBOUNCED
   useEffect(() => {
+
     const {isSyntaxValid, errors} = runSyntaxCheck(unManagedContent, categories);
     setSyntaxErrors(errors);
     setCanUpdate(isSyntaxValid);
@@ -194,9 +201,9 @@ export default function TextEditor() {
     if(isSyntaxValid) {
       const modif = structureEditorContent(editorLines, tasks); 
       setModifiedContentStructure(modif);
-
       findChanges();
-
+    } else {
+      setEditorChanges([]);
     }
 
   }, [debouncedEditorContent]);
@@ -215,11 +222,9 @@ export default function TextEditor() {
         const content = mapSingleTask(task, categories);
   
         let mappedTasks = {
-          type: 'task',
           id: task.id,
           startPos: {l: linePosition, c: 0},
           endPos: {l: linePosition, c: content.length},
-          content: content,
         }
   
         linePosition += 1;
@@ -233,50 +238,68 @@ export default function TextEditor() {
   }
 
   function findChanges() {   
-
     const deletedTasks = [];
     const newTasks = [];
-    const modifiedTask = [];
+    const modifiedTasks = [];
+    
+    let modifiedStructure = modifiedContentStructure; 
 
-    const modifiedEditorStructure = editorContentStructure; 
     if(editorChanges && editorChanges.length > 0) {
-      const editorLines = splitContentIntoLines(unManagedContent);
 
-      console.log("TEXT EDITOR STRUCTURE", editorContentStructure);
-      
-      editorChanges.forEach(changeObject => {
-        if( changeObject.changes.length == 1 ) {
-          
-          changeObject.changes.forEach(change => {
-            console.log("CHANGE RANGE", change.range);
-            const modifiedTask = editorContentStructure.find(line => line.startPos.l === change.range.startLineNumber);
-            const editorLines = splitContentIntoLines(unManagedContent);
+      const oldEditorLines = splitContentIntoLines(editorContent);
+      const newEditorLines = splitContentIntoLines(unManagedContent);
 
-            if(modifiedTask) {
-              if(editorContentStructure.filter((line => line.content !== '' && line.content !== '\n')).length  > getLinesWithContent(unManagedContent).length) {
-                if(change.range.startLineNumber === change.range.endLineNumber) {
-                  console.log("DELETED SINGLE TASK", modifiedTask.id); // console.log("NEW TASK");
-                } else {
-                  console.log("DELETED MULTIPLE TASKS FROM ", change.range.startLineNumber, " TO ", change.range.endLineNumber);
-                  console.log("DELETED TASKS", editorContentStructure.filter(line => line.startPos.l >= change.range.startLineNumber && line.startPos.l <= change.range.endLineNumber));
-                }
-              } else if(editorContentStructure.length < editorLines.length) {
-                //TODO FIGURE OUT A WAY TO TRACK NEW TASKS
-                console.log("NEW TASK");
-              } else {
-                const { areEqual, components } = areLinesEqual(modifiedTask.content, editorLines[change.range.startLineNumber - 1]);
-                console.log("MODIFIED TASK", modifiedTask.id, "areEqual", areEqual, "components", components);
-              }
+      const swaps = editorChanges.filter(change => change.changes.length == 2).sort((a, b) => a.timestamp - b.timestamp);
+      const uniqueChanges = getUniqueLineChanges(editorChanges.filter(change => change.changes.length === 1).sort((a, b) => a.timestamp - b.timestamp));
+      console.log("uniqueChanges", uniqueChanges);
+      if(uniqueChanges && uniqueChanges.length > 0) {
+        uniqueChanges.forEach(change => {
+
+          const modifiedTask = editorContentStructure?.find(line => {
+            return line.startPos.l === change.range.startLineNumber;
+          });
+
+          if(modifiedTask) {
+            if(oldEditorLines.length > newEditorLines.length && change.text === '' && change.range.startLineNumber !== change.range.endLineNumber) {
+              //TODO FIX MULTIPLE LINE DELETTIO INCLUDING CURSOR LINE
+              console.log("CHANGE", change);  
+              const deletedLineRange = determineDeletedLineRange(change);
+              const increment = Math.max(change.range.startLineNumber, change.range.endLineNumber) - Math.min(change.range.startLineNumber, change.range.endLineNumber);
+              deletedTasks.push(modifiedStructure.filter(line => deletedLineRange.includes(line.startPos.l)).map(line => line.id));
+              modifiedStructure = modifiedStructure.filter(line => !deletedLineRange.includes(line.startPos.l));
+              modifiedStructure = moveTasks(determineDeletionDirection(change), change.range.startLineNumber, modifiedStructure, increment);
+
+            } else if(oldEditorLines.length < newEditorLines.length && change.text !== '\n') {
+              //NEW TASK
+              const newTaskId = uuidv4();
+              const position = {
+                startPos: {l: change.range.startLineNumber, c: 1},
+                endPos: {l: change.range.startLineNumber, c: newEditorLines[change.range.startLineNumber].length},
+              };
+              newTasks.push({position: position, taskId: newTaskId, components: getTaskComponents(newEditorLines[change.range.startLineNumber - 1])});
+              modifiedStructure = moveTasks('down', change.range.startLineNumber, modifiedStructure);
+              modifiedStructure[change.range.startLineNumber] = { 
+                id: newTaskId,
+                startPos: position.startPos,
+                endPos: position.endPos, 
+                components: getTaskComponents(newEditorLines[change.range.startLineNumber - 1])
+              };
             } else {
-              console.log("NEW LINE MODIFIED");
+                const { areEqual, components } = areLinesEqual(oldEditorLines[change.range.startLineNumber - 1], newEditorLines[change.range.startLineNumber - 1]);
+                if(modifiedTask.id && !areEqual) {
+                  console.log("MODIFIED TASK", modifiedTask);
+                  modifiedTasks.push({id: modifiedTask.id, components: components});
+              }
             }
-          })
-
-        } else if ( changeObject.changes.length === 2 ) {
-          const endLine = changeObject.changes[0].range.endLineNumber;
-          const startLine = changeObject.changes[1].range.startLineNumber === endLine 
-            ? changeObject.changes[0].range.startLineNumber
-            : changeObject.changes[1].range.startLineNumber; 
+          }
+        })
+      }
+      if ( swaps && swaps.length > 0 ) {
+        swaps.forEach(swap => {
+          const endLine = swap.changes[0].range.endLineNumber;
+          const startLine = swap.changes[1].range.startLineNumber === endLine 
+            ? swap.changes[0].range.startLineNumber
+            : swap.changes[1].range.startLineNumber; 
 
           const firstTask = editorContentStructure.find(line => line.startPos.l === startLine);
           const secondTask = editorContentStructure.find(line => line.startPos.l === endLine);
@@ -285,15 +308,168 @@ export default function TextEditor() {
           secondTask.startPos.l = firstTask.startPos.l;
           firstTask.startPos.l = tempLineHolder;  
 
-          modifiedEditorStructure[startLine - 1] = secondTask;
-          modifiedEditorStructure[endLine - 1] = firstTask;
-        } 
-      })
-  
-      setEditorContentStructure(modifiedEditorStructure);
+          modifiedStructure[startLine - 1] = secondTask;
+          modifiedStructure[endLine - 1] = firstTask;
+        });
+      }
+
+      console.log("DELETE", deletedTasks);
+      console.log("NEW", newTasks);
+      console.log("MODIFIED", modifiedTasks);
+
+      newTaskMutation.mutate(newTasks.map(task => {
+        return {
+          id: task.taskId,
+          title: task.components.title,
+          details: task.components.details || '',
+          categoryId: categories?.find(category => category.name === task.components.category)?.id || '',
+          dueDate: new Date(task.components.dueDate) || null,
+          priority: task.components.priority || 1,
+          completed: task.components.completed || false,
+          start: null,
+          end: null,
+          reminders: null,
+          subtasks: null,
+        }
+      }))
+
+      modifiedTasks.forEach(task => {
+        console.log("MODIFIED TASK", task);
+        const updatedTask = {
+          id: task.id,
+          title: task.components.title,
+          details: task.components.details || '',
+          categoryId: categories?.find(category => {
+            return category.name.trim() === task.components.category.trim()
+          })?.id || '',
+          dueDate: null,
+          priority: task.components.priority || 1,
+          completed: task.components.completed || false,
+          start: null,
+          end: null,
+          reminders: null,
+          subtasks: null,
+        }
+        // new Date(task.components.dueDate) 
+        console.log("UPDATED TASK", updatedTask);
+        updateTaskMutation.mutate(updatedTask);
+      });
+      // updateTaskMutation.mutate(modifiedTasks.map(task => {
+      //   return {
+      //     id: task.id,
+      //     title: task.components.title,
+      //     details: task.components.details || '',
+      //     category: categories?.find(category => category.name === task.components.category)?.id || '',
+      //     dueDate: new Date(task.components.dueDate) || null,
+      //     priority: task.components.priority || 1,
+      //     completed: task.components.completed || false,
+      //     start: null,
+      //     end: null,
+      //     reminders: null,
+      //     subtasks: null,
+      //   }
+      // }));
+
+      console.log("MODIFIED STRUCTURE", modifiedStructure);
+      setEditorContentStructure(modifiedStructure);
       setEditorChanges([]);
-      // updateTextEditorStructureMutation.mutate(modifiedEditorStructure);
+      //ADD IDS before
+      setEditorContent(unManagedContent);
+      updateTextEditorStructureMutation.mutate(modifiedStructure);
     }
+  }
+
+  
+  function getUniqueLineChanges(changes) {
+    if(changes && changes.length > 0) {
+      if(changes.length > 1 ) {
+        let groups = changes
+        .filter(changeObject => changeObject.changes.length === 1)
+        .reduce((groups, changeObject) => {
+          const group = (groups[changeObject.changes[0].range.startLineNumber] || []);
+          group.push({...changeObject, cursorPosition: changeObject.cursorPosition});
+          groups[changeObject.changes[0].range.startLineNumber] = group;
+          return groups;
+        }, {});
+
+        groups = Object.entries(groups).map(group => {
+          if(group[1].length > 1) {
+            const latest = Math.max(...group[1].map(change => change.timestamp))
+            const ch = group[1].filter(change => change.timestamp === latest)[0];
+            return {
+              ...ch.changes[0],
+              cursorPosition: ch.cursorPosition, 
+            }
+          } else {
+            const ch = group[1][0]; 
+            return {
+              ...ch.changes[0],
+              cursorPosition: ch.cursorPosition,
+            }
+          }
+        });
+        return groups;
+      } else {
+        return changes[0].changes.map(change => { return {...change, cursorPosition: changes[0].cursorPosition}});
+      }
+    }
+  }
+
+  function moveTasks(direction, modifiedLineIndex, editorStructure, increment = 1) {
+    const movedStructure = editorStructure
+      .map(line => {
+        const {startPos, endPos} = line;
+        if(direction === 'down') {
+          if(startPos.l >= modifiedLineIndex) {
+            startPos.l += increment;
+            endPos.l += increment;
+          }
+        } else if (direction === 'up') {
+          if(startPos.l > modifiedLineIndex) {
+            startPos.l -= increment;
+            endPos.l -= increment;
+          }
+        }
+        return {...line, startPos: startPos, endPos: endPos};
+      });
+    return movedStructure;
+  } 
+
+  function determineDeletedLineRange(change) {
+    let startLine = Math.min(change.range.startLineNumber, change.range.endLineNumber);
+    let endLine = Math.max(change.range.startLineNumber, change.range.endLineNumber);
+
+    const deleteCursorLine = change.range.startColumn > 1 && change.range.endColumn === 1 || change.range.startColumn === 1 && change.range.endColumn > 1;
+    const keepCursorLine = change.range.startColumn === 1 && change.range.endColumn === 1 || change.range.startColumn > 1 && change.range.endColumn > 1
+
+    if(endLine - startLine === 1) {
+      if(keepCursorLine && !deleteCursorLine) {
+        if(change.cursorPosition.lineNumber === change.range.startLineNumber) {
+          return [change.range.endLineNumber];
+        } else {
+          return [change.range.startLineNumber];
+        }
+      } else if(!keepCursorLine && deleteCursorLine) {
+        return [change.range.startLineNumber, change.range.endLineNumber];
+      }
+    } else if(endLine - startLine > 1) {
+      const length = endLine - startLine;
+      if(keepCursorLine && !deleteCursorLine) {
+        if(change.cursorPosition.lineNumber === change.range.startLineNumber) {
+          startLine += 1;
+        } else {
+          endLine -= 1;
+        }
+        return Array.from({length: length}, (x, i) => i + startLine);
+      } else if(!keepCursorLine && deleteCursorLine) {
+        return Array.from({length: length}, (x, i) => i + startLine);
+      }
+    }
+  }
+
+  function determineDeletionDirection(change) {
+    console.log("RECV", change);
+    return change.cursorPosition.lineNumber === change.range.startLineNumber ? 'up' : 'down';
   }
 
   function handleCursorPosition(position, editor) {

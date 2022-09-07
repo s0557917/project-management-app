@@ -1,9 +1,11 @@
-const titleRegex = /(?<!d)(?<=t\\).*?(?=[t|c|d|dt|p][t|c|d|dt|p]?\\)|(?<!d)(?<=t\\).*(?=$)|(?<!d)(?<=t\\).*(?=\n)/;
-const titleWithBracketsRegex = /(?<!d)t\\.*?(?=[t|c|d|dt|p][t|c|d|dt|p]?\\)|(?<!d)t\\.*(?=$)|(?<!d)t\\.*(?=\n)/g;
-const detailsRegex = /(?<=d\\).*?(?=[t|c|d|dt|p][t|c|d|dt|p]?\\)|(?<=d\\).*(?=$)|(?<=d\\).*(?=\n)/;
+const titleRegex = /(?<!d)t\\.*?(?=[t|c|d|dt|p][t|c|d|dt|p]?\\)|(?<!d)t\\.*(?=$)|(?<!d)t\\.*(?=\n)/;
+const titleContentRegex = /(?<=(?<!d)t\\).*?(?=[t|c|d|dt|p][t|c|d|dt|p]?\\)|(?<=(?<!d)t\\).*(?=$)|(?<=(?<!d)t\\).*(?=\n)/;
+const detailsRegex = /d\\.*?(?=[a-z|A-Z][a-z|A-Z]?\\)|d\\.*(?=$)|d\\.*(?=\n)/;
+const detailsContentRegex = /(?<=d\\).*?(?=[a-z|A-Z][a-z|A-Z]?\\)|(?<=d\\).*(?=$)|(?<=d\\).*(?=\n)/;
 const categoryRegex = /(?<=c\\).*?(?=\s*?[a-z|A-Z][a-z|A-Z]?\\)|(?<=c\\)\w*?(?=\s*?$)|(?<=c\\)\w*?(?=\s*?\n)/;
 const prioRegex = /(?<=p\\)[1-5](?=\s*)|(?<=p\\)[1-5](?=\s*$)|(?<=p\\)[1-5](?=\s*\n)/;
 const dateTimeRegex = /(?<=dt\\|)\d{2}[-]\d{2}[-]\d{4} \d{2}[:]\d{2}|\d{2}[-]\d{2}[-]\d{4}(?=\\)/;
+const taskCompletedRegex = /x\\.*|.*x\\/;
 
 const emptyTagRegex = /[t|c|dt|d|p]\\\s*(?=[t|c|dt|d|p][t|c|dt|d|p]?\\|$|\n)/g;
 
@@ -23,12 +25,13 @@ function formatDateTimeToObject(date) {
 export function runSyntaxCheck(text, categories) {  
     if(text && text !== null && text !== '' && categories) {
         const errors = new Set();
-        const lineMatches = text.match(/.*?\n/g);
+        const splitText = splitContentIntoLines(text);
 
         let emptyTagsExist = false;
+        let multipleEqualTagsInLine = false;
         let wrongPrioritiesExist = false;
         let linesWithoutTitleExist = false;
-        let categoryExists = [];
+        let categoryExists = true;
         let dateTimesCorrectness = [];
         
         //
@@ -45,23 +48,64 @@ export function runSyntaxCheck(text, categories) {
             errors.add('A task can only have a priority from 1 to 5!');
         }
 
-        // Check that components are also present once
-        
-        if(lineMatches !== null) {
-            // Check that category is valid
-            categoryExists = lineMatches.map(line => {
-                const category = line.match(categoryRegex);
-                
-                if(category !== null && category[0] !== 'Uncategorized') {
-                    return categories.find(cat => cat.name === category[0]) !== undefined;
+        if(splitText !== null && splitText.length > 0) {
+            
+            
+            splitText.forEach((line, index) => {
+                // Check that category is valid
+                const categoryMatches = line.match(categoryRegex);
+                if(categoryMatches && categoryMatches !== null && categoryMatches[0] && categoryMatches[0] !== 'Uncategorized') {
+                    const category = categories.find(cat => cat.name === categoryMatches[0]) !== undefined;
+                    if(!category) {
+                        errors.add(`The category in line ${index + 1} does not exist!`)
+                        categoryExists = false;
+                    }
                 }
+                
+                // Check that components are also only present once
+                const titleMatches = line.match(new RegExp(titleRegex, 'g'));
+                const detailsMatches = line.match(new RegExp(detailsRegex, 'g'));
+                const dateTimeMatches = line.match(new RegExp(dateTimeRegex, 'g'));
+                const priorityMatches = line.match(new RegExp(prioRegex, 'g'));
+                const taskCompletedMatches = line.match(new RegExp(taskCompletedRegex, 'g'));
+
+                if(titleMatches !== null && titleMatches.length > 1) {
+                    multipleEqualTagsInLine = true;
+                    errors.add(`There are multiple titles in line ${index + 1}!`);
+                } 
+                
+                if(detailsMatches !== null && detailsMatches.length > 1) {
+                    multipleEqualTagsInLine = true;
+                    errors.add(`There are multiple details in line ${index + 1}!`);
+                } 
+                
+                if (categoryMatches !== null && categoryMatches.length > 1) {
+                    multipleEqualTagsInLine = true;
+                    errors.add(`There are multiple categories in line ${index + 1}!`);
+                }
+                
+                if(dateTimeMatches !== null && dateTimeMatches.length > 1) {
+                    multipleEqualTagsInLine = true;
+                    errors.add(`There are multiple due dates in line ${index + 1}!`);
+                } 
+                
+                if(priorityMatches !== null && priorityMatches.length > 1) {
+                    console.log("PRIOS", priorityMatches , " --- ", line );
+                    multipleEqualTagsInLine = true;
+                    errors.add(`There are multiple priorities in line ${index + 1}!`);
+                } 
+                
+                if(taskCompletedMatches !== null && taskCompletedMatches.length > 1) {
+                    multipleEqualTagsInLine = true;
+                    errors.add(`There are multiple task completed tags in line ${index + 1}!`);
+                }
+
             });
-            if(categoryExists?.includes(false)) errors.add('One of the used categories does not exist!');
 
             // Check that title is present
             const lineHasTitle = text.match(/(?<!d)t\\*?(?=[t|c|d|dt|p][t|c|d|dt|p]?\\)|(?<!d)t\\.*?(?=$)|(?<!d)t\\.*?(?=\n)/g);
-            lineMatches.forEach((line, index) => {
-                if (line !== '' && line !== '\n' && !line.includes('t\\')) {
+            splitText.forEach((line, index) => {
+                if (!line.includes('t\\')) {
                     linesWithoutTitleExist = true;
                     errors.add(`Line ${index + 1} does not have a title!`);
                 } 
@@ -92,7 +136,8 @@ export function runSyntaxCheck(text, categories) {
                 && !wrongPrioritiesExist
                 && !emptyTagsExist
                 && !dateTimesCorrectness?.includes(false)
-                && !categoryExists?.includes(false),
+                && categoryExists
+                && !multipleEqualTagsInLine,
             errors: Array.from(errors)
         }
     } else {
@@ -124,6 +169,7 @@ export function splitContentIntoLines(content) {
             currentLine.push(content.charAt(i));
           }
         }
+
         return editorContentLines;
     }
 }
@@ -141,11 +187,9 @@ export function structureEditorContent(editorLines, tasks) {
                     })?.id 
                     : undefined;
                 return {
-                    type: 'task',
                     id: fullTaskId,
                     startPos: {l: i + 1, c: 0},
                     endPos: {l: i + 1, c: editorLine.length},
-                    content: editorLine,
                 }
             } else if (editorLine !== '' || editorLine !== '\n') {
                 return {
@@ -171,7 +215,8 @@ export function areLinesEqual(firstLine, secondLine) {
             && firstLineComponents.details === secondLineComponents.details
             && firstLineComponents.category === secondLineComponents.category
             && firstLineComponents.priority === secondLineComponents.priority
-            && firstLineComponents.dueDate === secondLineComponents.dueDate,
+            && firstLineComponents.dueDate === secondLineComponents.dueDate
+            && firstLineComponents.isCompleted === secondLineComponents.isCompleted,
         components: {...secondLineComponents}
     }
 }
@@ -184,11 +229,12 @@ export function getLinesWithContent(editorContent) {
 export function getTaskComponents(line) {
     if(!line) return undefined;
 
-    const titleMatches = line.match(titleRegex);
-    const detailsMatches = line.match(detailsRegex);
+    const titleMatches = line.match(titleContentRegex);
+    const detailsMatches = line.match(detailsContentRegex);
     const priorityMatches = line.match(prioRegex);
     const dateTimeMatches = line.match(dateTimeRegex);
     const categoryMatches = line.match(categoryRegex);
+    const taskCompleted = line.match(taskCompletedRegex);
 
     return {
         taskId: line.id,
@@ -197,6 +243,7 @@ export function getTaskComponents(line) {
         category: categoryMatches !== null ? categoryMatches[0].trim() : undefined,   
         priority: priorityMatches !== null ? parseInt(priorityMatches[0].trim()) : 1,
         dueDate: dateTimeMatches !== null ? dateTimeMatches[0].trim() : undefined,
+        isCompleted: taskCompleted !== null ? true : false
     }
 }
 
@@ -259,11 +306,9 @@ export function ensureCorrectLineStartSpacing(editorContent) {
 }
 
 export function displayCompletedTasks(editorLines, oldDecorations, editorRef) {
-    const completedRegex = /x\\.*|.*x\\/g;
-
     const completedLines = editorLines
     ?.map((line, index) => {
-        if(line.match(completedRegex) !== null) {
+        if(line.match(taskCompletedRegex) !== null) {
             return {
                 range: new monaco.Range(index + 1, 1, index + 1, 1),
                 options: {
