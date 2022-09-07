@@ -191,13 +191,6 @@ export function structureEditorContent(editorLines, tasks) {
                     startPos: {l: i + 1, c: 0},
                     endPos: {l: i + 1, c: editorLine.length},
                 }
-            } else if (editorLine !== '' || editorLine !== '\n') {
-                return {
-                    type: 'note',
-                    startPos: {l: i + 1, c: 0},
-                    endPos: {l: i + 1, c: editorLine.length},
-                    content: editorLine,
-                }
             }
         })
         .filter(line => line !== undefined);

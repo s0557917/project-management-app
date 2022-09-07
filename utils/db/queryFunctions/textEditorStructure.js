@@ -15,6 +15,7 @@ export const getTextEditorStructure = async () => {
 }
 
 export const updateTextEditorStructure = async (textEditorStructureUpdate) => {
+    console.log("UPDATE TEXT EDITOR STRUCTURE", textEditorStructureUpdate);
     const res = await fetch(`/api/textEditorStructure`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },

@@ -14,13 +14,32 @@ export default async function handler(req, res) {
             
             if(req.body.action === 'delete'){
                 const updatedTaskId = req.body.taskId;
-                updatedTextEditorStructure = updatedTextEditorStructure.filter(line => {
-                    if(line.id !== updatedTaskId){
-                        return true;
-                    } else {
-                        return false;
-                    }
-                });
+                const deleteIdIndex = updatedTextEditorStructure.findIndex(task => task.id === updatedTaskId);
+                console.log("ID", updatedTaskId);
+                console.log("deleteIdIndex: ", deleteIdIndex);
+                console.log('updatetajk', updatedTextEditorStructure);
+
+                updatedTextEditorStructure = updatedTextEditorStructure
+                    .filter(line => {
+                        if(line.id !== updatedTaskId){
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    })
+                    .map((line, index) => {
+                        if(index > deleteIdIndex){
+                            return {
+                                ...line, 
+                                startPos: {'c': line.startPos.c, 'l': line.startPos.l - 1},
+                                endPos: {'c': line.endPos.c, 'l': line.endPos.l - 1},
+                            }
+                        } else {
+                            return line;
+                        }
+                    });
+
+                console.log("DELETE AFTER", updatedTextEditorStructure);
             } else if(req.body.action === 'add'){
                 const updatedTaskId = req.body.taskId;
                 const lastLine = updatedTextEditorStructure.sort((a, b) => b.endPos.l - a.endPos.l)[0].endPos.l;

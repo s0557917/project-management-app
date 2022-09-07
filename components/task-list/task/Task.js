@@ -28,8 +28,9 @@ export default function Task({ taskData, onTaskClicked, onCompletionStateChanged
         (taskId) => deleteTask(taskId),
         {
             onSuccess: (data) => {
+                console.log("--- Deleted task with id: " + data.id);
                 queryClient.invalidateQueries('tasks');
-                updateTextEditorStructureMutation.mutate(data.taskId);
+                updateTextEditorStructureMutation.mutate(data.id);
             }
         }
     )

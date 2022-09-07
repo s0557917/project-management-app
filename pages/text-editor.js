@@ -220,7 +220,6 @@ export default function TextEditor() {
       const structuredContent = tasks?.map(task => {
   
         const content = mapSingleTask(task, categories);
-  
         let mappedTasks = {
           id: task.id,
           startPos: {l: linePosition, c: 0},
@@ -242,7 +241,8 @@ export default function TextEditor() {
     const newTasks = [];
     const modifiedTasks = [];
     
-    let modifiedStructure = modifiedContentStructure; 
+    let modifiedStructure = editorContentStructure; 
+    console.log("CONTENT STRU", modifiedContentStructure);
 
     if(editorChanges && editorChanges.length > 0) {
 
@@ -262,12 +262,12 @@ export default function TextEditor() {
           if(modifiedTask) {
             if(oldEditorLines.length > newEditorLines.length && change.text === '' && change.range.startLineNumber !== change.range.endLineNumber) {
               //TODO FIX MULTIPLE LINE DELETTIO INCLUDING CURSOR LINE
-              console.log("CHANGE", change);  
               const deletedLineRange = determineDeletedLineRange(change);
               const increment = Math.max(change.range.startLineNumber, change.range.endLineNumber) - Math.min(change.range.startLineNumber, change.range.endLineNumber);
               deletedTasks.push(modifiedStructure.filter(line => deletedLineRange.includes(line.startPos.l)).map(line => line.id));
               modifiedStructure = modifiedStructure.filter(line => !deletedLineRange.includes(line.startPos.l));
               modifiedStructure = moveTasks(determineDeletionDirection(change), change.range.startLineNumber, modifiedStructure, increment);
+              console.log("DELETE", modifiedStructure);
 
             } else if(oldEditorLines.length < newEditorLines.length && change.text !== '\n') {
               //NEW TASK
@@ -284,10 +284,11 @@ export default function TextEditor() {
                 endPos: position.endPos, 
                 components: getTaskComponents(newEditorLines[change.range.startLineNumber - 1])
               };
+
+              console.log("NEW TASK", modifiedStructure);
             } else {
                 const { areEqual, components } = areLinesEqual(oldEditorLines[change.range.startLineNumber - 1], newEditorLines[change.range.startLineNumber - 1]);
                 if(modifiedTask.id && !areEqual) {
-                  console.log("MODIFIED TASK", modifiedTask, components);
                   modifiedTasks.push({id: modifiedTask.id, components: components});
               }
             }
@@ -310,8 +311,13 @@ export default function TextEditor() {
 
           modifiedStructure[startLine - 1] = secondTask;
           modifiedStructure[endLine - 1] = firstTask;
+          console.log("SWAP", modifiedStructure);
         });
       }
+
+      console.log("DELETED TASKS", deletedTasks);
+      console.log("NEW TASKS", newTasks);
+      console.log("MODIFIED TASKS", modifiedTasks);
 
       newTaskMutation.mutate(newTasks.map(task => {
         return {
@@ -350,6 +356,7 @@ export default function TextEditor() {
         updateTaskMutation.mutate(updatedTask);
       });
       
+      console.log("MODIFIED STRUCTURE", modifiedStructure);
       setEditorContentStructure(modifiedStructure);
       setEditorChanges([]);
       setEditorContent(unManagedContent);

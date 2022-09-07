@@ -25,7 +25,7 @@ export function mapTaskStructureToEditor(taskStructure, tasks, categories) {
 
 export function mapSingleTask(task, categories) {
     if(task && categories) {
-        return `${task.id.substring(0,6)} ${mapTitle(task)} ${mapDetails(task)} ${mapCategory(categories, task.categoryId)} p\\${task.priority} ${mapDate(task)} ${task.completed ? 'x\\' : ''}`
+        return `${mapTitle(task)} ${mapDetails(task)} ${mapCategory(categories, task.categoryId)} p\\${task.priority} ${mapDate(task)} ${task.completed ? 'x\\' : ''}`
     } else {
         return '';
     }

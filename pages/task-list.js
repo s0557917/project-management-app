@@ -64,8 +64,6 @@ export default function TaskList() {
                     color: 'green',
                     title: 'New task saved successfully!',
                 });
-
-                updateTextEditorStructureMutation.mutate(data.id);
             },
         }
     );
