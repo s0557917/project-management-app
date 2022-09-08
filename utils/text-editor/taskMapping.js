@@ -25,25 +25,36 @@ export function mapTaskStructureToEditor(taskStructure, tasks, categories) {
 
 export function mapSingleTask(task, categories) {
     if(task && categories) {
-        return `${mapTitle(task)} ${mapDetails(task)} ${mapCategory(categories, task.categoryId)} p\\${task.priority} ${mapDate(task)} ${task.completed ? 'x\\' : ''}`
+        return `${task.id.substring(0,5)} ${mapTitle(task.title)} ${mapDetails(task.details)} ${mapCategory(categories, task.categoryId)} p\\${task.priority} ${mapDate(task.dueDate)} ${task.completed ? 'x\\' : ''}`
     } else {
         return '';
     }
 }
 
-function mapTitle(task) {
-    if(task.title && task.title.length < titlePadding) {
-        return String(`t\\${task.title}`).padEnd(titlePadding);
-    } else if(task.title && task.title.length >= titlePadding) {
-        return String(`t\\${task.title.substring(0, titlePadding)}...`).padEnd(titlePadding);
+export function mapSingleTaskFromComponents(taskComponents) {
+
+    const category = taskComponents.category ? String(taskComponents.category).padEnd(categoryPadding, ' ') : '';
+
+    if(taskComponents) {
+        return `${mapTitle(taskComponents.title)} ${mapDetails(taskComponents.details)} ${category} p\\${taskComponents.priority} ${mapDate(taskComponents.dueDate)} ${taskComponents.completed ? 'x\\' : ''}\n`
+    } else {
+        return '';
     }
 }
 
-function mapDetails(task) {
-    if(task.details && task.details.length < titlePadding) {
-        return String(`d\\${task.details}`).padEnd(titlePadding);
-    } else if(task.details && task.details.length >= titlePadding) {
-        return String(`d\\${task.details.substring(0,15)}...`).padEnd(titlePadding);
+function mapTitle(title) {
+    if(title && title.length < titlePadding) {
+        return String(`t\\${title}`).padEnd(titlePadding);
+    } else if(title && title.length >= titlePadding) {
+        return String(`t\\${title.substring(0, titlePadding)}...`).padEnd(titlePadding);
+    }
+}
+
+function mapDetails(details) {
+    if(details && details.length < titlePadding) {
+        return String(`d\\${details}`).padEnd(titlePadding);
+    } else if(details && details.length >= titlePadding) {
+        return String(`d\\${details.substring(0,15)}...`).padEnd(titlePadding);
     } else {
         return String('').padEnd(titlePadding);
     }
@@ -59,11 +70,11 @@ function mapCategory(categories, categoryId) {
     }
 }
 
-function mapDate(task) {
-    if(!task.dueDate) {
+function mapDate(dueDate) {
+    if(!dueDate) {
         return String('').padEnd(datePadding);
     } else {
-        const date = new Date(task.dueDate);  
+        const date = new Date(dueDate);  
         const mappedDate = String(
             `dt\\${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`
         );

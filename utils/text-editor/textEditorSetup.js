@@ -1,7 +1,7 @@
 import { languageDef, configuration } from '../../editor/editorConfig';
 
 export default function textEditorSetup(monaco, categories) {
-    if (monaco ) {
+    if (monaco && !monaco.languages.getLanguages().some(({ id }) => id === 'taskLanguage')) {
         monaco.languages.register({ id: 'taskLanguage' });
         monaco.languages.setMonarchTokensProvider('taskLanguage', setLanguageTokens(categories));
         monaco.languages.setLanguageConfiguration('taskLanguage', configuration);

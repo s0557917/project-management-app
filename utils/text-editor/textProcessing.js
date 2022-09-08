@@ -1,3 +1,5 @@
+import { mapSingleTaskFromComponents } from "./taskMapping";
+
 const titleRegex = /(?<!d)t\\.*?(?=[t|c|d|dt|p][t|c|d|dt|p]?\\)|(?<!d)t\\.*(?=$)|(?<!d)t\\.*(?=\n)/;
 const titleContentRegex = /(?<=(?<!d)t\\).*?(?=[t|c|d|dt|p][t|c|d|dt|p]?\\)|(?<=(?<!d)t\\).*(?=$)|(?<=(?<!d)t\\).*(?=\n)/;
 const detailsRegex = /d\\.*?(?=[a-z|A-Z][a-z|A-Z]?\\)|d\\.*(?=$)|d\\.*(?=\n)/;
@@ -32,9 +34,9 @@ export function runSyntaxCheck(text, categories) {
         let wrongPrioritiesExist = false;
         let linesWithoutTitleExist = false;
         let categoryExists = true;
+        let missingPrioritiesExist = false;
         let dateTimesCorrectness = [];
         
-        //
         // Check for empty components
         const emptyTagsMatches = text.match(/[t|c|d|p|dt]\\\s*([t|x|c|d|p|dt]\\|$|\n)/g)
         if(emptyTagsMatches !== null) {
@@ -90,7 +92,6 @@ export function runSyntaxCheck(text, categories) {
                 } 
                 
                 if(priorityMatches !== null && priorityMatches.length > 1) {
-                    console.log("PRIOS", priorityMatches , " --- ", line );
                     multipleEqualTagsInLine = true;
                     errors.add(`There are multiple priorities in line ${index + 1}!`);
                 } 
@@ -98,6 +99,12 @@ export function runSyntaxCheck(text, categories) {
                 if(taskCompletedMatches !== null && taskCompletedMatches.length > 1) {
                     multipleEqualTagsInLine = true;
                     errors.add(`There are multiple task completed tags in line ${index + 1}!`);
+                }
+
+                //Check that priority is present 
+                if(priorityMatches === null) {
+                    missingPrioritiesExist = true;
+                    errors.add(`There is no priority in line ${index + 1}!`);
                 }
 
             });
@@ -132,7 +139,8 @@ export function runSyntaxCheck(text, categories) {
         }
 
         return {
-            isSyntaxValid: !linesWithoutTitleExist
+            isSyntaxValid: !missingPrioritiesExist 
+                && !linesWithoutTitleExist
                 && !wrongPrioritiesExist
                 && !emptyTagsExist
                 && !dateTimesCorrectness?.includes(false)
@@ -148,13 +156,21 @@ export function runSyntaxCheck(text, categories) {
     }
 }
 
-export function guaranteeCorrectTagSpacing(lines) {
-    return lines.map(line => {
-        let modifiedLine = line
-            .replace(/\\t(?=[^\s](.*?))/g, '\\t ')
-            .replace(/(?<=[^\s])t\\/g, ' t\\ ');
-        return modifiedLine;
-    });
+export function guaranteeCorrectFormatting(text) {
+    if(text && text !== null && text !== '') {
+        const splitText = splitContentIntoLines(text);
+        return splitText.map(line => {
+        if(line.match(prioRegex) === null) {
+            console.log("LINE WITHOUT PRIORITY: ", line);
+            const taskComponents = getTaskComponents(line);
+            return mapSingleTaskFromComponents({...taskComponents, priority: 1});
+        } else {
+            return line;
+        }
+        }).join(''); 
+    } else {
+        return '';
+    }
 }
 
 export function splitContentIntoLines(content) {

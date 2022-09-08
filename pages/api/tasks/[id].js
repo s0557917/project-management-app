@@ -30,7 +30,6 @@ export default async function handler(req, res) {
     
                 res.status(201).json(tasks);
             } else {
-                console.log("BODY", req.body);
                 const taskData = {
                     title: req.body.title, 
                     details: req.body.details || "", 
@@ -45,7 +44,7 @@ export default async function handler(req, res) {
                     reminders: req.body.reminders || [],
                     subtasks: req.body.subtasks || [],
                 }
-                console.log("taskData", taskData);
+
                 const task = await prisma.task.update({
                     where: { id: req.query.id },
                     data: taskData
