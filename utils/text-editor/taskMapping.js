@@ -25,7 +25,7 @@ export function mapTaskStructureToEditor(taskStructure, tasks, categories) {
 
 export function mapSingleTask(task, categories) {
     if(task && categories) {
-        return `${task.id.substring(0,5)} ${mapTitle(task.title)} ${mapDetails(task.details)} ${mapCategory(categories, task.categoryId)} p\\${task.priority} ${mapDate(task.dueDate)} ${task.completed ? 'x\\' : ''}`
+        return `${mapTitle(task.title)} ${mapDetails(task.details)} ${mapCategory(categories, task.categoryId)} p\\${task.priority} ${mapDate(task.dueDate, task.start, task.end)} ${task.completed ? 'x\\' : ''}`
     } else {
         return '';
     }
@@ -70,13 +70,25 @@ function mapCategory(categories, categoryId) {
     }
 }
 
-function mapDate(dueDate) {
+function mapDate(dueDate, start, end) {
     if(!dueDate) {
         return String('').padEnd(datePadding);
     } else {
         const date = new Date(dueDate);  
+        const startTime = start && start !== null ? new Date(start) : null;
+        const endTime = end && end !== null ? new Date(end) : null;
+
+        const dateString = `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
+        let startTimeString = '';
+        let endTimeString = '';
+
+        if(startTime !== null && endTime !== null) {
+            startTimeString = `${String(startTime.getHours()).padStart(2, "0")}:${String(startTime.getMinutes()).padStart(2, "0")}`;
+            endTimeString = `${String(endTime.getHours()).padStart(2, "0")}:${String(endTime.getMinutes()).padStart(2, "0")}`;
+        }
+
         const mappedDate = String(
-            `dt\\${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`
+            `dt\\${dateString}${startTimeString !== '' && endTimeString !== '' ? ` ${startTimeString}-${endTimeString}` : ''}`
         );
 
         return mappedDate.padEnd(datePadding);

@@ -1,4 +1,5 @@
 import { mapSingleTaskFromComponents } from "./taskMapping";
+import dayjs from "dayjs";
 
 const titleRegex = /(?<!d)t\\.*?(?=[t|c|d|dt|p][t|c|d|dt|p]?\\)|(?<!d)t\\.*(?=$)|(?<!d)t\\.*(?=\n)/;
 const titleContentRegex = /(?<=(?<!d)t\\).*?(?=[t|c|d|dt|p][t|c|d|dt|p]?\\)|(?<=(?<!d)t\\).*(?=$)|(?<=(?<!d)t\\).*(?=\n)/;
@@ -6,19 +7,40 @@ const detailsRegex = /d\\.*?(?=[a-z|A-Z][a-z|A-Z]?\\)|d\\.*(?=$)|d\\.*(?=\n)/;
 const detailsContentRegex = /(?<=d\\).*?(?=[a-z|A-Z][a-z|A-Z]?\\)|(?<=d\\).*(?=$)|(?<=d\\).*(?=\n)/;
 const categoryRegex = /(?<=c\\).*?(?=\s*?[a-z|A-Z][a-z|A-Z]?\\)|(?<=c\\)\w*?(?=\s*?$)|(?<=c\\)\w*?(?=\s*?\n)/;
 const prioRegex = /(?<=p\\)[1-5](?=\s*)|(?<=p\\)[1-5](?=\s*$)|(?<=p\\)[1-5](?=\s*\n)/;
-const dateTimeRegex = /(?<=dt\\|)\d{2}[-]\d{2}[-]\d{4} \d{2}[:]\d{2}|\d{2}[-]\d{2}[-]\d{4}(?=\\)/;
+const dateTimeRegex = /(dt\\\d{2}-\d{2}-\d{4} \d{2}:\d{2}-\d{2}:\d{2})|(dt\\\d{2}-\d{2}-\d{4} \d{2}:\d{2})/;
+const dateTimeContentRegex = /((?<=dt\\)\d{2}-\d{2}-\d{4} \d{2}:\d{2}-\d{2}:\d{2})|((?<=dt\\)\d{2}-\d{2}-\d{4})/g;
 const taskCompletedRegex = /x\\.*|.*x\\/;
 
 const emptyTagRegex = /[t|c|dt|d|p]\\\s*(?=[t|c|dt|d|p][t|c|dt|d|p]?\\|$|\n)/g;
 
 function formatDateTimeToObject(date) {
-    const splitDateAndTime = date[0].split(' ');
+    const splitDateAndTime = date.split(' ');
     const splitDate = splitDateAndTime[0].split('-');
-    
-    if(splitDateAndTime.length === 2 && splitDate.length === 3) {
-        return new Date(`${splitDate[2]}-${splitDate[1]}-${splitDate[0]}T${splitDateAndTime[1].padEnd(8, ':00')}`);
-    } else if (splitDateAndTime.length === 1 && splitDate.length === 3) {
-        return new Date(`${splitDate[2]}-${splitDate[1]}-${splitDate[0]}T00:00:00`);
+
+    if(splitDateAndTime.length === 1) {
+        const startTime = new Date(`${splitDate[2]}-${splitDate[1]}-${splitDate[0]}T00:00:00`); 
+        if(dayjs(startTime, true).isValid()) {
+            return {start: startTime, end: undefined};
+        } else {
+            return undefined;
+        }
+    } else if(splitDateAndTime.length === 2) {
+        const splitTimes = splitDateAndTime[1].split('-');
+        const splitStartTime = splitTimes[0].split(':');
+        const splitEndTime = splitTimes[1].split(':');
+
+        const startTime = new Date(`${splitDate[2]}-${splitDate[1]}-${splitDate[0]}T${splitTimes[0]}:00`);
+        let endTime = new Date(`${splitDate[2]}-${splitDate[1]}-${splitDate[0]}T${splitTimes[1]}:00`);
+
+        if(splitStartTime > splitEndTime) {
+            endTime = dayjs(endTime).add(1, 'day').toDate();
+        }
+
+        if(dayjs(startTime, true).isValid() && dayjs(endTime, true).isValid()) {
+            return {start: startTime, end: endTime};
+        } else {
+            return undefined;
+        }
     } else {
         return undefined;
     }
@@ -35,25 +57,27 @@ export function runSyntaxCheck(text, categories) {
         let linesWithoutTitleExist = false;
         let categoryExists = true;
         let missingPrioritiesExist = false;
-        let dateTimesCorrectness = [];
+        let multipleDateTimeTagsExist = false;
+        let invalidDateTimesExist = false;
         
-        // Check for empty components
-        const emptyTagsMatches = text.match(/[t|c|d|p|dt]\\\s*([t|x|c|d|p|dt]\\|$|\n)/g)
-        if(emptyTagsMatches !== null) {
-            emptyTagsExist = true;
-            errors.add('Check that all your tags have content!');
-        }
         //Check that priorities are correct
-        const wrongPrioritiesMatches = text.match(/p\\[6-9]/g);
-        if(wrongPrioritiesMatches !== null) {
-            wrongPrioritiesExist = true;
-            errors.add('A task can only have a priority from 1 to 5!');
-        }
-
+        
         if(splitText !== null && splitText.length > 0) {
             
-            
             splitText.forEach((line, index) => {
+                // Check for empty components
+                const emptyTagsMatches = line.match(/[t|c|d|p|dt]\\\s*([t|x|c|d|p|dt]\\|$|\n)/g)
+                if(emptyTagsMatches !== null) {
+                    emptyTagsExist = true;
+                    errors.add(`A tag in line ${index + 1} has no content!`);
+                }
+                
+                const wrongPrioritiesMatches = line.match(/p\\[6-9]/g);
+                if(wrongPrioritiesMatches !== null) {
+                    wrongPrioritiesExist = true;
+                    errors.add(`Line ${index + 1} contains a wrong priority! Only priorities from line 1 to 5 are allowed.`);
+                }
+
                 // Check that category is valid
                 const categoryMatches = line.match(categoryRegex);
                 if(categoryMatches && categoryMatches !== null && categoryMatches[0] && categoryMatches[0] !== 'Uncategorized') {
@@ -67,7 +91,7 @@ export function runSyntaxCheck(text, categories) {
                 // Check that components are also only present once
                 const titleMatches = line.match(new RegExp(titleRegex, 'g'));
                 const detailsMatches = line.match(new RegExp(detailsRegex, 'g'));
-                const dateTimeMatches = line.match(new RegExp(dateTimeRegex, 'g'));
+                const dateTimeContentMatches = line.match(dateTimeContentRegex);
                 const priorityMatches = line.match(new RegExp(prioRegex, 'g'));
                 const taskCompletedMatches = line.match(new RegExp(taskCompletedRegex, 'g'));
 
@@ -86,10 +110,6 @@ export function runSyntaxCheck(text, categories) {
                     errors.add(`There are multiple categories in line ${index + 1}!`);
                 }
                 
-                if(dateTimeMatches !== null && dateTimeMatches.length > 1) {
-                    multipleEqualTagsInLine = true;
-                    errors.add(`There are multiple due dates in line ${index + 1}!`);
-                } 
                 
                 if(priorityMatches !== null && priorityMatches.length > 1) {
                     multipleEqualTagsInLine = true;
@@ -100,13 +120,34 @@ export function runSyntaxCheck(text, categories) {
                     multipleEqualTagsInLine = true;
                     errors.add(`There are multiple task completed tags in line ${index + 1}!`);
                 }
-
+                
                 //Check that priority is present 
                 if(priorityMatches === null) {
                     missingPrioritiesExist = true;
                     errors.add(`There is no priority in line ${index + 1}!`);
                 }
-
+                
+                //Check if dueDate is present and if its correct
+                if(dateTimeContentMatches !== null) {
+                    if (dateTimeContentMatches.length === 1) {
+                        const dateObject = formatDateTimeToObject(dateTimeContentMatches[0]);
+                        if(!dateObject) {
+                            errors.add(`The due date in line ${index + 1} does not exist!`);
+                            invalidDateTimesExist = true;
+                        }
+                    } else if(dateTimeContentMatches.length > 1) {
+                        multipleDateTimeTagsExist = true;
+                        errors.add(`There are multiple due dates in line ${index + 1}!`);
+                        
+                        dateTimeContentMatches.forEach((dateTimeContent) => {
+                            const dateObject = formatDateTimeToObject(dateTimeContent);
+                            if(!dateObject) {
+                                errors.add(`The due date in line ${index + 1} does not exist!`);
+                                invalidDateTimesExist = true;
+                            }
+                        });
+                    }
+                }
             });
 
             // Check that title is present
@@ -118,32 +159,14 @@ export function runSyntaxCheck(text, categories) {
                 } 
             });
         }
-        
-        //Check that date is valid
-        const fullDates = text.match(/dt\\.*?(?=[a-z|A-Z][a-z|A-Z]?\\)|dt\\.*(?=$)|dt\\.*(?=\n)/g);
-        if(fullDates !== null) {
-            dateTimesCorrectness = fullDates.map(date => {
-                const dateMatch = date.match(dateTimeRegex);
-                if(dateMatch !== null) {
-                    const dateObject = formatDateTimeToObject(dateMatch);
-                    if(!dateObject || isNaN(dateObject)) {
-                        errors.add("A set date and/or time does not exist!");
-                        return false;
-                    }
-                } else {
-                    errors.add('A date and/or time is missing!');
-                    return false;
-                }
-                
-            });
-        }
 
         return {
-            isSyntaxValid: !missingPrioritiesExist 
+            isSyntaxValid: !invalidDateTimesExist 
+                && !multipleDateTimeTagsExist
+                && !missingPrioritiesExist 
                 && !linesWithoutTitleExist
                 && !wrongPrioritiesExist
                 && !emptyTagsExist
-                && !dateTimesCorrectness?.includes(false)
                 && categoryExists
                 && !multipleEqualTagsInLine,
             errors: Array.from(errors)
@@ -153,23 +176,6 @@ export function runSyntaxCheck(text, categories) {
             isSyntaxValid: false,
             errors: ['No text was provided!']
         }
-    }
-}
-
-export function guaranteeCorrectFormatting(text) {
-    if(text && text !== null && text !== '') {
-        const splitText = splitContentIntoLines(text);
-        return splitText.map(line => {
-        if(line.match(prioRegex) === null) {
-            console.log("LINE WITHOUT PRIORITY: ", line);
-            const taskComponents = getTaskComponents(line);
-            return mapSingleTaskFromComponents({...taskComponents, priority: 1});
-        } else {
-            return line;
-        }
-        }).join(''); 
-    } else {
-        return '';
     }
 }
 
@@ -224,10 +230,17 @@ export function areLinesEqual(firstLine, secondLine) {
             && firstLineComponents.details === secondLineComponents.details
             && firstLineComponents.category === secondLineComponents.category
             && firstLineComponents.priority === secondLineComponents.priority
-            && firstLineComponents.dueDate === secondLineComponents.dueDate
+            && areDueDatesEqual(firstLineComponents, secondLineComponents)
             && firstLineComponents.isCompleted === secondLineComponents.isCompleted,
         components: {...secondLineComponents}
     }
+}
+
+function areDueDatesEqual(firstComponent, secondComponent) {
+    
+    const areEqual = firstComponent.dueDate === secondComponent.dueDate && firstComponent.end === secondComponent.end;
+    console.log(firstComponent, " == ", secondComponent, " : ", areEqual);
+    return areEqual;
 }
 
 export function getLinesWithContent(editorContent) {
@@ -241,9 +254,16 @@ export function getTaskComponents(line) {
     const titleMatches = line.match(titleContentRegex);
     const detailsMatches = line.match(detailsContentRegex);
     const priorityMatches = line.match(prioRegex);
-    const dateTimeMatches = line.match(dateTimeRegex);
+    const dateTimeMatches = line.match(dateTimeContentRegex);
     const categoryMatches = line.match(categoryRegex);
     const taskCompleted = line.match(taskCompletedRegex);
+
+    let dateObject = null;
+    if(dateTimeMatches !== null) {
+        dateObject = formatDateTimeToObject(dateTimeMatches[0]?.trim());
+    }
+
+    console.log("dateObject", dateObject);
 
     return {
         taskId: line.id,
@@ -251,44 +271,11 @@ export function getTaskComponents(line) {
         details: detailsMatches !== null ? detailsMatches[0].trim() : undefined,
         category: categoryMatches !== null ? categoryMatches[0].trim() : undefined,   
         priority: priorityMatches !== null ? parseInt(priorityMatches[0].trim()) : 1,
-        dueDate: dateTimeMatches !== null ? dateTimeMatches[0].trim() : undefined,
+        dueDate: dateObject && dateObject !== null ? dateObject.start : undefined,
+        start: dateObject && dateObject !== null ? dateObject.start : undefined,
+        end: dateObject && dateObject !== null && dateObject.end !== undefined ? dateObject.end : undefined,
         isCompleted: taskCompleted !== null ? true : false
     }
-}
-
-export function compareTasks(previous, current) {
-    return current.filter(task => {
-        const previousTask = previous.find(previousTask => previousTask.id === task.id);
-        
-        if(previousTask !== undefined && task.type !== 'note') {
-            const prevComponents = getTaskComponents(previousTask.content);
-            const currComponents = getTaskComponents(task.content);
-
-            if(prevComponents.title !== currComponents.title) {
-                console.log("Title changed", task);
-                return true;
-            }
-            if(prevComponents.details !== currComponents.details) {
-                console.log("Details changed", task);
-                return true;
-            }
-            if(prevComponents.category !== currComponents.category) {
-                console.log("Category changed", task);
-                return true;
-            }
-            if(prevComponents.priority !== currComponents.priority) {
-                console.log("Priority changed", task);
-                return true;
-            }
-            //TODO FIX DATE COMPARISON
-            if(prevComponents.dueDate !== currComponents.dueDate) {
-                console.log("DateTime changed", prevComponents.dueDate, " -- ", currComponents.dueDate);
-                return true;
-            }
-        }
-
-        return false;
-    })
 }
 
 export function mapLineToTask(task, categories) {

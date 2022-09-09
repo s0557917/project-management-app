@@ -12,7 +12,7 @@ import TextEditorSkeleton from '../components/general/loading/TextEditorSkeleton
 import textEditorSetup from '../utils/text-editor/textEditorSetup';
 import { mapSingleTask, mapTaskStructureToEditor } from '../utils/text-editor/taskMapping';
 import { useState } from 'react';
-import { runSyntaxCheck, splitContentIntoLines, getTaskComponents, structureEditorContent, mapLineToTask, displayCompletedTasks, areLinesEqual, guaranteeCorrectFormatting } from '../utils/text-editor/textProcessing';
+import { runSyntaxCheck, splitContentIntoLines, getTaskComponents, structureEditorContent, mapLineToTask, displayCompletedTasks, areLinesEqual } from '../utils/text-editor/textProcessing';
 import { addNewTask } from "../utils/db/queryFunctions/tasks";
 import { prismaGetTextEditorStructure, getTextEditorStructure, updateTextEditorStructure } from "../utils/db/queryFunctions/textEditorStructure";
 import ErrorInformation from "../components/text-editor/information/ErrorInformation";
@@ -67,8 +67,7 @@ export default function TextEditor() {
   const { toggleColorScheme } = useMantineColorScheme();
   
   const [editorContentStructure, setEditorContentStructure] = useState([]);
-  // const [modifiedContentStructure, setModifiedContentStructure] = useState([]);
-  
+
   const [unManagedContent, setUnManagedContent] = useState('');
   const [editorContent, setEditorContent] = useState(() => handleInitialContentSetup() || '');
   const [canUpdate, setCanUpdate] = useState(true);
@@ -77,7 +76,6 @@ export default function TextEditor() {
   const debouncedEditorContent = useDebounce(unManagedContent, 1000);
   const [editorChanges, setEditorChanges] = useState([]);	
   
-  let cursorPosition = {};
   const monaco = useMonaco();
   const editorRef = useRef(null);
 
@@ -156,6 +154,32 @@ export default function TextEditor() {
     });
     setUnManagedContent(editor.getValue());
     editorRef.current = editor; 
+
+    editor.addAction({
+      id: 'supress-undo',
+      label: 'Supress Undo',
+      keybindings: [
+        monaco.KeyMod.chord(
+          monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyZ
+        )
+      ],
+      precondition: null,
+      keybindingContext: null,
+      run: () => {}
+    })
+
+    editor.addAction({
+      id: 'supress-redo',
+      label: 'Supress Redo',
+      keybindings: [
+        monaco.KeyMod.chord(
+          monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyY
+        )
+      ],
+      precondition: null,
+      keybindingContext: null,
+      run: () => {}
+    })
   }
 
   useEffect(() => {
@@ -170,9 +194,7 @@ export default function TextEditor() {
 
   useEffect(() => {
     if(textEditorStructure) {
-      console.log("ECS USE EFFECT");
       const editorContent = handleInitialContentSetup();
-      // console.log("editorContent", editorContent);
       setEditorContent(editorContent);
   
       if(editorContent && editorContent !== '' && editorContent !== [] && editorContent.length > 0  ) {
@@ -183,7 +205,6 @@ export default function TextEditor() {
     }
   }, [textEditorStructure]);
 
-  //TODO: CHECK IF UNMANAGED AND DEBOUNCED
   useEffect(() => {
 
     const {isSyntaxValid, errors} = runSyntaxCheck(unManagedContent, categories);
@@ -311,6 +332,7 @@ export default function TextEditor() {
             } else {
               const { areEqual, components } = areLinesEqual(oldEditorLines[change.range.startLineNumber - 1], newEditorLines[change.range.startLineNumber - 1]);
               if(modifiedTask.id && !areEqual) {
+                console.log("ARE LINES EQUAL? ", areEqual);
                 modifiedTasks.push({id: modifiedTask.id, components: components});
               }
             }
@@ -336,9 +358,9 @@ export default function TextEditor() {
         });
       }
 
-      // console.log("DELETED TASKS", deletedTasks);
-      // console.log("NEW TASKS", newTasks);
-      // console.log("MODIFIED TASKS", modifiedTasks); 
+      console.log("DELETED TASKS", deletedTasks);
+      console.log("NEW TASKS", newTasks);
+      console.log("MODIFIED TASKS", modifiedTasks); 
       // deletedTasks.forEach(taskId => {
       //   deleteTaskMutation.mutate(taskId)
       // });
@@ -378,20 +400,13 @@ export default function TextEditor() {
 
       //   updateTaskMutation.mutate(updatedTask);
       // });
+
       console.log("MODIFIED STRUCTURE", modifiedStructure);
       setEditorContentStructure(modifiedStructure);
       setEditorChanges([]);
       setEditorContent(unManagedContent);
       // updateTextEditorStructureMutation.mutate(modifiedStructure);
     }
-  }
-
-  function handleDeletedLines(deletedLineRange, increment, modifiedStructure) {
-    const deletedTasks = modifiedStructure.filter(line => deletedLineRange.includes(line.startPos.l)).map(line => line.id);
-    modifiedStructure = modifiedStructure.filter(line => !deletedLineRange.includes(line.startPos.l));
-    modifiedStructure = moveTasks(determineDeletionDirection(change), change.range.startLineNumber, modifiedStructure, increment);
-
-    return { deletedTasks, modifiedStructure };
   }
 
   function getUniqueLineChanges(changes) {
@@ -468,42 +483,6 @@ export default function TextEditor() {
       });
     return movedStructure;
   } 
-
-  function determineDeletedLineRange(change) {
-    let startLine = Math.min(change.range.startLineNumber, change.range.endLineNumber);
-    let endLine = Math.max(change.range.startLineNumber, change.range.endLineNumber);
-
-    const deleteCursorLine = change.range.startColumn > 1 && change.range.endColumn === 1 || change.range.startColumn === 1 && change.range.endColumn > 1;
-    const keepCursorLine = change.range.startColumn === 1 && change.range.endColumn === 1 || change.range.startColumn > 1 && change.range.endColumn > 1
-
-    if(endLine - startLine === 1) {
-      if(keepCursorLine && !deleteCursorLine) {
-        if(change.cursorPosition.lineNumber === change.range.startLineNumber) {
-          return [change.range.endLineNumber];
-        } else {
-          return [change.range.startLineNumber];
-        }
-      } else if(!keepCursorLine && deleteCursorLine) {
-        return [change.range.startLineNumber, change.range.endLineNumber];
-      }
-    } else if(endLine - startLine > 1) {
-      const length = endLine - startLine;
-      if(keepCursorLine && !deleteCursorLine) {
-        if(change.cursorPosition.lineNumber === change.range.startLineNumber) {
-          startLine += 1;
-        } else {
-          endLine -= 1;
-        }
-        return Array.from({length: length}, (x, i) => i + startLine);
-      } else if(!keepCursorLine && deleteCursorLine) {
-        return Array.from({length: length}, (x, i) => i + startLine);
-      }
-    }
-  }
-
-  function determineDeletionDirection(change) {
-    return change.cursorPosition.lineNumber === change.range.startLineNumber ? 'up' : 'down';
-  }
 
   return (  
     <>
