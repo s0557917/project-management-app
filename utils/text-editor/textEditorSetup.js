@@ -1,4 +1,5 @@
 import { languageDef, configuration } from '../../editor/editorConfig';
+import { splitContentIntoLines } from './textProcessing';
 
 export default function textEditorSetup(monaco, categories) {
     if (monaco && !monaco.languages.getLanguages().some(({ id }) => id === 'taskLanguage')) {
@@ -9,16 +10,25 @@ export default function textEditorSetup(monaco, categories) {
         monaco.languages.registerCompletionItemProvider('taskLanguage', {
           triggerCharacters: ["\\"],
           provideCompletionItems: function (model, position) {
-            var word = model.getWordUntilPosition(position);
+ 
             var range = {
-                startLineNumber: position.lineNumber,
-                endLineNumber: position.lineNumber,
-                startColumn: word.startColumn - 1,
-                endColumn: word.endColumn - 1 
+              startLineNumber: position.lineNumber,
+              endLineNumber: position.lineNumber,
+              startColumn: position.column > 1 ? position.column - 2 : 1,
+              endColumn: position.column
             };
-            return {
-              suggestions: createDependencyProposals(range, categories)
-            };
+
+            const autoCompleteCharacters = model.getValueInRange({
+              startLineNumber: range.startLineNumber,
+              startColumn: range.startColumn,
+              endLineNumber: range.endLineNumber,
+              endColumn: range.endColumn
+            });
+
+            const sugg = createDependencyProposals(autoCompleteCharacters, range, categories);
+            console.log("RET SUGGESTIONS", sugg);
+
+            return { suggestions: sugg };
           }
         });
 
@@ -36,58 +46,117 @@ export default function textEditorSetup(monaco, categories) {
       }
 }
 
-function createDependencyProposals(range, categories) {
-  const suggestions = [
-    {
-      label: '\\t New task',
-      kind: monaco.languages.CompletionItemKind.Constant,
-      insertText: 't\\',
-      range: range,
-    },
-    {
-      label: '\\d Task Details',
-      kind: monaco.languages.CompletionItemKind.Element,
-      insertText: 'd\\',
-      range: range,
-    },
-    {
-      label: '\\dt Task deadline',
-      kind: monaco.languages.CompletionItemKind.Field,
-      insertText: 'dt\\',
-      range: range,
-    },
-    {
-      label: '\\p1 Lowest priority',
-      kind: monaco.languages.CompletionItemKind.Keyword,
-      insertText: 'p\\1',
-      range: range,
-    },
-    {
-      label: '\\p2 Low priority',
-      kind: monaco.languages.CompletionItemKind.Property,
-      insertText: 'p\\2',
-      range: range,
-    },
-    {
-      label: '\\p3 Medium priority',
-      kind: monaco.languages.CompletionItemKind.Snippet,
-      insertText: 'p\\3',
-      range: range,
-    },
-    {
-      label: '\\p4 High priority',
-      kind: monaco.languages.CompletionItemKind.Template,
-      insertText: 'p\\4',
-      range: range,
-    },
-    {
-      label: '\\p5 Highest Priority',
-      kind: monaco.languages.CompletionItemKind.Text,
-      insertText: 'p\\5',
-      range: range,
-    }
-  ];
+function createDependencyProposals(autoCompleteCharacters, range, categories) {
+  const suggestions = [{
+    label: '\\t New task',
+    kind: monaco.languages.CompletionItemKind.Constant,
+    insertText: 't\\',
+    range: range,
+  },
+  {
+    label: '\\d Task Details',
+    kind: monaco.languages.CompletionItemKind.Element,
+    insertText: 'd\\',
+    range: range,
+  },
+  {
+    label: '\\dt Task deadline',
+    kind: monaco.languages.CompletionItemKind.Field,
+    insertText: 'dt\\',
+    range: range,
+  },
+  {
+    label: '\\p1 Lowest priority',
+    kind: monaco.languages.CompletionItemKind.Keyword,
+    insertText: 'p\\1',
+    range: range,
+  },
+  {
+    label: '\\p2 Low priority',
+    kind: monaco.languages.CompletionItemKind.Property,
+    insertText: 'p\\2',
+    range: range,
+  },
+  {
+    label: '\\p3 Medium priority',
+    kind: monaco.languages.CompletionItemKind.Snippet,
+    insertText: 'p\\3',
+    range: range,
+  },
+  {
+    label: '\\p4 High priority',
+    kind: monaco.languages.CompletionItemKind.Template,
+    insertText: 'p\\4',
+    range: range,
+  },
+  {
+    label: '\\p5 Highest Priority',
+    kind: monaco.languages.CompletionItemKind.Text,
+    insertText: 'p\\5',
+    range: range,
+  }];
 
+  addCategorySuggestions(suggestions, categories, range);
+  
+  return suggestions;
+  
+  // if(autoCompleteCharacters.trim() === '\\') {
+  //   addCategorySuggestions(suggestions, categories, range);
+  //   suggestions.push({
+  //       label: '\\t New task',
+  //       kind: monaco.languages.CompletionItemKind.Constant,
+  //       insertText: 't\\',
+  //       range: range,
+  //     },
+  //     {
+  //       label: '\\d Task Details',
+  //       kind: monaco.languages.CompletionItemKind.Element,
+  //       insertText: 'd\\',
+  //       range: range,
+  //     },
+  //     {
+  //       label: '\\dt Task deadline',
+  //       kind: monaco.languages.CompletionItemKind.Field,
+  //       insertText: 'dt\\',
+  //       range: range,
+  //     },
+  //     {
+  //       label: '\\p1 Lowest priority',
+  //       kind: monaco.languages.CompletionItemKind.Keyword,
+  //       insertText: 'p\\1',
+  //       range: range,
+  //     },
+  //     {
+  //       label: '\\p2 Low priority',
+  //       kind: monaco.languages.CompletionItemKind.Property,
+  //       insertText: 'p\\2',
+  //       range: range,
+  //     },
+  //     {
+  //       label: '\\p3 Medium priority',
+  //       kind: monaco.languages.CompletionItemKind.Snippet,
+  //       insertText: 'p\\3',
+  //       range: range,
+  //     },
+  //     {
+  //       label: '\\p4 High priority',
+  //       kind: monaco.languages.CompletionItemKind.Template,
+  //       insertText: 'p\\4',
+  //       range: range,
+  //     },
+  //     {
+  //       label: '\\p5 Highest Priority',
+  //       kind: monaco.languages.CompletionItemKind.Text,
+  //       insertText: 'p\\5',
+  //       range: range,
+  //     }
+  //   );
+  // } else if(autoCompleteCharacters.trim() === 'c\\') {
+  //   addCategorySuggestions(suggestions, categories, range);
+  // }    
+}
+
+function addCategorySuggestions(suggestions, categories, range) {
   categories?.forEach(category => {
     suggestions.push({
       label: `\\c ${category.name}`, 
@@ -96,8 +165,6 @@ function createDependencyProposals(range, categories) {
       range: range,
     });
   });
-
-  return suggestions;
 }
 
 function setLanguageTokens(categories) {

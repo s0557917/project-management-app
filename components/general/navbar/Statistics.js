@@ -14,7 +14,7 @@ export default function Statistics() {
     const {data: tasks, isFetching: isFetchingTasks} = useQuery(['tasks'], getAllTasks);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const trackedDays = generateStatistics();
-
+    console.log("TRACKED DAYS", trackedDays);
     const textColor = getThemeColor('text-gray-900', 'text-white');
     const bgColor = getThemeColor('bg-white', 'bg-neutral-600');
 
@@ -42,8 +42,8 @@ export default function Statistics() {
             <StatsRing
                 data={{
                     "label": "Task Activity",
-                    "stats": `${trackedDays ? `${trackedDays}/7` :''}`,
-                    "progress": `${trackedDays ? `${(trackedDays/7 * 100)}` : 0}`,
+                    "stats": `${trackedDays}/7`,
+                    "progress": `${(trackedDays/7 * 100)}`,
                     "color": trackedDays > 3 ? "green" : "red",
                     "icon": "up"
                 }}
@@ -64,13 +64,13 @@ export default function Statistics() {
                         }]}
                         label={
                             <p className={`text-center text-lg font-bold ${textColor}`}>
-                                {`${trackedDays ? `${trackedDays}/7` :''}`}
+                                {`${trackedDays}/7`}
                             </p>
                         }
                     />
                     <div className="ml-2">
                         <p className={`${textColor} text-lg font-bold mb-1`}>{trackedDays > 3 ? 'Keep it up!' : 'Make it happen!'}</p>
-                        <p className={`${textColor} text-xs`}>{trackedDays > 3 ? 'You have worked on your tasks at least 3 out of the last 7 days!' : 'Try to work on your tasks at least 3 days a week!'}</p>
+                        <p className={`text-black text-xs`}>{trackedDays > 3 ? 'You have worked on your tasks at least 3 out of the last 7 days!' : 'Try to work on your tasks at least 3 days a week!'}</p>
                     </div>
                 </div>
             }

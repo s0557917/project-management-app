@@ -33,5 +33,6 @@ export default NextAuth({
             }
             return Promise.resolve('/');
         }
-    }
+    },
+    debug: true,
 })

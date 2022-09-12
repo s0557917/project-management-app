@@ -10,6 +10,7 @@ import getThemeColor from '../../../utils/color/getThemeColor';
 import useOutsideAlerter from '../../../utils/hooks/useOutsideAlerter';
 import { updateTask } from '../../../utils/db/queryFunctions/tasks';
 import { showNotification } from '@mantine/notifications';
+import { Circle } from "phosphor-react";
 
 export default function SearchBar() {
 
@@ -83,7 +84,7 @@ export default function SearchBar() {
 
     return (
         <div 
-            className="relative self-center mx-3 w-72"
+            className="relative self-center mx-1 my-2 w-72"
             ref={wrapperRef}
         >
             <TextInput 
@@ -93,25 +94,39 @@ export default function SearchBar() {
                 icon={<MagnifyingGlass size={16} />}
                 onClick={() => searchResults.length > 0 ? setDropdownOpened(true) : null}
             />
+
             {dropdownOpened && 
-                <div className={`${bgColor} absolute bg-neutral-500 w-72 h-auto flex flex-col rounded-sm z-10 m-2 items-start`}>
+                <div className={`${bgColor} absolute w-72 h-auto flex flex-col rounded-sm z-10 m-2 items-start`}>
                     <ScrollArea 
                         style={{ height: 250 }} 
                         type="auto" 
                         offsetScrollbars
                     >
-                        {searchResults.map(result => (
-                            <button 
-                                onClick={() => {
-                                    setSelectedTask(result);
-                                    setDropdownOpened(false);
-                                    setOpenedTaskEditor(true);
-                                }}
-                                className={`${bgColor} hover:bg-neutral-700 active:scale-95 left-auto right-auto mx-2 my-1 w-64`}
-                            >
-                                {result.title}
-                            </button>
-                        ))}
+                        {searchResults.map(result => {
+                            const category = categories.find(category => category.id === result.categoryId);
+                            const color = category && category !== null && category.color ? category.color : '#ababab'; 
+
+                            return (
+                                <div
+                                    className={`flex items-center justify-between ${bgColor} hover:bg-neutral-700 active:scale-95 left-auto right-auto px-2 py-1 mx-2 my-1 border-y border-y-neutral-700`}
+                                >
+                                    <div 
+                                        onClick={() => {
+                                            setSelectedTask(result);
+                                            setDropdownOpened(false);
+                                            setOpenedTaskEditor(true);
+                                        }}
+                                        className="text-xs w-3/5"
+                                    >
+                                        {result.title}
+                                    </div>
+                                    <div className='flex items-center w-2/5'>
+                                        <Circle size={15} color={color} weight="fill" />
+                                        <p className='text-xs'>{category ? category.name : 'Uncategorized'}</p>
+                                    </div>
+                                </div>
+                            )
+                        })}
                     </ScrollArea>
                 </div>
             }

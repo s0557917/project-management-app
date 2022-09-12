@@ -207,19 +207,21 @@ export default function TextEditor() {
 
   useEffect(() => {
 
-    const {isSyntaxValid, errors} = runSyntaxCheck(unManagedContent, categories);
-    setSyntaxErrors(errors);
-    setCanUpdate(isSyntaxValid);
-    
-    const editorLines = splitContentIntoLines(debouncedEditorContent);
-    if(editorRef !== null && editorRef.current !== null) {
-      const decorations = displayCompletedTasks(editorLines, textDecorations, editorRef);
-      setTextDecorations(decorations);
-    }
-    if(isSyntaxValid) {
-      // const modif = structureEditorContent(editorLines, tasks); 
-      // setModifiedContentStructure(modif);
-      findChanges();
+    if(unManagedContent !== '') {
+      const {isSyntaxValid, errors} = runSyntaxCheck(unManagedContent, categories);
+      setSyntaxErrors(errors);
+      setCanUpdate(isSyntaxValid);
+      
+      const editorLines = splitContentIntoLines(debouncedEditorContent);
+      if(editorRef !== null && editorRef.current !== null) {
+        const decorations = displayCompletedTasks(editorLines, textDecorations, editorRef);
+        setTextDecorations(decorations);
+      }
+      if(isSyntaxValid) {
+        // const modif = structureEditorContent(editorLines, tasks); 
+        // setModifiedContentStructure(modif);
+        findChanges();
+      }
     }
 
   }, [debouncedEditorContent]);
@@ -358,54 +360,51 @@ export default function TextEditor() {
         });
       }
 
-      console.log("DELETED TASKS", deletedTasks);
-      console.log("NEW TASKS", newTasks);
-      console.log("MODIFIED TASKS", modifiedTasks); 
-      // deletedTasks.forEach(taskId => {
-      //   deleteTaskMutation.mutate(taskId)
-      // });
+      deletedTasks.forEach(taskId => {
+        deleteTaskMutation.mutate(taskId)
+      });
 
-      // newTaskMutation.mutate(newTasks.map(task => {
-      //   return {
-      //     id: task.taskId,
-      //     title: task.components.title,
-      //     details: task.components.details || '',
-      //     categoryId: categories?.find(category => category.name === task.components.category)?.id || '',
-      //     dueDate: new Date(task.components.dueDate) || null,
-      //     priority: task.components.priority || 1,
-      //     completed: task.components.completed || false,
-      //     start: null,
-      //     end: null,
-      //     reminders: null,
-      //     subtasks: null,
-      //   }
-      // }))
+      newTaskMutation.mutate(newTasks.map(task => {
+        return {
+          id: task.taskId,
+          title: task.components.title,
+          details: task.components.details || '',
+          categoryId: categories?.find(category => category.name === task.components.category)?.id || '',
+          dueDate: new Date(task.components.dueDate) || null,
+          priority: task.components.priority || 1,
+          completed: task.components.completed || false,
+          start: null,
+          end: null,
+          reminders: null,
+          subtasks: null,
+        }
+      }))
 
-      // modifiedTasks.forEach(task => {
-      //   const updatedTask = {
-      //     id: task.id,
-      //     title: task.components.title,
-      //     details: task.components.details || '',
-      //     categoryId: categories?.find(category => {
-      //         return category?.name?.trim() === task.components?.category?.trim()
-      //       })?.id || '',
-      //     dueDate: null,
-      //     priority: task.components.priority || 1,
-      //     completed: task.components.isCompleted || false,
-      //     start: null,
-      //     end: null,
-      //     reminders: null,
-      //     subtasks: null,
-      //   }
+      modifiedTasks.forEach(task => {
+        const updatedTask = {
+          id: task.id,
+          title: task.components.title,
+          details: task.components.details || '',
+          categoryId: categories?.find(category => {
+              return category?.name?.trim() === task.components?.category?.trim()
+            })?.id || '',
+          dueDate: null,
+          priority: task.components.priority || 1,
+          completed: task.components.isCompleted || false,
+          start: null,
+          end: null,
+          reminders: null,
+          subtasks: null,
+        }
 
-      //   updateTaskMutation.mutate(updatedTask);
-      // });
+        updateTaskMutation.mutate(updatedTask);
+      });
 
       console.log("MODIFIED STRUCTURE", modifiedStructure);
       setEditorContentStructure(modifiedStructure);
       setEditorChanges([]);
       setEditorContent(unManagedContent);
-      // updateTextEditorStructureMutation.mutate(modifiedStructure);
+      updateTextEditorStructureMutation.mutate(modifiedStructure);
     }
   }
 
@@ -498,20 +497,40 @@ export default function TextEditor() {
                 <UsageInformation />
             </div>
             <div className='px-5 pt-2'>
-              {!tasks || !categories || !options || !textEditorStructure || !editorContent
+              {!tasks 
+                || tasks === null 
+                || !categories 
+                || categories === null 
+                || !options 
+                || options === null 
+                || !textEditorStructure 
+                || textEditorStructure === null
               ? <TextEditorSkeleton />
-              : <MonacoEditor
-                  height="80vh"
-                  language='taskLanguage'
-                  options={options}
-                  theme="sampleTheme"
-                  value={editorContent}
-                  onMount={handleEditorDidMount}
-               />
+              : DEBUG_EDITOR(tasks, categories, options, textEditorStructure, editorContent, handleEditorDidMount)
               }
             </div>
         </div>
       }
     </>
+  )
+}
+
+function DEBUG_EDITOR(tasks, categories, options, textEditorStructure, editorContent, handleEditorDidMount) {
+    // console.log("-------------------------------------");
+    // console.log("TASKS", tasks);
+    // console.log("CATEGORIES", categories);
+    // console.log("OPTIONS", options);
+    // console.log("TEXT EDITOR STRUCTURE", textEditorStructure);
+    // console.log("HANDLE EDITOR MOUNT", handleEditorDidMount);
+    // console.log("-------------------------------------");
+  return (
+    <MonacoEditor
+    height="80vh"
+    language='taskLanguage'
+    options={options}
+    theme="sampleTheme"
+    value={editorContent}
+    onMount={handleEditorDidMount}
+  />
   )
 }

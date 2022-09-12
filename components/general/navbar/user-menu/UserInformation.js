@@ -19,13 +19,13 @@ export default function UserInformation() {
     return (
         <>
             <Menu.Item>
-                <div className="flex">
+                <div className="flex text-sm">
                     Username: 
                     <p className="mx-1 font-semibold text-md">{userName}</p>
                 </div>
             </Menu.Item>
             <Menu.Item>
-                <div className="flex">
+                <div className="flex text-sm">
                     Email: 
                     <p className="mx-1 font-semibold">{userEmail}</p>
                 </div>

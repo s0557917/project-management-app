@@ -14,6 +14,7 @@ export default function List({ tasks, categories, modalStateSetter, selectedTask
   const {data: filters, isFetching: isFetchingFilters} = useQuery(['filters'], getFilters);
 
   function generateListContent(){
+    
     switch(sortingLogic){
       case 'category':
         return <CategorySortingView 

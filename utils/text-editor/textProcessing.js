@@ -1,15 +1,6 @@
-import { mapSingleTaskFromComponents } from "./taskMapping";
-import dayjs from "dayjs";
+import { titleRegex, titleContentRegex, detailsRegex, detailsContentRegex, categoryRegex, prioRegex, dateTimeContentRegex, taskCompletedRegex } from "./regex";
 
-const titleRegex = /(?<!d)t\\.*?(?=[t|c|d|dt|p][t|c|d|dt|p]?\\)|(?<!d)t\\.*(?=$)|(?<!d)t\\.*(?=\n)/;
-const titleContentRegex = /(?<=(?<!d)t\\).*?(?=[t|c|d|dt|p][t|c|d|dt|p]?\\)|(?<=(?<!d)t\\).*(?=$)|(?<=(?<!d)t\\).*(?=\n)/;
-const detailsRegex = /d\\.*?(?=[a-z|A-Z][a-z|A-Z]?\\)|d\\.*(?=$)|d\\.*(?=\n)/;
-const detailsContentRegex = /(?<=d\\).*?(?=[a-z|A-Z][a-z|A-Z]?\\)|(?<=d\\).*(?=$)|(?<=d\\).*(?=\n)/;
-const categoryRegex = /(?<=c\\).*?(?=\s*?[a-z|A-Z][a-z|A-Z]?\\)|(?<=c\\)\w*?(?=\s*?$)|(?<=c\\)\w*?(?=\s*?\n)/;
-const prioRegex = /(?<=p\\)[1-5](?=\s*)|(?<=p\\)[1-5](?=\s*$)|(?<=p\\)[1-5](?=\s*\n)/;
-const dateTimeRegex = /(dt\\\d{2}-\d{2}-\d{4} \d{2}:\d{2}-\d{2}:\d{2})|(dt\\\d{2}-\d{2}-\d{4} \d{2}:\d{2})/;
-const dateTimeContentRegex = /((?<=dt\\)\d{2}-\d{2}-\d{4} \d{2}:\d{2}-\d{2}:\d{2})|((?<=dt\\)\d{2}-\d{2}-\d{4})/g;
-const taskCompletedRegex = /x\\.*|.*x\\/;
+import dayjs from "dayjs";
 
 const emptyTagRegex = /[t|c|dt|d|p]\\\s*(?=[t|c|dt|d|p][t|c|dt|d|p]?\\|$|\n)/g;
 
@@ -46,7 +37,10 @@ function formatDateTimeToObject(date) {
     }
 }
 
-export function runSyntaxCheck(text, categories) {  
+export function runSyntaxCheck(text, categories) {
+    
+    if(text === '') return {isSyntaxValid: true, errors: []};
+    
     if(text && text !== null && text !== '' && categories) {
         const errors = new Set();
         const splitText = splitContentIntoLines(text);
@@ -147,6 +141,9 @@ export function runSyntaxCheck(text, categories) {
                             }
                         });
                     }
+                } else if(line.includes('dt\\') && dateTimeContentMatches === null ){
+                    errors.add(`The due date in line ${index + 1} is not valid!`);
+                    invalidDateTimesExist = true;
                 }
             });
 
@@ -302,24 +299,26 @@ export function ensureCorrectLineStartSpacing(editorContent) {
 }
 
 export function displayCompletedTasks(editorLines, oldDecorations, editorRef) {
-    const completedLines = editorLines
-    ?.map((line, index) => {
-        if(line.match(taskCompletedRegex) !== null) {
-            return {
-                range: new monaco.Range(index + 1, 1, index + 1, 1),
-                options: {
-                  isWholeLine: true,
-                  inlineClassName: 'completedTaskTextEditor',
-                },
-              };
-        } else { 
-            return undefined;
-        }
-    })
-    ?.filter(line => line !== undefined);
-    const delta = editorRef.current.deltaDecorations(
-        oldDecorations, 
-        completedLines
-    );
-    return delta;
+    if(editorLines && editorLines[0] !== '') {
+        const completedLines = editorLines
+            ?.map((line, index) => {
+                if(line.match(taskCompletedRegex) !== null) {
+                    return {
+                        range: new monaco.Range(index + 1, 1, index + 1, 1),
+                        options: {
+                        isWholeLine: true,
+                        inlineClassName: 'completedTaskTextEditor',
+                        },
+                    };
+                } else { 
+                    return undefined;
+                }
+            })
+            ?.filter(line => line !== undefined);
+            const delta = editorRef?.current?.deltaDecorations(
+                oldDecorations, 
+                completedLines
+            );
+        return delta;
+    }
 }
