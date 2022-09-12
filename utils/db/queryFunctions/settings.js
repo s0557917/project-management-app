@@ -1,11 +1,3 @@
-export const prismaGetTheme = async (userEmail) => {
-    const res = await prisma.user.findUnique({
-        where: { email: userEmail },
-    });
-
-    return res.theme;
-}
-
 export const getTheme = async () => {
     const res = await fetch('/api/theme', {
         method: 'GET',

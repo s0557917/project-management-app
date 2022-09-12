@@ -1,11 +1,3 @@
-export const prismaGetTextEditorStructure = async (userEmail) => {
-    const user = await prisma.user.findUnique({
-        where: { email: userEmail },
-    });
-    
-    return user.textEditorStructure;
-}
-
 export const getTextEditorStructure = async () => {
     const res = await fetch(`/api/textEditorStructure`, {
         method: 'GET',

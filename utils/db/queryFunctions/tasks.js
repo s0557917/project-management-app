@@ -1,13 +1,3 @@
-export const prismaGetAllTasks = async (userEmail) => {
-    const res = await prisma.task.findMany({
-        where: {
-            owner: { email: userEmail },
-        },
-    });
-
-    return res;
-}
-
 export const getAllTasks = async () => {
     const res = await fetch(`/api/tasks`, {
         method: 'GET',

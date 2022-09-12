@@ -1,13 +1,3 @@
-export const prismaGetAllCategories = async (userEmail) => {
-    const categories = await prisma.category.findMany({
-        where: {
-            owner: { email: userEmail },
-        },
-    });
-
-    return categories;
-}
-
 export const getAllCategories = async () => {
     const res = await fetch(`/api/categories`, {
         method: 'GET',

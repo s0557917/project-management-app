@@ -4,11 +4,14 @@ import Navbar from '../components/general/navbar/Navbar';
 import { getSession } from 'next-auth/react';
 import { useState, useEffect } from "react";
 import { dehydrate, QueryClient, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { prismaGetAllTasks, getAllTasks, addNewTask, updateTask } from "../utils/db/queryFunctions/tasks";
-import { getAllCategories, prismaGetAllCategories } from "../utils/db/queryFunctions/categories";
+import { getAllTasks, addNewTask, updateTask } from "../utils/db/queryFunctions/tasks";
+import { getAllCategories } from "../utils/db/queryFunctions/categories";
+import { getTheme } from "../utils/db/queryFunctions/settings";
+import { prismaGetAllTasks } from "../utils/db/prismaQueryFunctions/tasks";
+import { prismaGetAllCategories } from "../utils/db/prismaQueryFunctions/categories";
+import { prismaGetTheme } from "../utils/db/prismaQueryFunctions/theme";
 import TitleBar from "../components/general/layout/TitleBar";
 import { useMantineColorScheme } from "@mantine/core";
-import { prismaGetTheme, getTheme } from "../utils/db/queryFunctions/settings";
 import { useNotifications } from "@mantine/notifications";
 
 export async function getServerSideProps({req, res}) {

@@ -5,8 +5,14 @@ import dynamic from 'next/dynamic';
 import { options } from '../editor/editorConfig';
 import useDebounce from '../utils/hooks/useDebounce';
 import { dehydrate, QueryClient, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { prismaGetAllTasks, getAllTasks, deleteTask, updateTask } from '../utils/db/queryFunctions/tasks';
-import { prismaGetAllCategories, getAllCategories } from '../utils/db/queryFunctions/categories';
+import { getAllTasks, deleteTask, updateTask } from '../utils/db/queryFunctions/tasks';
+import { getAllCategories } from '../utils/db/queryFunctions/categories';
+import { getTextEditorStructure, updateTextEditorStructure } from "../utils/db/queryFunctions/textEditorStructure";
+import { getTheme } from "../utils/db/queryFunctions/settings";
+import { prismaGetAllTasks } from "../utils/db/prismaQueryFunctions/tasks";
+import { prismaGetAllCategories } from "../utils/db/prismaQueryFunctions/categories";
+import { prismaGetTheme } from "../utils/db/prismaQueryFunctions/theme";
+import { prismaGetTextEditorStructure } from "../utils/db/prismaQueryFunctions/textEditorStructure";
 import { getSession } from 'next-auth/react';
 import TextEditorSkeleton from '../components/general/loading/TextEditorSkeleton';
 import textEditorSetup from '../utils/text-editor/textEditorSetup';
@@ -14,11 +20,9 @@ import { mapSingleTask, mapTaskStructureToEditor } from '../utils/text-editor/ta
 import { useState } from 'react';
 import { runSyntaxCheck, splitContentIntoLines, getTaskComponents, structureEditorContent, mapLineToTask, displayCompletedTasks, areLinesEqual } from '../utils/text-editor/textProcessing';
 import { addNewTask } from "../utils/db/queryFunctions/tasks";
-import { prismaGetTextEditorStructure, getTextEditorStructure, updateTextEditorStructure } from "../utils/db/queryFunctions/textEditorStructure";
 import ErrorInformation from "../components/text-editor/information/ErrorInformation";
 import UsageInformation from "../components/text-editor/information/UsageInformation";
 import { useMantineColorScheme } from "@mantine/core";
-import { prismaGetTheme, getTheme } from "../utils/db/queryFunctions/settings";
 import { v4 as uuidv4 } from 'uuid';
 
 export async function getServerSideProps({req, res}) {
