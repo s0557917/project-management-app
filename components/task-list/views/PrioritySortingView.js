@@ -19,7 +19,6 @@ export default function PrioritySortingView({tasks, categories, onTaskClicked, o
             theme={theme}
         />
 
-        console.log("PRIORITY SORTED", prio);
         return prio;
     }
 

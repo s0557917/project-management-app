@@ -25,6 +25,7 @@ import UsageInformation from "../components/text-editor/information/UsageInforma
 import { useMantineColorScheme } from "@mantine/core";
 import { v4 as uuidv4 } from 'uuid';
 import Loading from "../components/general/loading/Loading";
+import StatusInformation from "../components/text-editor/information/StatusInformation";
 
 export async function getServerSideProps({req, res}) {
 
@@ -74,11 +75,12 @@ export default function TextEditor() {
   const [editorContentStructure, setEditorContentStructure] = useState([]);
 
   const [unManagedContent, setUnManagedContent] = useState('');
+  const [status, setStatus] = useState('loading');
   const [editorContent, setEditorContent] = useState(() => handleInitialContentSetup() || '');
   const [canUpdate, setCanUpdate] = useState(true);
   const [syntaxErrors, setSyntaxErrors] = useState([]);
   const [textDecorations, setTextDecorations] = useState([]);
-  const debouncedEditorContent = useDebounce(unManagedContent, 1000);
+  const debouncedEditorContent = useDebounce(unManagedContent, 500);
   const [editorChanges, setEditorChanges] = useState([]);	
   
   const monaco = useMonaco();
@@ -148,16 +150,20 @@ export default function TextEditor() {
     textEditorSetup(monaco, categories);
     editor.onDidChangeModelContent(e => {
       setUnManagedContent(editor.getValue());
+      setStatus('loading');
       const changeObject = {changes: e.changes, timestamp: Date.now(), cursorPosition: editor.getPosition()};
       setEditorChanges(prevEditorChanges => [...prevEditorChanges, changeObject]);
     });
     editor.onDidChangeCursorSelection(e => {
       setUnManagedContent(editor.getValue());
+      setStatus('loading');
     });
     editor.onDidChangeCursorPosition(e => {
       setUnManagedContent(editor.getValue());
+      setStatus('loading');
     });
     setUnManagedContent(editor.getValue());
+    setStatus('loading');
     editorRef.current = editor; 
 
     editor.addAction({
@@ -186,7 +192,7 @@ export default function TextEditor() {
       run: () => {}
     })
 
-    console.log("Editor mounted");
+    setStatus('ready');
   }
 
   useEffect(() => {
@@ -203,17 +209,17 @@ export default function TextEditor() {
     if(textEditorStructure) {
       const editorContent = handleInitialContentSetup();
       setEditorContent(editorContent);
-  
+      
       if(editorContent && editorContent !== '' && editorContent !== [] && editorContent.length > 0  ) {
         const {isSyntaxValid, errors} = runSyntaxCheck(editorContent, categories);
+        console.log("Text editor structure updated");
         setSyntaxErrors(errors);
         setCanUpdate(isSyntaxValid); 
       }  
     }
   }, [textEditorStructure]);
 
-  useEffect(() => {
-
+  useEffect(() => { 
     if(unManagedContent !== '') {
       const {isSyntaxValid, errors} = runSyntaxCheck(unManagedContent, categories);
       setSyntaxErrors(errors);
@@ -225,12 +231,11 @@ export default function TextEditor() {
         setTextDecorations(decorations);
       }
       if(isSyntaxValid) {
-        // const modif = structureEditorContent(editorLines, tasks); 
-        // setModifiedContentStructure(modif);
         findChanges();
       }
     }
-
+    
+    setStatus('ready');
   }, [debouncedEditorContent]);
 
 
@@ -411,6 +416,7 @@ export default function TextEditor() {
       setEditorContentStructure(modifiedStructure);
       setEditorChanges([]);
       setEditorContent(unManagedContent);
+      setStatus('ready');
       updateTextEditorStructureMutation.mutate(modifiedStructure);
     }
   }
@@ -502,6 +508,7 @@ export default function TextEditor() {
                 errors={syntaxErrors}
                 />
               }
+              <StatusInformation status={status} />
               <UsageInformation />
           </div>
           <div className='px-5 pt-2'>

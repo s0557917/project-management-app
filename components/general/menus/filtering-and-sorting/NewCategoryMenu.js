@@ -95,12 +95,11 @@ export default function NewCategoryMenu({ onCategoryAdded, newColorState, newCat
             <TextInput 
                 value={newCategoryTitle}
                 onChange={(event) => setNewCategoryTitle(event.currentTarget.value)} 
-                // label="Create a new category"
                 placeholder='Category Name'
                 
                 rightSection={
                     <button 
-                        className='bg-cyan-500 hover:bg-cyan-700 p-1 rounded-full' 
+                        className='bg-green-600 hover:bg-green-700 p-1 rounded-full' 
                         onClick={() => {
                             setOpened(false);
                             onCategoryAdded(newCategoryTitle, selectedNewColor);

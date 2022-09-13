@@ -19,7 +19,7 @@ export default function ErrorInformation({errors}) {
                     size={20} 
                     color="#d12929" 
                     weight="fill" 
-                    className="mt-2.5 mx-2 cursor-pointer"
+                    className="mt-2.5 mx-1 cursor-default"
                 />
             </Popover.Target>
             <Popover.Dropdown className='bg-red-100'  sx={{ pointerEvents: 'none' }}>

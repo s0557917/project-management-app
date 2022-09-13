@@ -176,13 +176,13 @@ export default function FilteringMenu () {
                         
                         rightSection={
                             <button 
-                                className='bg-cyan-500 hover:bg-cyan-700 p-1 rounded-full' 
+                                className='bg-green-600 transition-all hover:bg-green-700 p-1 rounded-full text-white' 
                                 onClick={() => {
                                     onCategoryAdded(newCategoryTitle);
                                     setIsFilteringMenuOpened(false);
                                 }}
                             >
-                                <ArrowRight size={18} weight="bold"/>
+                                <ArrowRight size={18} color='#ffffff' weight="bold"/>
                             </button>
                         }
                     />
