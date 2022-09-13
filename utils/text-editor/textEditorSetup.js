@@ -2,48 +2,59 @@ import { languageDef, configuration } from '../../editor/editorConfig';
 import { splitContentIntoLines } from './textProcessing';
 
 export default function textEditorSetup(monaco, categories) {
-    if (monaco && !monaco.languages.getLanguages().some(({ id }) => id === 'taskLanguage')) {
-        monaco.languages.register({ id: 'taskLanguage' });
-        monaco.languages.setMonarchTokensProvider('taskLanguage', setLanguageTokens(categories));
-        monaco.languages.setLanguageConfiguration('taskLanguage', configuration);
+  if (monaco && !monaco.languages.getLanguages().some(({ id }) => id === 'taskLanguage')) {
+    monaco.languages.register({ id: 'taskLanguage' });
+    monaco.languages.setMonarchTokensProvider('taskLanguage', setLanguageTokens(categories));
+    monaco.languages.setLanguageConfiguration('taskLanguage', configuration);
 
-        monaco.languages.registerCompletionItemProvider('taskLanguage', {
-          triggerCharacters: ["\\"],
-          provideCompletionItems: function (model, position) {
- 
-            var range = {
-              startLineNumber: position.lineNumber,
-              endLineNumber: position.lineNumber,
-              startColumn: position.column > 1 ? position.column - 2 : 1,
-              endColumn: position.column
-            };
+    monaco.languages.registerCompletionItemProvider('taskLanguage', {
+      triggerCharacters: ["\\"],
+      provideCompletionItems: function (model, position) {
 
-            const autoCompleteCharacters = model.getValueInRange({
-              startLineNumber: range.startLineNumber,
-              startColumn: range.startColumn,
-              endLineNumber: range.endLineNumber,
-              endColumn: range.endColumn
-            });
+        var range = {
+          startLineNumber: position.lineNumber,
+          endLineNumber: position.lineNumber,
+          startColumn: position.column > 1 ? position.column - 2 : 1,
+          endColumn: position.column
+        };
 
-            const sugg = createDependencyProposals(autoCompleteCharacters, range, categories);
-            console.log("RET SUGGESTIONS", sugg);
-
-            return { suggestions: sugg };
-          }
+        const autoCompleteCharacters = model.getValueInRange({
+          startLineNumber: range.startLineNumber,
+          startColumn: range.startColumn,
+          endLineNumber: range.endLineNumber,
+          endColumn: range.endColumn
         });
 
-        monaco.editor.defineTheme("darkTheme", {
-          base: 'vs-dark',
-          inherit: false,
-          rules: setCategoryTokens(categories),
-          colors: { 
-            "editor.background": "#000000",
-            "editor.foreground": "#ffffff",
-          },
-          scrollBar: {horizontal: 'auto'}
-        });
-        monaco.editor.setTheme('darkTheme');
+        const sugg = createDependencyProposals(autoCompleteCharacters, range, categories);
+
+        return { suggestions: sugg };
       }
+    });
+
+    monaco.editor.defineTheme("darkTheme", {
+      base: 'vs-dark',
+      inherit: false,
+      rules: setCategoryTokens(categories),
+      colors: { 
+        "editor.background": "#000000",
+        "editor.foreground": "#ffffff",
+      },
+      scrollBar: {horizontal: 'auto'}
+    });
+    monaco.editor.setTheme('darkTheme');
+  } else if(monaco) {
+    monaco.editor.defineTheme("darkTheme", {
+      base: 'vs-dark',
+      inherit: false,
+      rules: setCategoryTokens(categories),
+      colors: { 
+        "editor.background": "#000000",
+        "editor.foreground": "#ffffff",
+      },
+      scrollBar: {horizontal: 'auto'}
+    });
+    monaco.editor.setTheme('darkTheme');
+  }
 }
 
 function createDependencyProposals(autoCompleteCharacters, range, categories) {

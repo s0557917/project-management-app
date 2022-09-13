@@ -185,6 +185,8 @@ export default function TextEditor() {
       keybindingContext: null,
       run: () => {}
     })
+
+    console.log("Editor mounted");
   }
 
   useEffect(() => {
@@ -512,31 +514,18 @@ export default function TextEditor() {
               || !textEditorStructure 
               || textEditorStructure === null
             ? <TextEditorSkeleton />
-            : DEBUG_EDITOR(tasks, categories, options, textEditorStructure, editorContent, handleEditorDidMount)
+            : <MonacoEditor
+                height="80vh"
+                language='taskLanguage'
+                options={options}
+                theme="sampleTheme"
+                value={editorContent}
+                onMount={handleEditorDidMount}
+              />
             }
           </div>
         </div>
       }
     </>
-  )
-}
-
-function DEBUG_EDITOR(tasks, categories, options, textEditorStructure, editorContent, handleEditorDidMount) {
-    // console.log("-------------------------------------");
-    // console.log("TASKS", tasks);
-    // console.log("CATEGORIES", categories);
-    // console.log("OPTIONS", options);
-    // console.log("TEXT EDITOR STRUCTURE", textEditorStructure);
-    // console.log("HANDLE EDITOR MOUNT", handleEditorDidMount);
-    // console.log("-------------------------------------");
-  return (
-    <MonacoEditor
-    height="80vh"
-    language='taskLanguage'
-    options={options}
-    theme="sampleTheme"
-    value={editorContent}
-    onMount={handleEditorDidMount}
-  />
   )
 }
