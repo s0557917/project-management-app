@@ -24,6 +24,7 @@ import ErrorInformation from "../components/text-editor/information/ErrorInforma
 import UsageInformation from "../components/text-editor/information/UsageInformation";
 import { useMantineColorScheme } from "@mantine/core";
 import { v4 as uuidv4 } from 'uuid';
+import Loading from "../components/general/loading/Loading";
 
 export async function getServerSideProps({req, res}) {
 
@@ -491,28 +492,29 @@ export default function TextEditor() {
     <>
       {
         <div>
-            <Navbar />
-            <div className="flex items-center w-full justify-end px-5">
-                {!canUpdate && 
-                  <ErrorInformation 
-                  errors={syntaxErrors}
-                  />
-                }
-                <UsageInformation />
-            </div>
-            <div className='px-5 pt-2'>
-              {!tasks 
-                || tasks === null 
-                || !categories 
-                || categories === null 
-                || !options 
-                || options === null 
-                || !textEditorStructure 
-                || textEditorStructure === null
-              ? <TextEditorSkeleton />
-              : DEBUG_EDITOR(tasks, categories, options, textEditorStructure, editorContent, handleEditorDidMount)
+          <Loading />
+          <Navbar />
+          <div className="flex items-center w-full justify-end px-5">
+              {!canUpdate && 
+                <ErrorInformation 
+                errors={syntaxErrors}
+                />
               }
-            </div>
+              <UsageInformation />
+          </div>
+          <div className='px-5 pt-2'>
+            {!tasks 
+              || tasks === null 
+              || !categories 
+              || categories === null 
+              || !options 
+              || options === null 
+              || !textEditorStructure 
+              || textEditorStructure === null
+            ? <TextEditorSkeleton />
+            : DEBUG_EDITOR(tasks, categories, options, textEditorStructure, editorContent, handleEditorDidMount)
+            }
+          </div>
         </div>
       }
     </>

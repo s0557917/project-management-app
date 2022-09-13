@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { signOut, useSession } from 'next-auth/react';
 import { useQuery } from '@tanstack/react-query'
 import { getDefaultView } from '../../../utils/db/queryFunctions/settings';
+import { Loader } from '@mantine/core';
 
 const Header = ({}) => {
   const {data: defaultView, isLoading:isLoadingDefaultView, isError:errorDefaultView} = useQuery(['defaultView'], getDefaultView);
@@ -34,8 +35,11 @@ const Header = ({}) => {
   if (session) {
     redirectToDefaultView();
     content = (
-      <div className="left">
-        <h1>Loading...</h1>
+      <div className="flex items-center justify-center w-screen h-screen">
+        <div className='flex flex-col items-center'>
+          <Loader color="green" size="xl" />
+          <h1 className='pt-2'>Loading...</h1>
+        </div>
       </div>
     );
   }

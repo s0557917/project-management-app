@@ -14,7 +14,7 @@ import { prismaGetAllCategories } from "../utils/db/prismaQueryFunctions/categor
 import TitleBar from "../components/general/layout/TitleBar";
 import { useMantineColorScheme } from "@mantine/core";
 import { showNotification } from '@mantine/notifications';
-import { updateTextEditorStructure } from "../utils/db/queryFunctions/textEditorStructure";
+import Loading from "../components/general/loading/Loading";
 
 export async function getServerSideProps({req, res}) {
     const session = await getSession({ req });
@@ -131,6 +131,7 @@ export default function TaskList() {
 
     return (
         <div className={`relative w-screen h-screen flex flex-col flex-1 scroll overflow-scroll `}>
+            <Loading />
             <Navbar /> 
             <div className="h-full p-5">       
                 <TitleBar 

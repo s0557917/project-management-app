@@ -12,7 +12,7 @@ import { prismaGetAllCategories } from "../utils/db/prismaQueryFunctions/categor
 import { prismaGetTheme } from "../utils/db/prismaQueryFunctions/theme";
 import TitleBar from "../components/general/layout/TitleBar";
 import { useMantineColorScheme } from "@mantine/core";
-import { useNotifications } from "@mantine/notifications";
+import Loading from "../components/general/loading/Loading";
 
 export async function getServerSideProps({req, res}) {
     const session = await getSession({ req });
@@ -121,6 +121,7 @@ export default function Calendar() {
 
     return (
         <div>
+            <Loading />
             <Navbar />
             <div className="h-screen p-5">
                 <TitleBar 
