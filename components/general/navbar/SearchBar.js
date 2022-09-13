@@ -24,8 +24,12 @@ export default function SearchBar() {
     const {data: tasks, isFetching: isFetchingTasks} = useQuery(['tasks'], getAllTasks);
     const {data: categories, isFetching: isFetchingCategories} = useQuery(['categories'], getAllCategories);
 
-    const bgColor = getThemeColor('bg-white', 'bg-neutral-600');
     const queryClient = useQueryClient();
+
+    const textColor = getThemeColor('text-gray-900', 'text-white');
+    const backgroundColor = getThemeColor('bg-gray-200', 'bg-zinc-800');
+    const borderColor = getThemeColor('border-gray-300', 'border-zinc-700');
+    const hoverColor = getThemeColor('hover:bg-gray-300', 'hover:bg-zinc-700');
 
     useEffect(() => {
         if(debouncedSearchValue && tasks) {
@@ -35,14 +39,14 @@ export default function SearchBar() {
 
             if(matchingTasks.length > 0) {
                 setSearchResults(matchingTasks);
-                setDropdownOpened(true);
+                // setDropdownOpened(true);
             } else {
                 setSearchResults([]);
-                setDropdownOpened(false);
+                // setDropdownOpened(false);
             }
         } else {
             setSearchResults([]);
-            setDropdownOpened(false);
+            // setDropdownOpened(false);
         }
     }, [debouncedSearchValue]);
 
@@ -82,6 +86,8 @@ export default function SearchBar() {
     const wrapperRef = useRef(null);
     useOutsideAlerter(wrapperRef, setDropdownOpened);
 
+    const searchResultsListHeight = searchResults.length > 0 ? 250 : 50;
+
     return (
         <div 
             className="relative self-center mx-1 my-2 w-72"
@@ -89,44 +95,52 @@ export default function SearchBar() {
         >
             <TextInput 
                 value={searchValue}
-                onChange={(event) => setSearchValue(event.target.value)}
+                onChange={(event) => {
+                    setSearchValue(event.target.value);
+                    setDropdownOpened(true);
+                }}
                 placeholder={"Search..."}
                 icon={<MagnifyingGlass size={16} />}
-                onClick={() => searchResults.length > 0 ? setDropdownOpened(true) : null}
+                onClick={() => setDropdownOpened(true)}
             />
 
             {dropdownOpened && 
-                <div className={`${bgColor} absolute w-72 h-auto flex flex-col rounded-sm z-10 m-2 items-start`}>
+                <div className={`${backgroundColor} ${borderColor} border-[1px] absolute py-2 w-72 h-auto flex flex-col rounded-sm z-10 m-2 items-start top-8 right-1`}>
                     <ScrollArea 
-                        style={{ height: 250 }} 
+                        style={{ height: searchResultsListHeight, width: '100%' }} 
                         type="auto" 
                         offsetScrollbars
                     >
-                        {searchResults.map(result => {
-                            const category = categories.find(category => category.id === result.categoryId);
-                            const color = category && category !== null && category.color ? category.color : '#ababab'; 
+                        {searchResults.length > 0 
+                            ? searchResults.map(result => {
+                                const category = categories.find(category => category.id === result.categoryId);
+                                const color = category && category !== null && category.color ? category.color : '#ababab'; 
 
-                            return (
-                                <div
-                                    className={`flex items-center justify-between ${bgColor} hover:bg-neutral-700 active:scale-95 left-auto right-auto px-2 py-1 mx-2 my-1 border-y border-y-neutral-700`}
-                                >
-                                    <div 
-                                        onClick={() => {
-                                            setSelectedTask(result);
-                                            setDropdownOpened(false);
-                                            setOpenedTaskEditor(true);
-                                        }}
-                                        className="text-xs w-3/5"
+                                return (
+                                    <div
+                                        className={`${backgroundColor} ${hoverColor} w-full flex items-center justify-between active:scale-95 left-auto right-auto px-2 py-3 mx-2 border-y border-y-neutral-700`}
                                     >
-                                        {result.title}
+                                        <div 
+                                            onClick={() => {
+                                                setSelectedTask(result);
+                                                setDropdownOpened(false);
+                                                setOpenedTaskEditor(true);
+                                            }}
+                                            className="text-xs"
+                                        >
+                                            {result.title}
+                                        </div>
+                                        <div className='flex items-center mr-1'>
+                                            <Circle size={15} color={color} weight="fill" />
+                                            <p className='text-xs'>{category ? category.name : 'Uncategorized'}</p>
+                                        </div>
                                     </div>
-                                    <div className='flex items-center w-2/5'>
-                                        <Circle size={15} color={color} weight="fill" />
-                                        <p className='text-xs'>{category ? category.name : 'Uncategorized'}</p>
-                                    </div>
-                                </div>
-                            )
-                        })}
+                                )
+                            }) 
+                            : <div className='flex items-center h-[50px] mr-1'>
+                                <p className={`text-xs ${textColor} px-2 py-1 mx-2 my-1 `}>No results found...</p>
+                            </div>
+                        }
                     </ScrollArea>
                 </div>
             }
