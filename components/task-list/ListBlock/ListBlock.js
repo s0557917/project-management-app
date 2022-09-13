@@ -13,6 +13,8 @@ import { addNewTask } from "../../../utils/db/queryFunctions/tasks";
 
 export default function ListBlock({tasks, categories, onTaskClicked, onCompletionStateChanged, category, title, active, displayIcons}) {
     
+    const backgroundColor = getThemeColor('bg-gray-200', 'bg-zinc-800');
+
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
@@ -38,9 +40,8 @@ export default function ListBlock({tasks, categories, onTaskClicked, onCompletio
         (newTask) => addNewTask(newTask),
         {
             onSuccess: async (data) => {
-                updateTextEditorStructureMutation.mutate(data.id);
-                queryClient.invalidateQueries('tasks');
                 setIsNewTaskModalOpen(false);
+                queryClient.invalidateQueries('tasks');
                 showNotification({
                     autoClose: 3000,
                     type: 'success',
@@ -130,11 +131,13 @@ export default function ListBlock({tasks, categories, onTaskClicked, onCompletio
     }
 
     function onNewTaskSaved(taskData) {
+        console.log("NEW TASK SAVED", taskData);
         newTaskMutation.mutate(taskData);
     }
 
+
     return (
-        <div className={`rounded-md w-4/5 mx-auto bg-zinc-800`}>
+        <div className={`rounded-md w-4/5 mx-auto ${backgroundColor}`}>
             {
                 active &&
                 <ListBlockContainer 

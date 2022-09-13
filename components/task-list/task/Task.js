@@ -15,22 +15,11 @@ export default function Task({ taskData, onTaskClicked, onCompletionStateChanged
     const textColor = getThemeColor('text-gray-900', 'text-white');
     const queryClient = useQueryClient();
 
-    const updateTextEditorStructureMutation = useMutation(
-        (taskId) => updateTextEditorStructure({taskId, action: 'delete'}),
-        {
-            onSuccess: () => {
-                queryClient.invalidateQueries('textEditorStructure');
-            }
-        }
-    )
-
     const deleteTaskMutation = useMutation(
         (taskId) => deleteTask(taskId),
         {
             onSuccess: (data) => {
-                console.log("--- Deleted task with id: " + data.id);
                 queryClient.invalidateQueries('tasks');
-                updateTextEditorStructureMutation.mutate(data.id);
             }
         }
     )

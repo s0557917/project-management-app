@@ -8,8 +8,8 @@ export default function CategorySortingView ({tasks, categories, filters, onTask
       ?.map(category => {
         
         let tasksInCategory = tasks
-        ?.sort((a, b) => a.title.localeCompare(b.title))
-        ?.filter(task => task.categoryId === category.id && !task.completed);  
+          ?.sort((a, b) => a.title.localeCompare(b.title))
+          ?.filter(task => task.categoryId === category.id && !task.completed);  
 
         return <ListBlock
           key={category.id}

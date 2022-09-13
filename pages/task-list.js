@@ -59,7 +59,6 @@ export default function TaskList() {
         (newTask) => addNewTask(newTask),
         {
             onSuccess: async (data) => {
-                updateTextEditorStructureMutation.mutate(data.id);
                 queryClient.invalidateQueries('tasks');
                 showNotification({
                     autoClose: 3000,
@@ -82,15 +81,6 @@ export default function TaskList() {
                 title: 'Task updated successfully!',
             });
         }}
-    )
-
-    const updateTextEditorStructureMutation = useMutation(
-        (taskId) => updateTextEditorStructure({taskId, action: 'add'}),
-        {
-            onSuccess: () => {
-                queryClient.invalidateQueries('textEditorStructure');
-            }
-        }
     )
 
     const [openedTaskEditor, setOpenedTaskEditor] = useState(false);

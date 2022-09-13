@@ -14,10 +14,10 @@ export default function Statistics() {
     const {data: tasks, isFetching: isFetchingTasks} = useQuery(['tasks'], getAllTasks);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const trackedDays = generateStatistics();
-    console.log("TRACKED DAYS", trackedDays);
-    const textColor = getThemeColor('text-gray-900', 'text-white');
-    const bgColor = getThemeColor('bg-white', 'bg-neutral-600');
 
+    const textColor = getThemeColor('text-gray-900', 'text-white');
+    const backgroundColor = getThemeColor('bg-gray-200', 'bg-zinc-800');
+    const borderColor = getThemeColor('border-gray-300', 'border-zinc-700');
 
     function generateStatistics() {
 
@@ -52,7 +52,7 @@ export default function Statistics() {
             />
             {isPopoverOpen && 
                 <div 
-                    className={`absolute top-12 w-72 -right-2 p-2 rounded-md flex items-center justify-between ${bgColor} z-10`}
+                    className={`${borderColor} border-[1px] absolute top-12 w-72 -right-2 p-2 rounded-md flex items-center justify-between ${backgroundColor} z-10`}
                 >
                     <RingProgress
                         size={50}
@@ -70,7 +70,7 @@ export default function Statistics() {
                     />
                     <div className="ml-2">
                         <p className={`${textColor} text-lg font-bold mb-1`}>{trackedDays > 3 ? 'Keep it up!' : 'Make it happen!'}</p>
-                        <p className={`text-black text-xs`}>{trackedDays > 3 ? 'You have worked on your tasks at least 3 out of the last 7 days!' : 'Try to work on your tasks at least 3 days a week!'}</p>
+                        <p className={`${textColor} text-xs`}>{trackedDays > 3 ? 'You have worked on your tasks at least 3 out of the last 7 days!' : 'Try to work on your tasks at least 3 days a week!'}</p>
                     </div>
                 </div>
             }

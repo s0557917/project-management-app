@@ -116,8 +116,6 @@ export default function TaskEditorDialogue({ tasks, categories, category, modalS
         {
             onSuccess: async (data) => {
 
-                updateTextEditorStructureMutation.mutate(data.id);
-
                 const taskSubtasks = () => {
                     if(subtasks && subtasks.length > 0 && newSubtasks && newSubtasks.length > 0){
                         return [...subtasks, ...newSubtasks.map(subtask => subtask.id)];
