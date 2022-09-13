@@ -15,7 +15,7 @@ export default function IconSection({ taskData, category, textColor }) {
                 {String(new Date(taskData.dueDate).getHours()).padStart(2, "0")}:{String(new Date(taskData.dueDate).getMinutes()).padStart(2, "0")}
             </p>
             </div>
-        : null
+        : '-';
     }
     
     return (
@@ -42,7 +42,7 @@ export default function IconSection({ taskData, category, textColor }) {
                     color={category ? category.color : getCategoryColor('#1f2937','#ffffff')} 
                     className="m-1 drop-shadow-md shadow-black contrast-125"
                 />
-                <p className="text-xs">{category?.name}</p>
+                <p className="text-xs">{category?.name || '-'}</p>
             </IconInformation>
             {/* <IconInformation>
                 <BellRinging size={24} className="m-1 drop-shadow-md shadow-black"/>

@@ -4,14 +4,21 @@ import Sublist from "./Sublist"
 import getThemeColor from "../../../utils/color/getThemeColor";
 import { v4 as uuidv4 } from 'uuid';
 
-export default function SubtaskSection({ tasks, categories, selectedTask, subtasksState, newSubtasksState }) {
+export default function SubtaskSection({ tasks, categories, selectedTask, subtasksState, newSubtasksState, modifiedSubtasksState }) {
 
     const [subtasks, setSubtasks] = subtasksState;
     const [newSubtasks, setNewSubtasks] = newSubtasksState;
+    const [modifiedSubtasks, setModifiedSubtasks] = modifiedSubtasksState;
 
     const bgColor = getThemeColor('bg-gray-200', 'bg-zinc-800');
 
     function onSubtaskClicked(subtaskId){
+        const index = modifiedSubtasks.findIndex((subtask) => subtask.id === subtaskId);
+        if(index === -1){
+            modifiedSubtasks.push({taskId: subtaskId, completed: !(tasks.find((task) => task.id === subtaskId).completed)});
+        } else {
+            modifiedSubtasks[index].completed = !(modifiedSubtasks[index].completed);
+        }
     }
 
     function onSubtaskRemoved(subtaskId){

@@ -6,7 +6,7 @@ export default function Sublist({ subtasks, newSubtasks, categories, onSubtaskCl
   const textColor = getThemeColor('text-gray-900', 'text-white');
 
   return (
-    <div className="border-cyan-500">
+    <div>
       {(!subtasks || subtasks.length === 0 && (!newSubtasks || newSubtasks.length === 0))
         ? <p className={textColor}>No subtasks yet...</p> 
         : <ScrollArea style={{ height: 100 }} offsetScrollbars>

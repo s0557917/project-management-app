@@ -63,6 +63,7 @@ export default function TaskEditorDialogue({ tasks, categories, category, modalS
     });
     const [userTimezone, setUserTimezone] = useState(selectedTask?.timeZone || null);
     const [subtasks, setSubtasks] = useState(selectedTask?.subtasks || []);
+    const [modifiedSubtasks, setModifiedSubtasks] = useState([]);
     const [newSubtasks, setNewSubtasks] = useState([]);
 
     useEffect(() => {
@@ -279,6 +280,7 @@ export default function TaskEditorDialogue({ tasks, categories, category, modalS
                     selectedTask={selectedTask} 
                     subtasksState={[subtasks, setSubtasks]}
                     newSubtasksState={[newSubtasks, setNewSubtasks]}
+                    modifiedSubtasksState={[modifiedSubtasks, setModifiedSubtasks]}
                 />
             </>
         </Dialogue>

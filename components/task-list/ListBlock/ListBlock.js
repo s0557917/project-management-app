@@ -10,6 +10,7 @@ import { updateCategory } from "../../../utils/db/queryFunctions/categories";
 import { showNotification } from '@mantine/notifications';
 import TaskEditorDialogue from "../../task-editor-dialogue/TaskEditorDialogue";
 import { addNewTask } from "../../../utils/db/queryFunctions/tasks";
+import EmptyListCategory from "../empty-states/EmptyListCategory";
 
 export default function ListBlock({tasks, categories, onTaskClicked, onCompletionStateChanged, category, title, active, displayIcons}) {
     
@@ -86,17 +87,23 @@ export default function ListBlock({tasks, categories, onTaskClicked, onCompletio
             />
         })
 
-        return (mappedTasks?.length > 0 
+        const ret = (mappedTasks?.length > 0 
             ? mappedTasks 
-            : <div className="p-2 flex items-center">
-                <p className={`text-gray-900' text-md`}>No tasks in this category yet...</p>
-                <button 
-                    className="rounded-full text-xl bg-green-600 hover:scale-105 active:scale-95 text-white ml-3 w-7 h-7 justify-center"
-                    onClick={() => setIsNewTaskModalOpen(true)}    
-                >
-                    <span className="justify-self-center">+</span>
-                </button>
-            </div>);
+            : (
+                <div className="p-2 flex items-center">
+                    <p className={`text-gray-900' text-md`}>
+                        No tasks in this category yet...
+                    </p>
+                    <button 
+                        className="rounded-full text-xl bg-green-600 hover:scale-105 active:scale-95 text-white ml-3 w-7 h-7 justify-center"
+                        onClick={() => setIsNewTaskModalOpen(true)}    
+                    >
+                        <span className="justify-self-center">+</span>
+                    </button>
+                </div>
+            )
+        )
+        return ret;
     }
 
     function onOpenCategoryEditor() {
@@ -131,7 +138,6 @@ export default function ListBlock({tasks, categories, onTaskClicked, onCompletio
     }
 
     function onNewTaskSaved(taskData) {
-        console.log("NEW TASK SAVED", taskData);
         newTaskMutation.mutate(taskData);
     }
 

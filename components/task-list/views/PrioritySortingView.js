@@ -7,7 +7,7 @@ export default function PrioritySortingView({tasks, categories, onTaskClicked, o
             ?.filter(task => filterTasksToUserPreferences(task, categories, filters))
             ?.sort((a, b) => b.priority - a.priority);
 
-        return <ListBlock
+        const prio = <ListBlock
             key={'priority-sorted'}
             tasks={filteredAndSortedTasks}
             categories={categories}
@@ -18,6 +18,9 @@ export default function PrioritySortingView({tasks, categories, onTaskClicked, o
             active={true}
             theme={theme}
         />
+
+        console.log("PRIORITY SORTED", prio);
+        return prio;
     }
 
     return (
