@@ -32,6 +32,10 @@ export default function SearchBar() {
     const hoverColor = getThemeColor('hover:bg-gray-300', 'hover:bg-zinc-700');
 
     useEffect(() => {
+        // console.log("OPENED TASK EDITOR", openedTaskEditor);
+    }, [openedTaskEditor]);
+
+    useEffect(() => {
         if(debouncedSearchValue && tasks) {
             const matchingTasks = tasks.filter(task => 
                 task.title.toLowerCase().includes(debouncedSearchValue.toLowerCase())
@@ -118,14 +122,15 @@ export default function SearchBar() {
 
                                 return (
                                     <div
-                                        className={`${backgroundColor} ${hoverColor} w-full flex items-center justify-between active:scale-95 left-auto right-auto px-2 py-3 mx-2 border-y border-y-neutral-700`}
+                                        className={`${backgroundColor} ${hoverColor} cursor-pointer w-full flex items-center justify-between active:scale-95 left-auto right-auto px-2 py-3 mx-2 border-y border-y-neutral-700`}
+                                        onClick={() => {
+                                            console.log("TASK CLICKED");
+                                            setSelectedTask(result);
+                                            setDropdownOpened(false);
+                                            setOpenedTaskEditor(true);
+                                        }}
                                     >
                                         <div 
-                                            onClick={() => {
-                                                setSelectedTask(result);
-                                                setDropdownOpened(false);
-                                                setOpenedTaskEditor(true);
-                                            }}
                                             className="text-xs"
                                         >
                                             {result.title}

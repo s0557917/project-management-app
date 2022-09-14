@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import { StatsRing } from "./StatsRing";
 import { useQuery } from "@tanstack/react-query";
 import { getAllTasks } from "../../../utils/db/queryFunctions/tasks";
-import { getUniqueDates } from "../../../utils/dates/getUniqueDates";
+import { getUniqueUpdateDates } from "../../../utils/dates/getUniqueDates";
 import { useState } from "react";
 import { RingProgress } from "@mantine/core";
 import getThemeColor from "../../../utils/color/getThemeColor";
@@ -24,7 +24,7 @@ export default function Statistics() {
         if(tasks) {
             const limitDate = dayjs(new Date()).subtract(7, 'day').toDate();
             const filteredTasks = tasks.filter(task => new Date(task.updatedAt) >= limitDate && new Date(task.updatedAt) < new Date());
-            const uniqueDates = getUniqueDates(filteredTasks);
+            const uniqueDates = getUniqueUpdateDates(filteredTasks);
 
             return uniqueDates.size ;
         }

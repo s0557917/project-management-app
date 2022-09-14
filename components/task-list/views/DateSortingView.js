@@ -1,5 +1,5 @@
 import { filterTasksToUserPreferences } from "../../../utils/task-filtering/taskFiltering";
-import { getUniqueDates } from "../../../utils/dates/getUniqueDates";
+import { getUniqueDueDates } from "../../../utils/dates/getUniqueDates";
 import ListBlock from "../ListBlock/ListBlock";
 
 export default function DateSortingView({ tasks, categories, onTaskClicked, onCompletionStateChanged, filters}) {
@@ -14,12 +14,15 @@ export default function DateSortingView({ tasks, categories, onTaskClicked, onCo
     }
 
     function generateDateBlocks(sortedTasks) {
-        const dates = getUniqueDates(sortedTasks);
+        const dates = getUniqueDueDates(sortedTasks);
 
         let mappedTasks = [];
         if(dates.size !== 0) {
             mappedTasks = [...dates].map(date => {
-                const tasksInDate = sortedTasks.filter(task => new Date(task.dueDate).toLocaleDateString('en-GB') === date);    
+                const tasksInDate = sortedTasks.filter(task => {
+                    console.log("TASK", new Date(task.dueDate).toLocaleDateString('en-GB'), " -- ", date, " === ", new Date(task.dueDate).toLocaleDateString('en-GB') === date);
+                    return new Date(task.dueDate).toLocaleDateString('en-GB') === date;
+                });    
                 return <ListBlock
                     key={date}
                     tasks={tasksInDate}

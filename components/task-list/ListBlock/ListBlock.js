@@ -13,7 +13,7 @@ import { addNewTask } from "../../../utils/db/queryFunctions/tasks";
 import EmptyListCategory from "../empty-states/EmptyListCategory";
 
 export default function ListBlock({tasks, categories, onTaskClicked, onCompletionStateChanged, category, title, active, displayIcons}) {
-    
+    console.log("TASKS", tasks);
     const backgroundColor = getThemeColor('bg-gray-200', 'bg-zinc-800');
 
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
