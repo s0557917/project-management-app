@@ -31,6 +31,7 @@ export default function UsageInformation() {
                                 <li><span className='font-bold text-md'>d\ </span>- The task's details</li>
                                 <li><span className='font-bold text-md'>c\ </span>- The task's category</li>
                                 <li><span className='font-bold text-md'>p\ </span>- The task's priority. This has to be a value between 1 to 5.</li>
+                                <li><span className='font-bold text-md'>x\ </span>- The task's completion state. If present, the task is completed, if not the task is incomplete.</li>
                                 <li><span className='font-bold text-md'>dt\</span>- The task's date and time. It is important to watch the spacing very closely and the date has to be formatted as:
                                     <uL className='list-disc pl-10 mt-1'>
                                         <li><span className='font-bold text-md'>DD-MM-YYYY</span> - A simple due date</li>

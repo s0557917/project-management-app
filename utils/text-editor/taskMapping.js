@@ -12,6 +12,7 @@ export function mapTasksToEditor(tasks, categories) {
 
 export function mapTaskStructureToEditor(taskStructure, tasks, categories) {
     if(!taskStructure || !tasks || !categories) return [];
+    console.log("taskStructure", taskStructure);
     const taskStr = taskStructure
     ?.sort((a, b) => a.startPos.l < b.startPos.l ? -1 : 1)
     ?.map((line, index) => {
@@ -25,7 +26,7 @@ export function mapTaskStructureToEditor(taskStructure, tasks, categories) {
 
 export function mapSingleTask(task, categories) {
     if(task && categories) {
-        return `${mapTitle(task.title)} ${mapDetails(task.details)} ${mapCategory(categories, task.categoryId)} p\\${task.priority} ${mapDate(task.dueDate, task.start, task.end)} ${task.completed ? 'x\\' : ''}`
+        return `${task.id.substring(0,4)} ${mapTitle(task.title)} ${mapDetails(task.details)} ${mapCategory(categories, task.categoryId)} p\\${task.priority} ${mapDate(task.dueDate, task.start, task.end)} ${task.completed ? 'x\\' : ''}`
     } else {
         return '';
     }

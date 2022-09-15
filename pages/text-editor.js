@@ -80,7 +80,7 @@ export default function TextEditor() {
   const [canUpdate, setCanUpdate] = useState(true);
   const [syntaxErrors, setSyntaxErrors] = useState([]);
   const [textDecorations, setTextDecorations] = useState([]);
-  const debouncedEditorContent = useDebounce(unManagedContent, 500);
+  const debouncedEditorContent = useDebounce(unManagedContent, 1000);
   const [editorChanges, setEditorChanges] = useState([]);	
   
   const monaco = useMonaco();
@@ -278,23 +278,48 @@ export default function TextEditor() {
       const oldEditorLines = splitContentIntoLines(editorContent);
       const newEditorLines = splitContentIntoLines(unManagedContent);
 
+
       const swaps = editorChanges.filter(change => change.changes.length == 2).sort((a, b) => a.timestamp - b.timestamp);
       const uniqueChanges = getUniqueLineChanges(editorChanges.sort((a, b) => a.timestamp - b.timestamp).filter(change => change.changes.length === 1));
-
+      
       if(uniqueChanges && uniqueChanges.length > 0) {
         uniqueChanges.forEach(change => {
           const modifiedTask = editorContentStructure?.find(line => {
             return line.startPos.l === change.range.startLineNumber;
           });
-          const startLine = change.range.startLineNumber;
-          const endLine = change.range.endLineNumber;
-          const startColumn = change.range.startColumn;
-          const endColumn = change.range.endColumn;
-          const startLineWidth = oldEditorLines[startLine - 1].length;
-          const endLineWidth = oldEditorLines[endLine - 1].length;
 
-          if(modifiedTask) {
+          if(oldEditorLines.length < newEditorLines.length) {
+            //NEW TASK
+            // console.log("--------------------------------------")
+            // console.log("New task detected", change);
+            const newTaskId = uuidv4();
+            // console.log("NEW EDITOR LINES", newEditorLines)
+            const position = {
+              startPos: {l: change.range.startLineNumber, c: 1},
+              endPos: {l: change.range.startLineNumber, c: newEditorLines[change.range.startLineNumber - 1].length},
+            };
+            // console.log("POSITION", position);
+            newTasks.push({position: position, taskId: newTaskId, components: getTaskComponents(newEditorLines[change.range.startLineNumber - 1])});
+            if(change.range.startLineNumber !== newEditorLines.length) {
+              modifiedStructure = moveTasks('down', change.range.startLineNumber, modifiedStructure);
+            }
+            
+            modifiedStructure.push({ 
+              id: newTaskId,
+              startPos: position.startPos,
+              endPos: position.endPos, 
+              components: getTaskComponents(newEditorLines[change.range.startLineNumber - 1])
+            });
+            // console.log("--------------------------------------")
+          } else if(modifiedTask) {
             if(oldEditorLines.length > newEditorLines.length && change.text === '' && change.range.startLineNumber !== change.range.endLineNumber) {
+              
+              const startLine = change.range.startLineNumber;
+              const endLine = change.range.endLineNumber;
+              const startColumn = change.range.startColumn;
+              const endColumn = change.range.endColumn;
+              const startLineWidth = oldEditorLines[startLine - 1].length;
+
               //DELETED TASKS
               if(startColumn > 1 && startColumn < startLineWidth) {
                 const { areEqual, components } = areLinesEqual(oldEditorLines[startLine - 1], newEditorLines[startLine - 1]);
@@ -328,25 +353,9 @@ export default function TextEditor() {
                 modifiedStructure = modifiedStructure.filter(line => !deletedLineRange.includes(line.startPos.l));
                 modifiedStructure = moveTasks('down', startLine + 1, modifiedStructure, endLine - startLine);
               }
-            } else if(oldEditorLines.length < newEditorLines.length && change.text !== '\n') {
-              //NEW TASK
-              const newTaskId = uuidv4();
-              const position = {
-                startPos: {l: change.range.startLineNumber, c: 1},
-                endPos: {l: change.range.startLineNumber, c: newEditorLines[change.range.startLineNumber].length},
-              };
-              newTasks.push({position: position, taskId: newTaskId, components: getTaskComponents(newEditorLines[change.range.startLineNumber - 1])});
-              modifiedStructure = moveTasks('down', change.range.startLineNumber, modifiedStructure);
-              modifiedStructure[change.range.startLineNumber] = { 
-                id: newTaskId,
-                startPos: position.startPos,
-                endPos: position.endPos, 
-                components: getTaskComponents(newEditorLines[change.range.startLineNumber - 1])
-              };
             } else {
               const { areEqual, components } = areLinesEqual(oldEditorLines[change.range.startLineNumber - 1], newEditorLines[change.range.startLineNumber - 1]);
               if(modifiedTask.id && !areEqual) {
-                console.log("ARE LINES EQUAL? ", areEqual);
                 modifiedTasks.push({id: modifiedTask.id, components: components});
               }
             }
@@ -385,13 +394,13 @@ export default function TextEditor() {
           dueDate: new Date(task.components.dueDate) || null,
           priority: task.components.priority || 1,
           completed: task.components.completed || false,
-          start: null,
-          end: null,
+          start: new Date(task.components.start) || null,
+          end: new Date(task.components.end) || null,
           reminders: null,
           subtasks: null,
         }
       }))
-
+      
       modifiedTasks.forEach(task => {
         const updatedTask = {
           id: task.id,
@@ -400,11 +409,11 @@ export default function TextEditor() {
           categoryId: categories?.find(category => {
               return category?.name?.trim() === task.components?.category?.trim()
             })?.id || '',
-          dueDate: null,
+          dueDate: new Date(task.components.dueDate) || null,
           priority: task.components.priority || 1,
           completed: task.components.isCompleted || false,
-          start: null,
-          end: null,
+          start: new Date(task.components.start) || null,
+          end: new Date(task.components.end) || null,
           reminders: null,
           subtasks: null,
         }
@@ -412,11 +421,11 @@ export default function TextEditor() {
         updateTaskMutation.mutate(updatedTask);
       });
 
-      console.log("MODIFIED STRUCTURE", modifiedStructure);
       setEditorContentStructure(modifiedStructure);
       setEditorChanges([]);
       setEditorContent(unManagedContent);
       setStatus('ready');
+      console.log("MODIFIED STRUCTURE", modifiedStructure);
       updateTextEditorStructureMutation.mutate(modifiedStructure);
     }
   }
@@ -441,7 +450,9 @@ export default function TextEditor() {
           changedObject[0].cursorPosition.lineNumber = Math.max(changes[0].cursorPosition.lineNumber, changes[1].cursorPosition.lineNumber); 
           
           return [{...changedObject[0].changes[0], cursorPosition: changedObject[0].cursorPosition}];
-
+        
+        } else if(changes[0].changes[0].text === '\n' ) {
+          return changes[1].changes.map(change => { return {...change, cursorPosition: changes[1].cursorPosition}})
         } else {
           let groups = changes
           .filter(changeObject => changeObject.changes.length === 1)
@@ -477,11 +488,12 @@ export default function TextEditor() {
   }
 
   function moveTasks(direction, modifiedLineIndex, editorStructure, increment = 1) {
+
     const movedStructure = editorStructure
       .map(line => {
         const {startPos, endPos} = line;
         if(direction === 'down') {
-          if(startPos.l >= modifiedLineIndex) {
+          if(startPos.l > modifiedLineIndex) {
             startPos.l += increment;
             endPos.l += increment;
           }
@@ -508,7 +520,7 @@ export default function TextEditor() {
                 errors={syntaxErrors}
                 />
               }
-              <StatusInformation status={status} />
+              {/* <StatusInformation status={status} /> */}
               <UsageInformation />
           </div>
           <div className='px-5 pt-2'>

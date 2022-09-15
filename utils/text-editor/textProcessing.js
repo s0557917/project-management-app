@@ -84,10 +84,16 @@ export function runSyntaxCheck(text, categories) {
                 
                 // Check that components are also only present once
                 const titleMatches = line.match(new RegExp(titleRegex, 'g'));
+                const titleContentMatches = line.match(new RegExp(titleContentRegex, 'g'));
                 const detailsMatches = line.match(new RegExp(detailsRegex, 'g'));
                 const dateTimeContentMatches = line.match(dateTimeContentRegex);
                 const priorityMatches = line.match(new RegExp(prioRegex, 'g'));
                 const taskCompletedMatches = line.match(new RegExp(taskCompletedRegex, 'g'));
+
+                if (!line.includes('t\\')) {
+                    linesWithoutTitleExist = true;
+                    errors.add(`Line ${index + 1} does not have a title!`);
+                } 
 
                 if(titleMatches !== null && titleMatches.length > 1) {
                     multipleEqualTagsInLine = true;
@@ -115,11 +121,11 @@ export function runSyntaxCheck(text, categories) {
                     errors.add(`There are multiple task completed tags in line ${index + 1}!`);
                 }
                 
-                //Check that priority is present 
-                if(priorityMatches === null) {
-                    missingPrioritiesExist = true;
-                    errors.add(`There is no priority in line ${index + 1}!`);
-                }
+                //Check that priority is present
+                // if(emptyTagsMatches === null && priorityMatches === null) {
+                //     missingPrioritiesExist = true;
+                //     errors.add(`There is no priority in line ${index + 1}!`);
+                // }
                 
                 //Check if dueDate is present and if its correct
                 if(dateTimeContentMatches !== null) {
@@ -148,12 +154,8 @@ export function runSyntaxCheck(text, categories) {
             });
 
             // Check that title is present
-            const lineHasTitle = text.match(/(?<!d)t\\*?(?=[t|c|d|dt|p][t|c|d|dt|p]?\\)|(?<!d)t\\.*?(?=$)|(?<!d)t\\.*?(?=\n)/g);
             splitText.forEach((line, index) => {
-                if (!line.includes('t\\')) {
-                    linesWithoutTitleExist = true;
-                    errors.add(`Line ${index + 1} does not have a title!`);
-                } 
+
             });
         }
 
@@ -234,7 +236,7 @@ export function areLinesEqual(firstLine, secondLine) {
 }
 
 function areDueDatesEqual(firstComponent, secondComponent) {
-    
+    console.log("firstComponent", firstComponent, "secondComponent", secondComponent);
     const areEqual = firstComponent.dueDate === secondComponent.dueDate && firstComponent.end === secondComponent.end;
     console.log(firstComponent, " == ", secondComponent, " : ", areEqual);
     return areEqual;

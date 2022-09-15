@@ -4,6 +4,11 @@ export function filterTasksToUserPreferences(task, categories, filters) {
     && (isCategoryPresentAndActive(task, categories) || isCategoryNotPresentAndUncategorizedVisible(task, filters));
 }
 
+export function filterTasksToUserPreferenceAndPrio(task, categories, filters) {
+    return showCompletedTasks(task, filters) 
+    && (isCategoryPresentAndActive(task, categories) || isCategoryNotPresentAndUncategorizedVisible(task, filters));
+}
+
 export function hasDueDate(task) {
     return task.dueDate !== null 
       && task.dueDate !== undefined 
