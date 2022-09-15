@@ -493,7 +493,7 @@ export default function TextEditor() {
       .map(line => {
         const {startPos, endPos} = line;
         if(direction === 'down') {
-          if(startPos.l > modifiedLineIndex) {
+          if(startPos.l >= modifiedLineIndex) {
             startPos.l += increment;
             endPos.l += increment;
           }
