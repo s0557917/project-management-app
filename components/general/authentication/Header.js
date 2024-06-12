@@ -7,13 +7,16 @@ import { getDefaultView } from "../../../utils/db/queryFunctions/settings";
 import { Loader } from "@mantine/core";
 
 export default function Header() {
+  const { data: session, status } = useSession();
   const {
     data: defaultView,
     isLoading: isLoadingDefaultView,
     isError: errorDefaultView,
-  } = useQuery(["defaultView"], getDefaultView);
+  } = useQuery({
+    queryKey: ["defaultView", session],
+    queryFn: () => getDefaultView(session?.user?.email),
+  });
 
-  const { data: session, status } = useSession();
   const router = useRouter();
 
   const isActive = (pathname) => router.pathname === pathname;
@@ -38,7 +41,6 @@ export default function Header() {
   }
 
   if (session) {
-    console.log("SESSSSSS ", session);
     redirectToDefaultView();
     content = (
       <div className="flex items-center justify-center w-screen h-screen">
