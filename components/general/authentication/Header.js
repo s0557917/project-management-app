@@ -7,7 +7,7 @@ import { getDefaultView } from "../../../utils/db/queryFunctions/settings";
 import { Loader } from "@mantine/core";
 
 export default function Header() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const {
     data: defaultView,
     isLoading: isLoadingDefaultView,

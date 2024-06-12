@@ -1,5 +1,5 @@
 export const getTheme = async () => {
-  const res = await fetch("/api/theme", {
+  const res = await fetch(`/api/theme?email=${email}`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
@@ -34,8 +34,8 @@ export const updateDefaultView = async (updatedDefaultView) => {
   return res.json();
 };
 
-export const getFilters = async () => {
-  const res = await fetch("/api/filters", {
+export const getFilters = async (email) => {
+  const res = await fetch(`/api/filters?email=${email}`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
